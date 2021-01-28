@@ -5,8 +5,9 @@ set(CMAKE_CXX_STANDARD 20)
 
 add_subdirectory(lib)
 include_directories(lib/raylib/src)
+include_directories(include)
 
-add_executable(skynet_editor main.cpp)
+add_executable(skynet_editor main.cpp include/mycolor.h)
 
 find_package(spdlog REQUIRED)
 
