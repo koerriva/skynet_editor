@@ -44,7 +44,20 @@ int main() {
         }
     }
     Vector2 lastMousePos = {0};
-    Vector2 deltaMousePos = {0};
+    Vector2 deltaMousePos;
+
+    Image mask = GenImageColor(20,20,WHITE);
+    Image neural_dark_img = GenImageColor(20, 20,WHITE);
+    ImageDrawCircleV(&neural_dark_img,{10,10},10,DARKGREEN);
+
+//    ImageAlphaMask(&neural_dark_img,mask);
+    Image neural_light_img = GenImageColor(20,20,WHITE);
+    ImageDrawCircleV(&neural_light_img,{10,10},10,GREEN);
+//    ImageAlphaMask(&neural_light_img,mask);
+
+    Texture2D neural_dark_texture = LoadTextureFromImage(neural_dark_img);
+    Texture2D neural_light_texture = LoadTextureFromImage(neural_light_img);
+
     while(!WindowShouldClose()){
         auto  mPos = GetMousePosition();
         deltaMousePos = Vector2Subtract(mPos,lastMousePos);
@@ -57,15 +70,18 @@ int main() {
 
         int index=0;
         for (auto center : entities) {
-            Color color;
+            Color color = SHENHAILV;
             if(IsInside(center,wPos)){
-                color = GREEN;
+//                color = GREEN;
+                DrawTextureV(neural_light_texture,Vector2SubtractValue(center,radius),color);
             }else{
-                color = DARKGREEN;
+//                color = DARKGREEN;
+                DrawTextureV(neural_dark_texture,Vector2SubtractValue(center,radius),color);
             }
 
-            DrawCircleV(center,radius,color);
-            DrawText(TextFormat("%d",index),center.x,center.y,9,WHITE);
+//            DrawCircleV(center,radius,RED);
+
+//            DrawText(TextFormat("%d",index),center.x,center.y,9,WHITE);
             index++;
         }
         EndMode2D();
@@ -77,7 +93,10 @@ int main() {
         DrawText(TextFormat("World Pos %2.f,%2.f",wPos.x,wPos.y),5,60,16,DARKBROWN);
 
         if(IsMouseButtonDown(MOUSE_LEFT_BUTTON)){
-            camera.offset = Vector2Add(Vector2Scale(deltaMousePos,1.f),camera.offset);
+            float t = GetFrameTime();
+            float f = 40/camera.zoom;
+            camera.target.x -= deltaMousePos.x*f*t;
+            camera.target.y -= deltaMousePos.y*f*t;
             DrawText("Move Scene",5,80,16,WHITE);
         }
 
