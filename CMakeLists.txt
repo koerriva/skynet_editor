@@ -7,6 +7,8 @@ add_subdirectory(lib)
 include_directories(lib/raylib/src)
 include_directories(include)
 
+file(COPY data DESTINATION .)
+
 add_executable(skynet_editor main.cpp include/mycolor.h)
 
 find_package(spdlog REQUIRED)

@@ -48,6 +48,9 @@ int main() {
     Vector2 lastMousePos = {0};
     Vector2 deltaMousePos;
 
+    Texture2D light_texture = LoadTexture("data/neural_light.png");
+    Texture2D dark_texture = LoadTexture("data/neural_dark.png");
+
     Image mask = GenImageColor(20,20,WHITE);
     Image neural_dark_img = GenImageColor(20, 20,WHITE);
     ImageDrawCircleV(&neural_dark_img,{10,10},10,DARKGREEN);
@@ -72,13 +75,13 @@ int main() {
 
         int index=0;
         for (auto center : entities) {
-            Color color = SHENHAILV;
+            Color color = WHITE;
             if(IsInside(center,wPos)){
 //                color = GREEN;
-                DrawTextureV(neural_light_texture,Vector2SubtractValue(center,radius),color);
+                DrawTextureV(light_texture,Vector2SubtractValue(center,radius),color);
             }else{
 //                color = DARKGREEN;
-                DrawTextureV(neural_dark_texture,Vector2SubtractValue(center,radius),color);
+                DrawTextureV(dark_texture,Vector2SubtractValue(center,radius),color);
             }
 
 //            DrawCircleV(center,radius,RED);
