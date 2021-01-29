@@ -16,17 +16,19 @@ bool IsInside(Vector2 center, Vector2 pos){
 
 int width = 1280,height=720;
 
-#ifndef __APPLE__
+#ifdef _WIN32
 // N卡使用独显运行
 extern "C" __declspec(dllexport) unsigned long NvOptimusEnablement = 0x00000001;
+#endif
 
+#ifndef __APPLE__
 // A显卡使用独显运行
-//extern "C" __declspec(dllexport) int AmdPowerXpressRequestHighPerformance = 0x00000001;
+extern "C" __declspec(dllexport) int AmdPowerXpressRequestHighPerformance = 0x00000001;
 #endif
 
 int main() {
 //    SetConfigFlags(FLAG_VSYNC_HINT | FLAG_MSAA_4X_HINT | FLAG_WINDOW_HIGHDPI);
-    SetConfigFlags(FLAG_VSYNC_HINT|FLAG_WINDOW_HIGHDPI);
+    SetConfigFlags(FLAG_WINDOW_HIGHDPI);
     InitWindow(width,height,"Skynet Editor");
     SetWindowPosition(100,100);
     SetTargetFPS(60);
