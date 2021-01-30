@@ -4,6 +4,7 @@
 #include <raymath.h>
 //#include <glm/glm.hpp>
 #include <spdlog/spdlog.h>
+#include <mygame.h>
 
 //using namespace glm;
 using namespace spdlog;
@@ -37,72 +38,76 @@ int main() {
     camera.target = {0.f,0.f};
     camera.offset = {width/2.f,height/2.f};
     float radius = 10.0f;
-    int row = width/20,col = height/20;
-    Vector2 entities[row*col];
-    for (int i = 0; i < row; ++i) {
-        for (int j = 0; j < col; ++j) {
-            entities[i*col+j].x = i*radius*2+radius;
-            entities[i*col+j].y = j*radius*2+radius;
-        }
-    }
+
+    Neural* neurals = (Neural*)MemAlloc(sizeof(Neural)*10000);
+    int neuralCount = 0;
+    Texture2D neural_dark_texture = LoadTexture("data/neural_dark.png");
+    Texture2D neural_light_texture =LoadTexture("data/neural_light.png");
+
     Vector2 lastMousePos = {0};
     Vector2 deltaMousePos;
+    Vector2 curentMousePos;
+    Vector2 worldMousePos;
 
-    Texture2D light_texture = LoadTexture("data/neural_light.png");
-    Texture2D dark_texture = LoadTexture("data/neural_dark.png");
-
-    Image mask = GenImageColor(20,20,WHITE);
-    Image neural_dark_img = GenImageColor(20, 20,WHITE);
-    ImageDrawCircleV(&neural_dark_img,{10,10},10,DARKGREEN);
-
-//    ImageAlphaMask(&neural_dark_img,mask);
-    Image neural_light_img = GenImageColor(20,20,WHITE);
-    ImageDrawCircleV(&neural_light_img,{10,10},10,GREEN);
-//    ImageAlphaMask(&neural_light_img,mask);
-
-    Texture2D neural_dark_texture = LoadTextureFromImage(neural_dark_img);
-    Texture2D neural_light_texture = LoadTextureFromImage(neural_light_img);
-
+    PlayerAction action = PlayerAction::Idle;
+    
     while(!WindowShouldClose()){
-        auto  mPos = GetMousePosition();
-        deltaMousePos = Vector2Subtract(mPos,lastMousePos);
-        lastMousePos = mPos;
-        auto wPos = GetScreenToWorld2D(mPos,camera);
+        {
+            curentMousePos = GetMousePosition();
+            deltaMousePos = Vector2Subtract(curentMousePos,lastMousePos);
+            lastMousePos = curentMousePos;
+            worldMousePos = GetScreenToWorld2D(curentMousePos,camera);
+            camera.zoom +=GetMouseWheelMove();
+            camera.zoom = Clamp(camera.zoom,1,5);
+        }
+
+        {
+            action = PlayerAction::Idle;
+        }
+        
+        if(IsMouseButtonDown(MOUSE_LEFT_BUTTON)&&Vector2Length(deltaMousePos)>1.0){
+            action = PlayerAction::MoveScene;
+        }
+        if(IsMouseButtonPressed(MOUSE_LEFT_BUTTON)){
+            action = PlayerAction::AddNode;
+        }
+
+        if(action==PlayerAction::MoveScene){
+            float t = GetFrameTime();
+            float f = 40/camera.zoom;
+            camera.target.x -= deltaMousePos.x*f*t;
+            camera.target.y -= deltaMousePos.y*f*t;
+        }
+
+        if(action==PlayerAction::AddNode){
+            neurals[neuralCount++]=Neural{worldMousePos,WHITE,false};
+        }
 
         BeginDrawing();
         ClearBackground(SHENHAILV);
         BeginMode2D(camera);
 
         int index=0;
-        for (auto center : entities) {
-            Color color = WHITE;
-            if(IsInside(center,wPos)){
-//                color = GREEN;
-                DrawTextureV(light_texture,Vector2SubtractValue(center,radius),color);
+        for (size_t i = 0; i < neuralCount; i++)
+        {
+            Neural* n = &neurals[i];
+            if(IsInside(n->center,worldMousePos)){
+                DrawTextureV(neural_light_texture,Vector2SubtractValue(n->center,radius),n->color);
             }else{
-//                color = DARKGREEN;
-                DrawTextureV(dark_texture,Vector2SubtractValue(center,radius),color);
+                DrawTextureV(neural_dark_texture,Vector2SubtractValue(n->center,radius),n->color);
             }
-
-//            DrawCircleV(center,radius,RED);
-
-//            DrawText(TextFormat("%d",index),center.x,center.y,9,WHITE);
-            index++;
         }
+
         EndMode2D();
         DrawFPS(5,5);
         DrawText(TextFormat("Mouse Y %2.f",GetMouseWheelMove()),5,20,16,DARKBROWN);
-        camera.zoom +=GetMouseWheelMove();
-        camera.zoom = Clamp(camera.zoom,1,5);
         DrawText(TextFormat("Mouse Zoom %2.f",camera.zoom),5,40,16,DARKBROWN);
-        DrawText(TextFormat("World Pos %2.f,%2.f",wPos.x,wPos.y),5,60,16,DARKBROWN);
-
-        if(IsMouseButtonDown(MOUSE_LEFT_BUTTON)){
-            float t = GetFrameTime();
-            float f = 40/camera.zoom;
-            camera.target.x -= deltaMousePos.x*f*t;
-            camera.target.y -= deltaMousePos.y*f*t;
+        DrawText(TextFormat("World Pos %2.f,%2.f",worldMousePos.x,worldMousePos.y),5,60,16,DARKBROWN);
+        if(action==PlayerAction::MoveScene){
             DrawText("Move Scene",5,80,16,WHITE);
+        }
+        if(action==PlayerAction::AddNode){
+            DrawText("Add Node",5,80,16,WHITE);
         }
 
         EndDrawing();
