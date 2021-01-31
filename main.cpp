@@ -35,8 +35,9 @@ int main() {
     SetTargetFPS(60);
     Camera2D camera;
     camera.zoom = 1.0f;
-    camera.target = {0.f,0.f};
+    camera.target = {0};
     camera.offset = {width/2.f,height/2.f};
+    camera.rotation = {0};
     float radius = 10.0f;
 
     Neural* neurals = (Neural*)MemAlloc(sizeof(Neural)*10000);
@@ -50,7 +51,13 @@ int main() {
     Vector2 worldMousePos;
 
     PlayerAction action = PlayerAction::Idle;
-    
+    CursorState cursorState = CursorState::OnGround;
+    Neural* selected = nullptr;
+
+    NeuralLink* neuralLinks = (NeuralLink*)MemAlloc(sizeof(NeuralLink)*10000*10000);
+    int neuralLinkCount=0;
+    NeuralLink neuralLink;
+    NeuralLinkState neuralLinkState = UNLINK;
     while(!WindowShouldClose()){
         {
             curentMousePos = GetMousePosition();
@@ -62,14 +69,65 @@ int main() {
         }
 
         {
-            action = PlayerAction::Idle;
+            selected = nullptr;
+            
+            for (size_t i = 0; i < neuralCount; i++)
+            {
+                Neural* n = &neurals[i];
+                if(IsInside(n->center,worldMousePos)){
+                    cursorState = CursorState::InNode;
+                    selected = n;
+                    break;
+                }
+            }
+            if(selected==nullptr){
+                cursorState = OnGround;
+            }
         }
-        
-        if(IsMouseButtonDown(MOUSE_LEFT_BUTTON)&&Vector2Length(deltaMousePos)>1.0){
-            action = PlayerAction::MoveScene;
-        }
-        if(IsMouseButtonPressed(MOUSE_LEFT_BUTTON)){
-            action = PlayerAction::AddNode;
+
+        {
+            // if(IsMouseButtonDown(MOUSE_LEFT_BUTTON)&&Vector2Length(deltaMousePos)>1.0
+            //     &&cursorState==OnGround){
+            //     action = PlayerAction::MoveScene;
+            // }
+            if(IsMouseButtonDown(MOUSE_LEFT_BUTTON)){
+                if(cursorState==InNode){
+//                    if(action==PlayerAction::LinkNode){
+//                        action=PlayerAction::Idle;
+//                    }
+                    if(action!=PlayerAction::LinkNode){
+                        action = PlayerAction::LinkNode;
+                        neuralLink.start = selected->center;
+                        neuralLink.isFinish = false;
+                        neuralLinkState = NeuralLinkState::BEGIN;
+                    }else{
+                        neuralLink.end = selected->center;
+                        neuralLink.isFinish = true;
+                        neuralLinkState = NeuralLinkState::END;
+                        neuralLinks[neuralLinkCount++] = neuralLink;
+                    }
+                }
+            }
+            if(IsMouseButtonReleased(MOUSE_LEFT_BUTTON)){
+                action = PlayerAction::Idle;
+                neuralLinkState = NeuralLinkState::UNLINK;
+            }
+//            if(IsMouseButtonUp(MOUSE_LEFT_BUTTON)){
+//                action = PlayerAction::Idle;
+//            }
+
+            if(IsMouseButtonPressed(MOUSE_RIGHT_BUTTON)){
+                action = PlayerAction::AddNode;
+            }
+            if(IsMouseButtonReleased(MOUSE_RIGHT_BUTTON)){
+                action = PlayerAction::Idle;
+            }
+            if(IsMouseButtonPressed(MOUSE_MIDDLE_BUTTON)){
+                action = PlayerAction::MoveScene;
+            }
+            if(IsMouseButtonReleased(MOUSE_MIDDLE_BUTTON)){
+                action = PlayerAction::Idle;
+            }
         }
 
         if(action==PlayerAction::MoveScene){
@@ -87,15 +145,23 @@ int main() {
         ClearBackground(SHENHAILV);
         BeginMode2D(camera);
 
-        int index=0;
+        if(action==PlayerAction::LinkNode){
+            DrawLineBezier(neuralLink.start,worldMousePos,2.0,GRAY);
+        }
+
         for (size_t i = 0; i < neuralCount; i++)
         {
             Neural* n = &neurals[i];
-            if(IsInside(n->center,worldMousePos)){
-                DrawTextureV(neural_light_texture,Vector2SubtractValue(n->center,radius),n->color);
-            }else{
-                DrawTextureV(neural_dark_texture,Vector2SubtractValue(n->center,radius),n->color);
+            DrawTextureV(neural_dark_texture,Vector2SubtractValue(n->center,radius),n->color);
+            if(selected==n){
+//                DrawCircleV(n->center,radius+1,RED);
+                DrawCircleLines(n->center.x,n->center.y,radius,RED);
             }
+        }
+
+        for (size_t i = 0; i < neuralLinkCount; ++i) {
+            NeuralLink* link = &neuralLinks[i];
+            DrawLineBezier(link->start,link->end,2.0,GRAY);
         }
 
         EndMode2D();
@@ -109,9 +175,18 @@ int main() {
         if(action==PlayerAction::AddNode){
             DrawText("Add Node",5,80,16,WHITE);
         }
+        if(action==PlayerAction::LinkNode){
+            DrawText("Link Node",5,80,16,WHITE);
+        }
 
         EndDrawing();
     }
+
+    UnloadTexture(neural_dark_texture);
+    UnloadTexture(neural_light_texture);
+    MemFree(neurals);
+    MemFree(neuralLinks);
+
     CloseWindow();
     return 0;
 }
