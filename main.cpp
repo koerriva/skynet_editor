@@ -5,6 +5,9 @@
 //#include <glm/glm.hpp>
 #include <spdlog/spdlog.h>
 #include <mygame.h>
+//#include <lua.hpp>
+
+#include <sol.hpp>
 
 //using namespace glm;
 using namespace spdlog;
@@ -28,6 +31,19 @@ extern "C" __declspec(dllexport) int AmdPowerXpressRequestHighPerformance = 0x00
 #endif
 
 int main() {
+#ifdef _WIN32
+    system("chcp 65001");
+#endif
+    lua_State* luaState = luaL_newstate();
+    luaL_openlibs(luaState);
+    luaL_dofile(luaState,"data/script/a.lua");
+    lua_close(luaState);
+    sol::state lua;
+    lua.open_libraries();
+    lua.script_file("data/script/a.lua");
+
+    sol::function update = lua["update"];
+
 //    SetConfigFlags(FLAG_VSYNC_HINT | FLAG_MSAA_4X_HINT | FLAG_WINDOW_HIGHDPI);
     SetConfigFlags(FLAG_WINDOW_HIGHDPI);
     InitWindow(width,height,"Skynet Editor");
@@ -59,6 +75,7 @@ int main() {
     NeuralLink neuralLink;
     NeuralLinkState neuralLinkState = UNLINK;
     while(!WindowShouldClose()){
+        update();
         {
             curentMousePos = GetMousePosition();
             deltaMousePos = Vector2Subtract(curentMousePos,lastMousePos);
