@@ -23,3 +23,7 @@ vscode
     - `${fileExtname}` - 目前打开文件的拓展名
     - `${lineNumber}` - 文件中目前被选择的行数
     - `${selectedText}` - 文件中目前被选择的内容
+    
+Lua 5.4.2
+-----------
+- [Lua整合](https://www.cnblogs.com/orangeform/archive/2012/07/23/2469902.html)

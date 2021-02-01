@@ -3,14 +3,15 @@
 #include <mycolor.h>
 #include <raymath.h>
 //#include <glm/glm.hpp>
-#include <spdlog/spdlog.h>
+//#include <spdlog/spdlog.h>
 #include <mygame.h>
 //#include <lua.hpp>
 
 #include <sol.hpp>
+#include <cassert>
 
 //using namespace glm;
-using namespace spdlog;
+//using namespace spdlog;
 
 bool IsInside(Vector2 center, Vector2 pos){
     float x = pos.x - center.x;
@@ -30,16 +31,35 @@ extern "C" __declspec(dllexport) unsigned long NvOptimusEnablement = 0x00000001;
 extern "C" __declspec(dllexport) int AmdPowerXpressRequestHighPerformance = 0x00000001;
 #endif
 
+//static int test_hello(lua_State* L){
+//    printf("test hell0");
+//    return 0;
+//}
+//static const struct luaL_Reg gameLib[] = {
+//        {"test_hello",test_hello},
+//        {NULL,NULL}
+//};
+//
+//extern "C" __declspec(dllexport)
+//int luaopen_gamelib(lua_State* L){
+//    luaL_register(L,"gamelib",gameLib);
+//    return 1;
+//}
+
 int main() {
 #ifdef _WIN32
     system("chcp 65001");
 #endif
-    lua_State* luaState = luaL_newstate();
-    luaL_openlibs(luaState);
-    luaL_dofile(luaState,"data/script/a.lua");
-    lua_close(luaState);
+//    lua_State* luaState = luaL_newstate();
+//    luaL_openlibs(luaState);
+//    luaL_dofile(luaState,"data/script/a.lua");
+//    lua_close(luaState);
+
     sol::state lua;
     lua.open_libraries();
+    lua.new_usertype<Vector2>("Vector2","x",&Vector2::x,"y",&Vector2::y);
+    lua.set_function("GetMousePos",GetMousePosition);
+    lua.set_function("GetDeltaTime",GetFrameTime);
     lua.script_file("data/script/a.lua");
 
     sol::function update = lua["update"];
