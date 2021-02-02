@@ -2,8 +2,8 @@
 #include <raylib.h>
 #include <mycolor.h>
 #include <raymath.h>
-//#include <glm/glm.hpp>
-//#include <spdlog/spdlog.h>
+#include <glm/glm.hpp>
+#include <spdlog/spdlog.h>
 #include <mygame.h>
 //#include <lua.hpp>
 
@@ -66,7 +66,7 @@ int main() {
     sol::function update = lua["update"];
 
 //    SetConfigFlags(FLAG_VSYNC_HINT | FLAG_MSAA_4X_HINT | FLAG_WINDOW_HIGHDPI);
-    SetConfigFlags(FLAG_WINDOW_HIGHDPI);
+    SetConfigFlags(FLAG_MSAA_4X_HINT|FLAG_WINDOW_HIGHDPI);
     InitWindow(width,height,"Skynet Editor");
     SetWindowPosition(100,100);
     SetTargetFPS(60);
@@ -201,7 +201,7 @@ int main() {
         BeginMode2D(camera);
 
         if(action==PlayerAction::LinkNode){
-            DrawLineBezier(neuralLink.start,worldMousePos,2.0,GRAY);
+            DrawLineBezier(neuralLink.start,worldMousePos,1.0,GRAY);
         }
 
         for (size_t i = 0; i < neuralCount; i++)

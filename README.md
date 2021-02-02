@@ -7,6 +7,8 @@
 技术资料
 -----------
 - [Raylib3.5](https://www.raylib.com/cheatsheet/cheatsheet.html)
+- [Bzier曲线简明教程](http://devmag.org.za/2011/04/05/bzier-curves-a-tutorial/)
+- [Raylib Bzier曲线资料](https://github.com/raysan5/raylib/issues/244)
 
 vscode
 -----------
@@ -26,4 +28,4 @@ vscode
     
 Lua 5.4.2
 -----------
-- [Lua整合](https://www.cnblogs.com/orangeform/archive/2012/07/23/2469902.html)
+- [Step By Step(Lua调用C函数)](https://www.cnblogs.com/orangeform/archive/2012/07/23/2469902.html)
