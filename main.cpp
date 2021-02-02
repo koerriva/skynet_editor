@@ -61,6 +61,7 @@ int main() {
     lua.set_function("GetMousePos",GetMousePosition);
     lua.set_function("GetDeltaTime",GetFrameTime);
     lua.script_file("data/script/a.lua");
+    long script_last_modify_time = GetFileModTime("data/script/a.lua");
 
     sol::function update = lua["update"];
 
@@ -94,7 +95,24 @@ int main() {
     int neuralLinkCount=0;
     NeuralLink neuralLink;
     NeuralLinkState neuralLinkState = UNLINK;
+
+
     while(!WindowShouldClose()){
+        {
+            long t = GetFileModTime("data/script/a.lua");
+            if(script_last_modify_time!=t){
+                TraceLog(LOG_INFO,"modify lua script");
+                auto result =lua.safe_script_file("data/script/a.lua",sol::script_pass_on_error);
+                if(result.valid()){
+                    update = lua["update"];
+                    script_last_modify_time = t;
+                }else{
+                    sol::error err = result;
+                    std::cerr << "The code has failed to run!\n" << err.what() << "\nPanicking and exiting..." << std::endl;
+                    TraceLog(LOG_ERROR,err.what());
+                }
+            }
+        }
         update();
         {
             curentMousePos = GetMousePosition();
