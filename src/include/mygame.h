@@ -61,6 +61,10 @@ void ActiveNeuralLink(NeuralLink* neuralLink){
         auto* pN = neuralLink->in[i];
         ActiveNeural(pN);
     }
+    for (int i = 0; i < neuralLink->out_synapse_count; ++i) {
+        auto* pN = neuralLink->out[i];
+        ActiveNeural(pN);
+    }
 }
 
 void DeActiveNeuralLink(NeuralLink* neuralLink){

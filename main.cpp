@@ -144,20 +144,7 @@ int main() {
             if(IsMouseButtonDown(MOUSE_LEFT_BUTTON)){
                 if(cursorState==InNode){
                     if(IsKeyDown(KEY_LEFT_SHIFT)){
-                        if(action!=PlayerAction::LinkNode){
-                            action = PlayerAction::LinkNode;
-                            LinkIn(&neuralLink,selected);
-                            neuralLink.isFinish = false;
-                            neuralLink.isActive = false;
-                            neuralLinkState = NeuralLinkState::BEGIN;
-                        }else{
-                            if(!neuralLink.isFinish){
-                                LinkOut(&neuralLink,selected);
-                                neuralLink.isFinish = true;
-                                neuralLinkState = NeuralLinkState::END;
-                                neuralLinks[neuralLinkCount++] = neuralLink;
-                            }
-                        }
+                        action = PlayerAction::LinkNode;
                     }else{
                         action = PlayerAction::MoveNode;
                     }
@@ -168,16 +155,10 @@ int main() {
                 neuralLinkState = NeuralLinkState::UNLINK;
                 neuralLink.isFinish = false;
             }
-//            if(IsMouseButtonUp(MOUSE_LEFT_BUTTON)){
-//                action = PlayerAction::Idle;
-//            }
 
             if(IsMouseButtonPressed(MOUSE_RIGHT_BUTTON)){
                 isRMBTriggerOnce = true;
             }
-//            if(IsMouseButtonReleased(MOUSE_RIGHT_BUTTON)){
-//                isRMBTriggerOnce = true;
-//            }
             if(isRMBTriggerOnce){
                 action = PlayerAction::AddNode;
                 isRMBTriggerOnce = false;
@@ -209,6 +190,26 @@ int main() {
             pNeural[neuralCount].isActive = false;
             neuralCount++;
             action = PlayerAction::Idle;
+        }
+
+        if(action==PlayerAction::LinkNode){
+            if(neuralLinkState==BEGIN){
+                auto* pLast = neuralLink.in[neuralLink.in_synapse_count-1];
+                if(selected != nullptr && pLast!=selected){
+                    TraceLog(LOG_INFO,"BEGIN");
+                    LinkOut(&neuralLink,selected);
+                    neuralLink.isFinish = true;
+                    neuralLinkState = NeuralLinkState::END;
+                    neuralLinks[neuralLinkCount++] = neuralLink;
+                }
+            }
+            if(neuralLinkState==UNLINK){
+                TraceLog(LOG_INFO,"UNLINK");
+                LinkIn(&neuralLink,selected);
+                neuralLink.isFinish = false;
+                neuralLink.isActive = false;
+                neuralLinkState = NeuralLinkState::BEGIN;
+            }
         }
 
         BeginDrawing();
