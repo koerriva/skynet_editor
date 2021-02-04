@@ -35,6 +35,8 @@ bool IsInsideEdge(float r,Vector2 center, Vector2 pos){
 }
 
 int width = 1280,height=720;
+int world_width = 4000;
+int world_height = height*world_width/width;
 
 #ifdef _WIN32
 // N卡使用独显运行
@@ -129,8 +131,10 @@ int main() {
 //        update();
         {
             im.Update(camera,GetFrameTime());
-            camera.zoom +=GetMouseWheelMove();
-            camera.zoom = Clamp(camera.zoom,1,5);
+            if(im.mouse.MB_SCROLL){
+                camera.zoom += im.mouse.Y*GetFrameTime()*10;
+                camera.zoom = Clamp(camera.zoom,1,5);
+            }
         }
 
         {
@@ -174,7 +178,13 @@ int main() {
         }
 
         if(action==PlayerAction::MoveScene){
-            camera.target = Vector2Subtract(camera.target,im.mouse.screen_delta_pos);
+            if(camera.zoom>1){
+                camera.target = Vector2Subtract(camera.target,im.mouse.world_delta_pos);
+            } else{
+                camera.target = Vector2Subtract(camera.target,im.mouse.screen_delta_pos);
+            }
+            camera.target.x = Clamp(camera.target.x,-world_width/2+width/2,world_width/2-width/2);
+            camera.target.y = Clamp(camera.target.y,-world_height/2+height/2,world_height/2-height/2);
         }
 
         if(action==PlayerAction::MoveNode){
@@ -184,13 +194,25 @@ int main() {
         }
 
         if(action==PlayerAction::AddNode){
-            int batchSize = 1000;
-            if(MAX_NEURAL_SIZE-nn.neural_count<1000){
-                batchSize = MAX_NEURAL_SIZE-nn.neural_count;
-            }
-            for (int i = 0; i < batchSize; ++i) {
+//            int batchSize = 1000;
+//            if(MAX_NEURAL_SIZE-nn.neural_count<1000){
+//                batchSize = MAX_NEURAL_SIZE-nn.neural_count;
+//            }
+//            for (int i = 0; i < batchSize; ++i) {
+//                Neural neural{};
+//                auto x = static_cast<float>(GetRandomValue(-world_width/2+radius,world_width/2-radius));
+//                auto y = static_cast<float>(GetRandomValue(-world_height/2+radius,world_height/2-radius));
+//                neural.center = {x,y};
+//                neural.color = DARKGREEN;
+//                neural.isActive = false;
+//                neural.radius = radius;
+//                nn.AddNeural(neural);
+//            }
+            if(cursorState!=InNode){
                 Neural neural{};
-                neural.center = {static_cast<float>(GetRandomValue(-5000,5000)),static_cast<float>(GetRandomValue(-5000,5000))};
+                float x = im.mouse.world_pos.x;
+                float y = im.mouse.world_pos.y;
+                neural.center = {x,y};
                 neural.color = DARKGREEN;
                 neural.isActive = false;
                 neural.radius = radius;
@@ -219,17 +241,33 @@ int main() {
         ClearBackground(SHENHAILV);
         BeginMode2D(camera);
         {
+            int start_x = -world_width/2;
+            int start_y = -world_height/2;
+
+            int end_x = world_width/2;
+            int end_y = world_height/2;
             //draw grid
-//            for (int i = 0; i < width / 20; ++i) {
-//                DrawLine(i*10+camera.target.x-width/2,0+camera.target.y-height/2
-//                         ,i*10+camera.target.x-width/2,height+camera.target.y-height/2
-//                         ,DARKGRAY);
-//            }
-//            for (int i = 0; i < height/20; ++i) {
-//                DrawLine(0+camera.target.x-width/2,i*20+camera.target.y-height/2
-//                         ,width+camera.target.x-width/2,i*20+camera.target.y-height/2
-//                         ,DARKGRAY);
-//            }
+            int seg = 20;
+            for (int i = 0; i < world_width / seg; ++i) {
+                DrawLine(start_x+i*seg,start_y
+                         ,start_x+i*seg,end_y
+                         ,DARKGRAY);
+            }
+            for (int i = 0; i < world_width / (seg*5); ++i) {
+                DrawLine(start_x+i*seg*5,start_y
+                        ,start_x+i*seg*5,end_y
+                        ,BLACK);
+            }
+            for (int i = 0; i < world_height/seg; ++i) {
+                DrawLine(start_x,i*seg+start_y
+                         ,end_x,i*seg+start_y
+                         ,DARKGRAY);
+            }
+            for (int i = 0; i < world_height/(seg*5); ++i) {
+                DrawLine(start_x,i*seg*5+start_y
+                        ,end_x,i*seg*5+start_y
+                        ,BLACK);
+            }
         }
 
         {
@@ -276,9 +314,9 @@ int main() {
 
         EndMode2D();
         DrawFPS(5,5);
-        DrawText(TextFormat("Mouse Y %2.f",GetMouseWheelMove()),5,20,16,DARKBROWN);
+        DrawText(TextFormat("Camera target %2.f,%2.f",camera.target.x,camera.target.y),5,20,16,DARKGREEN);
         DrawText(TextFormat("Mouse Zoom %2.f",camera.zoom),5,40,16,DARKBROWN);
-        DrawText(TextFormat("World Pos %2.f,%2.f",im.mouse.world_pos.x,im.mouse.world_pos.y),5,60,16,DARKBROWN);
+        DrawText(TextFormat("Mouse World Pos %2.f,%2.f",im.mouse.world_pos.x,im.mouse.world_pos.y),5,60,16,DARKBROWN);
         DrawText(TextFormat("Neural Size %d",nn.neural_count),5,80,16,DARKBROWN);
         if(action==PlayerAction::MoveScene){
             DrawText("Move Scene",5,100,16,WHITE);

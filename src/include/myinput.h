@@ -20,10 +20,14 @@ struct MouseState{
     bool MB_PRESS;
     bool RB_PRESS;
     bool RB_RELEASE;
+    bool MB_SCROLL;
+    float Y;
 
     void CleanState(){
         LB_PRESS = false;
         MB_PRESS = false;
+        MB_SCROLL = false;
+        Y = 0;
         RB_PRESS = false;
         RB_RELEASE = false;
     };
@@ -72,12 +76,9 @@ struct InputManager{
             TraceLog(LOG_INFO,"RELEASE");
         }
 
-        if(mouse.LB_PRESS){
-            TraceLog(LOG_INFO,"PICKING");
-        }
-
-        if(mouse.LB_REPEAT){
-            TraceLog(LOG_INFO,"LINKING");
+        mouse.Y = GetMouseWheelMove();
+        if(mouse.Y!=0){
+            mouse.MB_SCROLL = true;
         }
     };
 
