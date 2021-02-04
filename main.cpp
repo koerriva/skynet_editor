@@ -1,4 +1,5 @@
 #include <iostream>
+#define SUPPORT_GIF_RECORDING
 #include <raylib.h>
 #include <mycolor.h>
 #include <raymath.h>
