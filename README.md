@@ -9,6 +9,9 @@
 - [Raylib3.5](https://www.raylib.com/cheatsheet/cheatsheet.html)
 - [Bzier曲线简明教程](http://devmag.org.za/2011/04/05/bzier-curves-a-tutorial/)
 - [Raylib Bzier曲线资料](https://github.com/raysan5/raylib/issues/244)
+- [Tiny ECS系统](http://bakpakin.github.io/tiny-ecs/doc/)
+- [awesome-ecs](https://github.com/jslee02/awesome-entity-component-system)
+- [ECS](https://github.com/redxdev/ECS)
 
 vscode
 -----------

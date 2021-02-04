@@ -4,12 +4,13 @@
 #include <raymath.h>
 #include <glm/glm.hpp>
 #include <spdlog/spdlog.h>
-#include <mygame.h>
 //#include <lua.hpp>
-
+//#include <entt/entt.hpp>
 #include <sol.hpp>
 #include <cassert>
 
+#include <mygame.h>
+#include <myinput.h>
 //using namespace glm;
 //using namespace spdlog;
 
@@ -57,9 +58,12 @@ int main() {
 
     sol::state lua;
     lua.open_libraries();
-    lua.new_usertype<Vector2>("Vector2","x",&Vector2::x,"y",&Vector2::y);
+    lua.new_usertype<Vector2>("vec2","x",&Vector2::x,"y",&Vector2::y);
+    lua.new_usertype<Color>("color","r",&Color::r,"g",&Color::g,"b",&Color::b,"a",&Color::a);
     lua.set_function("GetMousePos",GetMousePosition);
     lua.set_function("GetDeltaTime",GetFrameTime);
+    lua.script_file("data/script/id.lua");
+    lua.script_file("data/script/tiny.lua");
     lua.script_file("data/script/a.lua");
     long script_last_modify_time = GetFileModTime("data/script/a.lua");
 
@@ -82,14 +86,12 @@ int main() {
 
     Texture2D neural_texture = LoadTexture("data/neural.png");
 
-    Vector2 lastMousePos = {0};
-    Vector2 deltaMousePos;
-    Vector2 curentMousePos;
-    Vector2 worldMousePos;
+    InputManager im={};
 
     PlayerAction action = PlayerAction::Idle;
     CursorState cursorState = CursorState::OnGround;
     Neural* selected = nullptr;
+    Neural* picked = nullptr;
 
     auto* neuralLinks = (NeuralLink*)MemAlloc(sizeof(NeuralLink) * MAX_NEURAL_LINK_SIZE);
     int neuralLinkCount=0;
@@ -102,7 +104,7 @@ int main() {
             long t = GetFileModTime("data/script/a.lua");
             if(script_last_modify_time!=t){
                 TraceLog(LOG_INFO,"modify lua script");
-                auto result =lua.safe_script_file("data/script/a.lua",sol::script_pass_on_error);
+                auto result =lua.safe_script_file("data/script/a.lua");
                 if(result.valid()){
                     update = lua["update"];
                     script_last_modify_time = t;
@@ -113,12 +115,9 @@ int main() {
                 }
             }
         }
-        update();
+//        update();
         {
-            curentMousePos = GetMousePosition();
-            deltaMousePos = Vector2Subtract(curentMousePos,lastMousePos);
-            lastMousePos = curentMousePos;
-            worldMousePos = GetScreenToWorld2D(curentMousePos,camera);
+            im.Update(camera,GetFrameTime());
             camera.zoom +=GetMouseWheelMove();
             camera.zoom = Clamp(camera.zoom,1,5);
         }
@@ -129,7 +128,7 @@ int main() {
             for (size_t i = 0; i < neuralCount; i++)
             {
                 Neural* n = &pNeural[i];
-                if(IsInside(n->center,worldMousePos)){
+                if(IsInside(n->center,im.mouse.world_pos)){
                     cursorState = CursorState::InNode;
                     selected = n;
                     break;
@@ -147,6 +146,14 @@ int main() {
                         action = PlayerAction::LinkNode;
                     }else{
                         action = PlayerAction::MoveNode;
+                        if(picked == nullptr){
+                            picked = selected;
+                        }
+                    }
+                }else{
+                    if(action!=PlayerAction::MoveNode&&action!=PlayerAction::LinkNode){
+                        picked = nullptr;
+                        action = PlayerAction::MoveScene;
                     }
                 }
             }
@@ -154,6 +161,7 @@ int main() {
                 action = PlayerAction::Idle;
                 neuralLinkState = NeuralLinkState::UNLINK;
                 neuralLink.isFinish = false;
+                picked = nullptr;
             }
 
             if(IsMouseButtonPressed(MOUSE_RIGHT_BUTTON)){
@@ -163,32 +171,29 @@ int main() {
                 action = PlayerAction::AddNode;
                 isRMBTriggerOnce = false;
             }
-            if(IsMouseButtonPressed(MOUSE_MIDDLE_BUTTON)){
-                action = PlayerAction::MoveScene;
-            }
-            if(IsMouseButtonReleased(MOUSE_MIDDLE_BUTTON)){
-                action = PlayerAction::Idle;
-            }
         }
 
         if(action==PlayerAction::MoveScene){
-            float t = GetFrameTime();
-            float f = 40/camera.zoom;
-            camera.target.x -= deltaMousePos.x*f*t;
-            camera.target.y -= deltaMousePos.y*f*t;
+            camera.target = Vector2Subtract(camera.target,im.mouse.screen_delta_pos);
         }
 
         if(action==PlayerAction::MoveNode){
-            if(selected){
-                selected->center = Vector2Add(selected->center,deltaMousePos);
+            if(picked){
+                picked->center = Vector2Add(picked->center,im.mouse.world_delta_pos);
             }
         }
 
         if(action==PlayerAction::AddNode){
-            pNeural[neuralCount].center = worldMousePos;
-            pNeural[neuralCount].color = DARKGREEN;
-            pNeural[neuralCount].isActive = false;
-            neuralCount++;
+            int batchSize = 1000;
+            if(MAX_NEURAL_SIZE-neuralCount<1000){
+                batchSize = MAX_NEURAL_SIZE-neuralCount;
+            }
+            for (int i = 0; i < batchSize; ++i) {
+                pNeural[neuralCount].center = {static_cast<float>(GetRandomValue(-5000,5000)),static_cast<float>(GetRandomValue(-5000,5000))};
+                pNeural[neuralCount].color = DARKGREEN;
+                pNeural[neuralCount].isActive = false;
+                neuralCount++;
+            }
             action = PlayerAction::Idle;
         }
 
@@ -229,9 +234,23 @@ int main() {
 //            }
         }
 
+        {
+//            sol::table neural_pool = lua["neural"];
+//            for (auto& n:neural_pool) {
+//                int id = n.first.as<int>();
+//                sol::table val = n.second;
+//                bool isActive = val["isActive"];
+//                Vector2 pos = val["pos"].get<Vector2>();
+//                Color color = val["color"].get<Color>();
+//                float r = val["radius"].get<float>();
+//
+//                DrawTextureEx(neural_texture,Vector2SubtractValue(pos, radius),0,1.0f,color);
+//            }
+        }
+
         if(action==PlayerAction::LinkNode){
             auto* pIn = neuralLink.in[neuralLink.in_synapse_count-1];
-            DrawLineBezier(pIn->center,worldMousePos,1.0,GRAY);
+            DrawLineBezier(pIn->center,im.mouse.world_pos,1.0,GRAY);
         }
 
         for (size_t i = 0; i < neuralLinkCount; ++i) {
@@ -261,15 +280,16 @@ int main() {
         DrawFPS(5,5);
         DrawText(TextFormat("Mouse Y %2.f",GetMouseWheelMove()),5,20,16,DARKBROWN);
         DrawText(TextFormat("Mouse Zoom %2.f",camera.zoom),5,40,16,DARKBROWN);
-        DrawText(TextFormat("World Pos %2.f,%2.f",worldMousePos.x,worldMousePos.y),5,60,16,DARKBROWN);
+        DrawText(TextFormat("World Pos %2.f,%2.f",im.mouse.world_pos.x,im.mouse.world_pos.y),5,60,16,DARKBROWN);
+        DrawText(TextFormat("Neural Size %d",neuralCount),5,80,16,DARKBROWN);
         if(action==PlayerAction::MoveScene){
-            DrawText("Move Scene",5,80,16,WHITE);
+            DrawText("Move Scene",5,100,16,WHITE);
         }
         if(action==PlayerAction::AddNode){
-            DrawText("Add Node",5,80,16,WHITE);
+            DrawText("Add Node",5,100,16,WHITE);
         }
         if(action==PlayerAction::LinkNode){
-            DrawText("Link Node",5,80,16,WHITE);
+            DrawText("Link Node",5,100,16,WHITE);
         }
 
         EndDrawing();
