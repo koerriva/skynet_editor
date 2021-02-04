@@ -14,10 +14,23 @@
 //using namespace glm;
 //using namespace spdlog;
 
-bool IsInside(Vector2 center, Vector2 pos){
+bool IsInside(float r,Vector2 center, Vector2 pos){
     float x = pos.x - center.x;
     float y = pos.y - center.y;
-    return 32*32>x*x+y*y;
+    return r*r>x*x+y*y;
+}
+
+bool IsInsideInner(float r,Vector2 center, Vector2 pos){
+    float x = pos.x - center.x;
+    float y = pos.y - center.y;
+    return (r-5)*(r-5)>x*x+y*y;
+}
+
+bool IsInsideEdge(float r,Vector2 center, Vector2 pos){
+    float x = pos.x - center.x;
+    float y = pos.y - center.y;
+    float a = x*x+y*y;
+    return r*r>a&&a>=(r-5)*(r-5);
 }
 
 int width = 1280,height=720;
@@ -80,10 +93,6 @@ int main() {
     camera.rotation = {0};
     float radius = 32.0f;
 
-//    Neural* pNeural = (Neural*)malloc(sizeof(Neural) * MAX_NEURAL_SIZE);
-    auto* pNeural = (Neural*)MemAlloc(sizeof(Neural) * MAX_NEURAL_SIZE);
-    int neuralCount = 0;
-
     Texture2D neural_texture = LoadTexture("data/neural.png");
 
     InputManager im={};
@@ -92,13 +101,14 @@ int main() {
     CursorState cursorState = CursorState::OnGround;
     Neural* selected = nullptr;
     Neural* picked = nullptr;
+    NeuralLink curNeuralLink = {};
+    curNeuralLink.Init();
 
-    auto* neuralLinks = (NeuralLink*)MemAlloc(sizeof(NeuralLink) * MAX_NEURAL_LINK_SIZE);
-    int neuralLinkCount=0;
-    NeuralLink neuralLink = {{},GRAY, false, false,{},0,{},0};
-    NeuralLinkState neuralLinkState = UNLINK;
+    NeuralNetwork nn{};
+    nn.Init();
+    nn.neurals = (Neural*)MemAlloc(sizeof(Neural)*MAX_NEURAL_SIZE);
+    nn.links =(NeuralLink*)MemAlloc(sizeof(NeuralLink)*MAX_NEURAL_LINK_SIZE);
 
-    bool isRMBTriggerOnce = false;
     while(!WindowShouldClose()){
         {
             long t = GetFileModTime("data/script/a.lua");
@@ -123,53 +133,42 @@ int main() {
         }
 
         {
-            selected = nullptr;
-            
-            for (size_t i = 0; i < neuralCount; i++)
+            for (size_t i = 0; i < nn.neural_count; i++)
             {
-                Neural* n = &pNeural[i];
-                if(IsInside(n->center,im.mouse.world_pos)){
+                Neural* pN = &nn.neurals[i];
+                if(IsInside(pN->radius,pN->center,im.mouse.world_pos)){
                     cursorState = CursorState::InNode;
-                    selected = n;
+                    selected = pN;
                     break;
                 }
-            }
-            if(selected==nullptr){
                 cursorState = OnGround;
+                selected = nullptr;
             }
         }
 
         {
-            if(IsMouseButtonDown(MOUSE_LEFT_BUTTON)){
-                if(cursorState==InNode){
-                    if(IsKeyDown(KEY_LEFT_SHIFT)){
-                        action = PlayerAction::LinkNode;
-                    }else{
-                        action = PlayerAction::MoveNode;
-                        if(picked == nullptr){
-                            picked = selected;
-                        }
-                    }
-                }else{
-                    if(action!=PlayerAction::MoveNode&&action!=PlayerAction::LinkNode){
-                        picked = nullptr;
-                        action = PlayerAction::MoveScene;
-                    }
-                }
-            }
             if(IsMouseButtonReleased(MOUSE_LEFT_BUTTON)){
                 action = PlayerAction::Idle;
-                neuralLinkState = NeuralLinkState::UNLINK;
-                neuralLink.isFinish = false;
                 picked = nullptr;
+
+                curNeuralLink.Init();
             }
 
-            if(IsMouseButtonPressed(MOUSE_RIGHT_BUTTON)){
-                isRMBTriggerOnce = true;
+            if(im.mouse.LB_PRESS){
+                if(cursorState==InNode){
+                    if(IsInsideInner(selected->radius,selected->center,im.mouse.world_pos)){
+                        picked = selected;
+                        action = PlayerAction::MoveNode;
+                    }else{
+                        action = PlayerAction::LinkNode;
+                    }
+                } else{
+                    action = PlayerAction::MoveScene;
+                }
             }
-            if(isRMBTriggerOnce){
+
+            if(im.mouse.RB_PRESS){
                 action = PlayerAction::AddNode;
-                isRMBTriggerOnce = false;
             }
         }
 
@@ -185,35 +184,33 @@ int main() {
 
         if(action==PlayerAction::AddNode){
             int batchSize = 1000;
-            if(MAX_NEURAL_SIZE-neuralCount<1000){
-                batchSize = MAX_NEURAL_SIZE-neuralCount;
+            if(MAX_NEURAL_SIZE-nn.neural_count<1000){
+                batchSize = MAX_NEURAL_SIZE-nn.neural_count;
             }
             for (int i = 0; i < batchSize; ++i) {
-                pNeural[neuralCount].center = {static_cast<float>(GetRandomValue(-5000,5000)),static_cast<float>(GetRandomValue(-5000,5000))};
-                pNeural[neuralCount].color = DARKGREEN;
-                pNeural[neuralCount].isActive = false;
-                neuralCount++;
+                Neural neural{};
+                neural.center = {static_cast<float>(GetRandomValue(-5000,5000)),static_cast<float>(GetRandomValue(-5000,5000))};
+                neural.color = DARKGREEN;
+                neural.isActive = false;
+                neural.radius = radius;
+                nn.AddNeural(neural);
             }
-            action = PlayerAction::Idle;
         }
 
         if(action==PlayerAction::LinkNode){
-            if(neuralLinkState==BEGIN){
-                auto* pLast = neuralLink.in[neuralLink.in_synapse_count-1];
-                if(selected != nullptr && pLast!=selected){
+            if(curNeuralLink.state==BEGIN){
+                if(selected != nullptr && curNeuralLink.form!=selected){
                     TraceLog(LOG_INFO,"BEGIN");
-                    LinkOut(&neuralLink,selected);
-                    neuralLink.isFinish = true;
-                    neuralLinkState = NeuralLinkState::END;
-                    neuralLinks[neuralLinkCount++] = neuralLink;
+                    curNeuralLink.to = selected;
+                    curNeuralLink.state = NeuralLinkState::END;
+                    nn.AddLink(curNeuralLink);
                 }
             }
-            if(neuralLinkState==UNLINK){
+            if(curNeuralLink.state==UNLINK){
                 TraceLog(LOG_INFO,"UNLINK");
-                LinkIn(&neuralLink,selected);
-                neuralLink.isFinish = false;
-                neuralLink.isActive = false;
-                neuralLinkState = NeuralLinkState::BEGIN;
+                curNeuralLink.form = selected;
+                curNeuralLink.isActive = false;
+                curNeuralLink.state = NeuralLinkState::BEGIN;
             }
         }
 
@@ -249,31 +246,31 @@ int main() {
         }
 
         if(action==PlayerAction::LinkNode){
-            auto* pIn = neuralLink.in[neuralLink.in_synapse_count-1];
+            auto* pIn = curNeuralLink.form;
             DrawLineBezier(pIn->center,im.mouse.world_pos,1.0,GRAY);
         }
 
-        for (size_t i = 0; i < neuralLinkCount; ++i) {
-            NeuralLink* link = &neuralLinks[i];
-            DeActiveNeuralLink(link);
-            int s = GetRandomValue(0,neuralLinkCount-1);
+        for (size_t i = 0; i < nn.link_count; ++i) {
+            NeuralLink* link = &nn.links[i];
+            link->DeActive();
+            int s = GetRandomValue(0,nn.link_count-1);
             if(s==i){
-                ActiveNeuralLink(link);
+                link->Active();
             }
-            auto* pIn = link->in[link->in_synapse_count-1];
-            auto* pOut = link->out[link->out_synapse_count-1];
-            DrawLineBezier(pIn->center,pOut->center,2.0,link->color);
+            DrawLineBezier(link->form->center,link->to->center,2.0,link->color);
         }
 
-        for (size_t i = 0; i < neuralCount; i++)
+        for (size_t i = 0; i < nn.neural_count; i++)
         {
-            Neural* p = &pNeural[i];
-            float scale = 1.0f;
-//            DrawTextureV(neural_texture, Vector2SubtractValue(p->center, radius), p->color);
+            Neural* p = &nn.neurals[i];
+            DrawTextureV(neural_texture, Vector2SubtractValue(p->center, radius), p->color);
             if(selected==p){
-                scale = 1.1f;
+                if(IsInsideEdge(p->radius,p->center,im.mouse.world_pos)){
+                    DrawRing(p->center,p->radius-5,p->radius,0,360,24,GRAY);
+                }else{
+                    DrawRing(p->center,p->radius-2,p->radius,0,360,24,GREEN);
+                }
             }
-            DrawTextureEx(neural_texture,Vector2SubtractValue(p->center, radius),0,scale,p->color);
         }
 
         EndMode2D();
@@ -281,9 +278,12 @@ int main() {
         DrawText(TextFormat("Mouse Y %2.f",GetMouseWheelMove()),5,20,16,DARKBROWN);
         DrawText(TextFormat("Mouse Zoom %2.f",camera.zoom),5,40,16,DARKBROWN);
         DrawText(TextFormat("World Pos %2.f,%2.f",im.mouse.world_pos.x,im.mouse.world_pos.y),5,60,16,DARKBROWN);
-        DrawText(TextFormat("Neural Size %d",neuralCount),5,80,16,DARKBROWN);
+        DrawText(TextFormat("Neural Size %d",nn.neural_count),5,80,16,DARKBROWN);
         if(action==PlayerAction::MoveScene){
             DrawText("Move Scene",5,100,16,WHITE);
+        }
+        if(action==PlayerAction::MoveNode){
+            DrawText("Move Node",5,100,16,WHITE);
         }
         if(action==PlayerAction::AddNode){
             DrawText("Add Node",5,100,16,WHITE);
@@ -292,15 +292,21 @@ int main() {
             DrawText("Link Node",5,100,16,WHITE);
         }
 
+        if(action==AddNode){
+            action = PlayerAction::Idle;
+        }
+        if(action==LinkNode&&curNeuralLink.state==END){
+            action = PlayerAction::Idle;
+        }
+
         EndDrawing();
+
+        im.Clean();
     }
 
     UnloadTexture(neural_texture);
-    MemFree(pNeural);
-    MemFree(neuralLinks);
-
-//    free(pNeural);
-//    free(neuralLinks);
+    MemFree(nn.neurals);
+    MemFree(nn.links);
 
     CloseWindow();
     return 0;

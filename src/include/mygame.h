@@ -22,63 +22,72 @@ struct Neural{
     Vector2 center;
     Color color;
     bool isActive;
+    float radius;
+
+    void Active(){
+        isActive = true;
+        color = GREEN;
+    }
+
+    void DeActive(){
+        isActive = false;
+        color = DARKGREEN;
+    }
 };
 
-void ActiveNeural(Neural* neural){
-    neural->isActive = true;
-    neural->color = GREEN;
-}
-
-void DeActiveNeural(Neural* neural){
-    neural->isActive = false;
-    neural->color = DARKGREEN;
-}
+enum NeuralLinkState{
+    UNLINK,BEGIN,END
+};
 
 struct NeuralLink{
     Vector2 points[BEZIER_LINE_DIVISIONS+1];
+    Neural* form;
+    Neural* to;
     Color color;
-    bool isFinish;
     bool isActive;
+    NeuralLinkState state;
 
-    Neural* in[MAX_NEURAL_SYNAPSE_SIZE];
-    size_t in_synapse_count;
-    Neural* out[MAX_NEURAL_SYNAPSE_SIZE];
-    size_t out_synapse_count;
+    void Init(){
+        form = nullptr;
+        to = nullptr;
+        isActive = false;
+        state = UNLINK;
+    }
+
+    void Active(){
+        isActive = true;
+        color = WHITE;
+        form->Active();
+        to->Active();
+    }
+
+    void DeActive(){
+        isActive = false;
+        color = ColorAlpha(GRAY,0.3);
+        form->DeActive();
+        to->DeActive();
+    }
 };
 
-void LinkIn(NeuralLink* neuralLink,Neural* neural){
-    neuralLink->in[neuralLink->in_synapse_count++]=neural;
-}
+struct NeuralNetwork{
+    Neural* neurals;
+    int neural_count;
+    NeuralLink* links;
+    int link_count;
 
-void LinkOut(NeuralLink* neuralLink,Neural* neural){
-    neuralLink->out[neuralLink->out_synapse_count++]=neural;
-}
+    void Init(){
+        neural_count = 0;
+        link_count = 0;
+    }
 
-void ActiveNeuralLink(NeuralLink* neuralLink){
-    neuralLink->isActive = true;
-    neuralLink->color = WHITE;
-    for (int i = 0; i < neuralLink->in_synapse_count; ++i) {
-        auto* pN = neuralLink->in[i];
-        ActiveNeural(pN);
+    void AddNeural(Neural neural){
+        neurals[neural_count++] = neural;
     }
-    for (int i = 0; i < neuralLink->out_synapse_count; ++i) {
-        auto* pN = neuralLink->out[i];
-        ActiveNeural(pN);
-    }
-}
 
-void DeActiveNeuralLink(NeuralLink* neuralLink){
-    neuralLink->isActive = false;
-    neuralLink->color = GRAY;
-    for (int i = 0; i < neuralLink->in_synapse_count; ++i) {
-        auto* pN = neuralLink->in[i];
-        DeActiveNeural(pN);
+    void AddLink(NeuralLink neuralLink){
+        links[link_count++] = neuralLink;
     }
-    for (int i = 0; i < neuralLink->out_synapse_count; ++i) {
-        auto* pN = neuralLink->out[i];
-        DeActiveNeural(pN);
-    }
-}
+};
 
 enum PlayerAction{
     Idle,MoveScene,AddNode,MoveNode,LinkNode
@@ -86,11 +95,7 @@ enum PlayerAction{
 
 
 enum CursorState{
-    OnGround,InNode
-};
-
-enum NeuralLinkState{
-    UNLINK,BEGIN,END
+    OnGround,InNode,InNodeInner,InNodeEdge
 };
 
 using namespace glm;

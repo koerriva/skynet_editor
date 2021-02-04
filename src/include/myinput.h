@@ -13,6 +13,20 @@ struct MouseState{
     Vector2 screen_delta_pos;
     Vector2 world_pos;
     Vector2 world_delta_pos;
+
+    bool LB_PRESS;
+    bool LB_REPEAT;
+    float LB_REPEAT_TIME;
+    bool MB_PRESS;
+    bool RB_PRESS;
+    bool RB_RELEASE;
+
+    void CleanState(){
+        LB_PRESS = false;
+        MB_PRESS = false;
+        RB_PRESS = false;
+        RB_RELEASE = false;
+    };
 };
 
 struct InputManager{
@@ -25,7 +39,51 @@ struct InputManager{
         Vector2 mouseWorldPos = GetScreenToWorld2D(mouseScreenPos,camera);
         mouse.world_delta_pos = Vector2Subtract(mouseWorldPos,mouse.world_pos);
         mouse.world_pos = mouseWorldPos;
+
+
+        if(IsMouseButtonPressed(MOUSE_LEFT_BUTTON)){
+            mouse.LB_PRESS = true;
+        }
+
+        if(IsMouseButtonDown(MOUSE_LEFT_BUTTON)){
+            mouse.LB_REPEAT_TIME += deltaTime;
+            if(mouse.LB_REPEAT_TIME>0.1){
+                mouse.LB_REPEAT = true;
+            }
+        }
+
+        if(IsMouseButtonReleased(MOUSE_LEFT_BUTTON)){
+            TraceLog(LOG_INFO,"RELEASE");
+            mouse.LB_REPEAT_TIME=0.0;
+            mouse.LB_REPEAT = false;
+        }
+
+        if(IsMouseButtonPressed(MOUSE_MIDDLE_BUTTON)){
+            mouse.MB_PRESS = true;
+        }
+
+        if(IsMouseButtonPressed(MOUSE_RIGHT_BUTTON)){
+            TraceLog(LOG_INFO,"RB PRESS");
+            mouse.RB_PRESS = true;
+        }
+
+        if(IsMouseButtonReleased(MOUSE_RIGHT_BUTTON)){
+            mouse.RB_RELEASE = true;
+            TraceLog(LOG_INFO,"RELEASE");
+        }
+
+        if(mouse.LB_PRESS){
+            TraceLog(LOG_INFO,"PICKING");
+        }
+
+        if(mouse.LB_REPEAT){
+            TraceLog(LOG_INFO,"LINKING");
+        }
     };
+
+    void Clean(){
+        mouse.CleanState();
+    }
 };
 
 #endif //SKYNET_EDITOR_MYINPUT_H
