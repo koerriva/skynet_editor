@@ -39,10 +39,6 @@ bool IsInsideEdge(float r,Vector2 center, Vector2 pos){
     return r*r>a&&a>=(r-5)*(r-5);
 }
 
-int width = 1280,height=720;
-int world_width = 4000;
-int world_height = height*world_width/width;
-
 #ifdef _WIN32
 // N卡使用独显运行
 extern "C" __declspec(dllexport) unsigned long NvOptimusEnablement = 0x00000001;
@@ -53,29 +49,10 @@ extern "C" __declspec(dllexport) unsigned long NvOptimusEnablement = 0x00000001;
 extern "C" __declspec(dllexport) int AmdPowerXpressRequestHighPerformance = 0x00000001;
 #endif
 
-//static int test_hello(lua_State* L){
-//    printf("test hell0");
-//    return 0;
-//}
-//static const struct luaL_Reg gameLib[] = {
-//        {"test_hello",test_hello},
-//        {NULL,NULL}
-//};
-//
-//extern "C" __declspec(dllexport)
-//int luaopen_gamelib(lua_State* L){
-//    luaL_register(L,"gamelib",gameLib);
-//    return 1;
-//}
-
 int main() {
 #ifdef _WIN32
     system("chcp 65001");
 #endif
-//    lua_State* luaState = luaL_newstate();
-//    luaL_openlibs(luaState);
-//    luaL_dofile(luaState,"data/script/a.lua");
-//    lua_close(luaState);
 
     sol::state lua;
     lua.open_libraries();
@@ -87,17 +64,21 @@ int main() {
     lua.script_file("data/script/tiny.lua");
     lua.script_file("data/script/a.lua");
     long script_last_modify_time = GetFileModTime("data/script/a.lua");
-
     sol::function update = lua["update"];
 
+    MyGame myGame;
+    myGame.width = 1600;
+    myGame.height = 900;
+    myGame.world_width = 4000;
+
     SetConfigFlags(FLAG_VSYNC_HINT | FLAG_MSAA_4X_HINT | FLAG_WINDOW_HIGHDPI);
-    InitWindow(width,height,"Skynet Editor");
+    InitWindow(myGame.width,myGame.height,"Skynet Editor");
     SetWindowPosition(100,100);
     SetTargetFPS(60);
     Camera2D camera;
     camera.zoom = 1.0f;
     camera.target = {0};
-    camera.offset = {(float)(width/2),(float)(height/2)};
+    camera.offset = {(float)myGame.width/2,(float)myGame.height/2};
     camera.rotation = 0;
     float radius = 32.0f;
 
@@ -173,7 +154,7 @@ int main() {
                     }else{
                         action = PlayerAction::LinkNode;
                     }
-                } else{
+                }else{
                     action = PlayerAction::MoveScene;
                 }
             }
@@ -184,13 +165,28 @@ int main() {
         }
 
         if(action==PlayerAction::MoveScene){
-            float t = GetFrameTime();
-            float f = 40/camera.zoom;
-//            camera.target = Vector2Subtract(camera.target,Vector2Scale(im.mouse.world_delta_pos,f*t));
+            if(im.mouse.screen_delta_pos.x!=0||im.mouse.screen_delta_pos.y!=0){
+                if(im.mouse.screen_delta_pos.x>0){
+                    im.mouse.world_delta_pos.x = abs(im.mouse.world_delta_pos.x);
+                }
+                if(im.mouse.screen_delta_pos.x<0){
+                    im.mouse.world_delta_pos.x = -abs(im.mouse.world_delta_pos.x);
+                }
 
-            camera.target = Vector2Subtract(camera.target,im.mouse.world_delta_pos);
-//            camera.target.x = Clamp(camera.target.x,-world_width/2+width/2,world_width/2-width/2);
-//            camera.target.y = Clamp(camera.target.y,-world_height/2+height/2,world_height/2-height/2);
+                if(im.mouse.screen_delta_pos.y>0){
+                    im.mouse.world_delta_pos.y = abs(im.mouse.world_delta_pos.y);
+                }
+                if(im.mouse.screen_delta_pos.y<0){
+                    im.mouse.world_delta_pos.y = -abs(im.mouse.world_delta_pos.y);
+                }
+                camera.target = Vector2Subtract(camera.target,im.mouse.world_delta_pos);
+                int sw = myGame.width;
+                int sh = myGame.height;
+                int ww = myGame.world_width;
+                int wh = myGame.world_height;
+                camera.target.x = Clamp(camera.target.x,-ww/2+sw/2,ww/2-sw/2);
+                camera.target.y = Clamp(camera.target.y,-wh/2+sh/2,wh/2-sh/2);
+            }
         }
 
         if(action==PlayerAction::MoveNode){
@@ -200,20 +196,6 @@ int main() {
         }
 
         if(action==PlayerAction::AddNode){
-//            int batchSize = 1000;
-//            if(MAX_NEURAL_SIZE-nn.neural_count<1000){
-//                batchSize = MAX_NEURAL_SIZE-nn.neural_count;
-//            }
-//            for (int i = 0; i < batchSize; ++i) {
-//                Neural neural{};
-//                auto x = static_cast<float>(GetRandomValue(-world_width/2+radius,world_width/2-radius));
-//                auto y = static_cast<float>(GetRandomValue(-world_height/2+radius,world_height/2-radius));
-//                neural.center = {x,y};
-//                neural.color = DARKGREEN;
-//                neural.isActive = false;
-//                neural.radius = radius;
-//                nn.AddNeural(neural);
-//            }
             if(cursorState!=InNode){
                 Neural neural{};
                 float x = im.mouse.world_pos.x;
@@ -246,35 +228,9 @@ int main() {
         BeginDrawing();
         ClearBackground(SHENHAILV);
         BeginMode2D(camera);
-        {
-            int start_x = -world_width/2;
-            int start_y = -world_height/2;
 
-            int end_x = world_width/2;
-            int end_y = world_height/2;
-            //draw grid
-            int seg = 20;
-            for (int i = 0; i < world_width / seg; ++i) {
-                DrawLine(start_x+i*seg,start_y
-                         ,start_x+i*seg,end_y
-                         ,DARKGRAY);
-            }
-            for (int i = 0; i < world_width / (seg*5); ++i) {
-                DrawLine(start_x+i*seg*5,start_y
-                        ,start_x+i*seg*5,end_y
-                        ,BLACK);
-            }
-            for (int i = 0; i < world_height/seg; ++i) {
-                DrawLine(start_x,i*seg+start_y
-                         ,end_x,i*seg+start_y
-                         ,DARKGRAY);
-            }
-            for (int i = 0; i < world_height/(seg*5); ++i) {
-                DrawLine(start_x,i*seg*5+start_y
-                        ,end_x,i*seg*5+start_y
-                        ,BLACK);
-            }
-        }
+        myGame.DrawGrid();
+
 
         {
 //            sol::table neural_pool = lua["neural"];

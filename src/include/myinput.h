@@ -31,8 +31,8 @@ struct MouseState{
         RB_PRESS = false;
         RB_RELEASE = false;
 
-        screen_delta_pos = {};
-        world_delta_pos = {};
+        screen_delta_pos = {0};
+        world_delta_pos = {0};
     };
 };
 
@@ -48,12 +48,8 @@ struct InputManager{
         mouse.screen_delta_pos = Vector2Subtract(mouseScreenPos,mouse.screen_pos);
         mouse.screen_pos = mouseScreenPos;
 
-        TraceLog(LOG_INFO,TextFormat("M %f,%f",mouseScreenPos.x,mouseScreenPos.y));
         Vector2 mouseWorldPos = GetScreenToWorld2D(mouseScreenPos,camera);
-        TraceLog(LOG_INFO,TextFormat("New W %f,%f",mouseWorldPos.x,mouseWorldPos.y));
-        TraceLog(LOG_INFO,TextFormat("Old P %f,%f",mouse.world_pos.x,mouse.world_pos.y));
         mouse.world_delta_pos = Vector2Subtract(mouseWorldPos,mouse.world_pos);
-        TraceLog(LOG_INFO,TextFormat("D %f,%f",mouse.world_delta_pos.x,mouse.world_delta_pos.y));
         mouse.world_pos = mouseWorldPos;
 
         if(IsMouseButtonPressed(MOUSE_LEFT_BUTTON)){

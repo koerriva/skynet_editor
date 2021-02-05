@@ -118,4 +118,41 @@ static void getBezierPoints2D(Vector2 startPos,Vector2 endPos,Vector2* points){
         previous = current;
     }
 }
+
+struct MyGame{
+    int width = 1280;
+    int height=720;
+    int world_width = 4000;
+    int world_height = height*world_width/width;
+
+    void DrawGrid() const{
+        int start_x = -world_width/2;
+        int start_y = -world_height/2;
+
+        int end_x = world_width/2;
+        int end_y = world_height/2;
+        //draw grid
+        int seg = 20;
+        for (int i = 0; i < world_width / seg; ++i) {
+            DrawLine(start_x+i*seg,start_y
+                    ,start_x+i*seg,end_y
+                    ,DARKGRAY);
+        }
+        for (int i = 0; i < world_width / (seg*5); ++i) {
+            DrawLine(start_x+i*seg*5,start_y
+                    ,start_x+i*seg*5,end_y
+                    ,BLACK);
+        }
+        for (int i = 0; i < world_height/seg; ++i) {
+            DrawLine(start_x,i*seg+start_y
+                    ,end_x,i*seg+start_y
+                    ,DARKGRAY);
+        }
+        for (int i = 0; i < world_height/(seg*5); ++i) {
+            DrawLine(start_x,i*seg*5+start_y
+                    ,end_x,i*seg*5+start_y
+                    ,BLACK);
+        }
+    }
+};
 #endif
