@@ -90,13 +90,13 @@ int main() {
     CursorState cursorState = CursorState::OnGround;
     Neural* selected = nullptr;
     Neural* picked = nullptr;
-    NeuralLink curNeuralLink = {};
-    curNeuralLink.Init();
+    Neural* linkFrom = nullptr;
+    Neural* linkTo = nullptr;
+    NeuralLinkState linkState = UNLINK;
 
     NeuralNetwork nn{};
     nn.Init();
     nn.neurals = (Neural*)MemAlloc(sizeof(Neural)*MAX_NEURAL_SIZE);
-    nn.links =(NeuralLink*)MemAlloc(sizeof(NeuralLink)*MAX_NEURAL_LINK_SIZE);
 
     while(!WindowShouldClose()){
         {
@@ -142,8 +142,9 @@ int main() {
             if(IsMouseButtonReleased(MOUSE_LEFT_BUTTON)){
                 action = PlayerAction::Idle;
                 picked = nullptr;
-
-                curNeuralLink.Init();
+                linkState = UNLINK;
+                linkFrom = nullptr;
+                linkTo = nullptr;
             }
 
             if(im.mouse.LB_PRESS){
@@ -209,19 +210,18 @@ int main() {
         }
 
         if(action==PlayerAction::LinkNode){
-            if(curNeuralLink.state==BEGIN){
-                if(selected != nullptr && curNeuralLink.form!=selected){
+            if(linkState==BEGIN){
+                if(selected != nullptr && linkFrom!=selected){
                     TraceLog(LOG_INFO,"BEGIN");
-                    curNeuralLink.to = selected;
-                    curNeuralLink.state = NeuralLinkState::END;
-                    nn.AddLink(curNeuralLink);
+                    linkTo = selected;
+                    linkFrom->Link(linkTo);
+                    linkState = NeuralLinkState::END;
                 }
             }
-            if(curNeuralLink.state==UNLINK){
+            if(linkState==UNLINK){
                 TraceLog(LOG_INFO,"UNLINK");
-                curNeuralLink.form = selected;
-                curNeuralLink.isActive = false;
-                curNeuralLink.state = NeuralLinkState::BEGIN;
+                linkFrom = selected;
+                linkState = BEGIN;
             }
         }
 
@@ -247,18 +247,21 @@ int main() {
         }
 
         if(action==PlayerAction::LinkNode){
-            auto* pIn = curNeuralLink.form;
+            auto* pIn = linkFrom;
             DrawLineBezier(pIn->center,im.mouse.world_pos,1.0,GRAY);
         }
 
-        for (size_t i = 0; i < nn.link_count; ++i) {
-            NeuralLink* link = &nn.links[i];
-            link->DeActive();
-            int s = GetRandomValue(0,nn.link_count-1);
-            if(s==i){
-                link->Active();
+        int chosen = GetRandomValue(0,nn.neural_count+nn.neural_count*2);
+        for (int i = 0; i < nn.neural_count; ++i) {
+            Neural* p = &nn.neurals[i];
+            if(chosen==i&&p->in_count==0&&p->out_count!=0){
+                p->Active();
             }
-            DrawLineBezier(link->form->center,link->to->center,2.0,link->color);
+            for (int j = 0; j < p->out_count; ++j) {
+                Neural* to = p->out[j];
+                if(p->isActive)to->Active();
+                DrawLineBezier(p->center,to->center,2.0,p->isActive?WHITE:GRAY);
+            }
         }
 
         for (size_t i = 0; i < nn.neural_count; i++)
@@ -296,18 +299,20 @@ int main() {
         if(action==AddNode){
             action = PlayerAction::Idle;
         }
-        if(action==LinkNode&&curNeuralLink.state==END){
+        if(action==LinkNode&&linkState==END){
             action = PlayerAction::Idle;
         }
 
         EndDrawing();
 
+        for (int i = 0; i < nn.neural_count; ++i) {
+            nn.neurals[i].DeActive();
+        }
         im.Clean();
     }
 
     UnloadTexture(neural_texture);
     MemFree(nn.neurals);
-    MemFree(nn.links);
 
     CloseWindow();
     return 0;

@@ -36,11 +36,6 @@ struct MouseState{
     };
 };
 
-std::ostream &operator<<(std::ostream &os, const Vector2 &vector2) {
-    os << "x: " << vector2.x << " y: " << vector2.y;
-    return os;
-}
-
 struct InputManager{
     MouseState mouse;
     void Update(Camera2D camera,float deltaTime){

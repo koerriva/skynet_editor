@@ -24,6 +24,11 @@ struct Neural{
     bool isActive;
     float radius;
 
+    Neural* in[MAX_NEURAL_SYNAPSE_SIZE];
+    int in_count;
+    Neural* out[MAX_NEURAL_SYNAPSE_SIZE];
+    int out_count;
+
     void Active(){
         isActive = true;
         color = GREEN;
@@ -33,46 +38,29 @@ struct Neural{
         isActive = false;
         color = DARKGREEN;
     }
+
+    void Link(Neural* neural){
+        if(out_count<MAX_NEURAL_SYNAPSE_SIZE){
+            out[out_count++] = neural;
+            neural->LinkIn(this);
+        }
+    }
+
+private:
+    void LinkIn(Neural* neural){
+        if(in_count<MAX_NEURAL_SYNAPSE_SIZE){
+            in[in_count++] = neural;
+        }
+    }
 };
 
 enum NeuralLinkState{
     UNLINK,BEGIN,END
 };
 
-struct NeuralLink{
-    Vector2 points[BEZIER_LINE_DIVISIONS+1];
-    Neural* form;
-    Neural* to;
-    Color color;
-    bool isActive;
-    NeuralLinkState state;
-
-    void Init(){
-        form = nullptr;
-        to = nullptr;
-        isActive = false;
-        state = UNLINK;
-    }
-
-    void Active(){
-        isActive = true;
-        color = WHITE;
-        form->Active();
-        to->Active();
-    }
-
-    void DeActive(){
-        isActive = false;
-        color = ColorAlpha(GRAY,0.3);
-        form->DeActive();
-        to->DeActive();
-    }
-};
-
 struct NeuralNetwork{
     Neural* neurals;
     int neural_count;
-    NeuralLink* links;
     int link_count;
 
     void Init(){
@@ -82,10 +70,6 @@ struct NeuralNetwork{
 
     void AddNeural(Neural neural){
         neurals[neural_count++] = neural;
-    }
-
-    void AddLink(NeuralLink neuralLink){
-        links[link_count++] = neuralLink;
     }
 };
 
