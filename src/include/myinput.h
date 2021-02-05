@@ -30,8 +30,16 @@ struct MouseState{
         Y = 0;
         RB_PRESS = false;
         RB_RELEASE = false;
+
+        screen_delta_pos = {};
+        world_delta_pos = {};
     };
 };
+
+std::ostream &operator<<(std::ostream &os, const Vector2 &vector2) {
+    os << "x: " << vector2.x << " y: " << vector2.y;
+    return os;
+}
 
 struct InputManager{
     MouseState mouse;
@@ -40,10 +48,13 @@ struct InputManager{
         mouse.screen_delta_pos = Vector2Subtract(mouseScreenPos,mouse.screen_pos);
         mouse.screen_pos = mouseScreenPos;
 
+        TraceLog(LOG_INFO,TextFormat("M %f,%f",mouseScreenPos.x,mouseScreenPos.y));
         Vector2 mouseWorldPos = GetScreenToWorld2D(mouseScreenPos,camera);
+        TraceLog(LOG_INFO,TextFormat("New W %f,%f",mouseWorldPos.x,mouseWorldPos.y));
+        TraceLog(LOG_INFO,TextFormat("Old P %f,%f",mouse.world_pos.x,mouse.world_pos.y));
         mouse.world_delta_pos = Vector2Subtract(mouseWorldPos,mouse.world_pos);
+        TraceLog(LOG_INFO,TextFormat("D %f,%f",mouse.world_delta_pos.x,mouse.world_delta_pos.y));
         mouse.world_pos = mouseWorldPos;
-
 
         if(IsMouseButtonPressed(MOUSE_LEFT_BUTTON)){
             mouse.LB_PRESS = true;
@@ -57,7 +68,6 @@ struct InputManager{
         }
 
         if(IsMouseButtonReleased(MOUSE_LEFT_BUTTON)){
-            TraceLog(LOG_INFO,"RELEASE");
             mouse.LB_REPEAT_TIME=0.0;
             mouse.LB_REPEAT = false;
         }
@@ -67,13 +77,11 @@ struct InputManager{
         }
 
         if(IsMouseButtonPressed(MOUSE_RIGHT_BUTTON)){
-            TraceLog(LOG_INFO,"RB PRESS");
             mouse.RB_PRESS = true;
         }
 
         if(IsMouseButtonReleased(MOUSE_RIGHT_BUTTON)){
             mouse.RB_RELEASE = true;
-            TraceLog(LOG_INFO,"RELEASE");
         }
 
         mouse.Y = GetMouseWheelMove();

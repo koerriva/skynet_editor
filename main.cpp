@@ -1,5 +1,10 @@
 #include <iostream>
+#define SUPPORT_EVENTS_WAITING
+//F12
+#define SUPPORT_SCREEN_CAPTURE
+//CTRL+F12
 #define SUPPORT_GIF_RECORDING
+#define SUPPORT_DATA_STORAGE
 #include <raylib.h>
 #include <mycolor.h>
 #include <raymath.h>
@@ -92,8 +97,8 @@ int main() {
     Camera2D camera;
     camera.zoom = 1.0f;
     camera.target = {0};
-    camera.offset = {(float)width/2.f,(float)height/2.f};
-    camera.rotation = {0};
+    camera.offset = {(float)(width/2),(float)(height/2)};
+    camera.rotation = 0;
     float radius = 32.0f;
 
     Texture2D neural_texture = LoadTexture("data/neural.png");
@@ -130,6 +135,7 @@ int main() {
         }
 //        update();
         {
+            camera.rotation = 0;
             im.Update(camera,GetFrameTime());
             if(im.mouse.MB_SCROLL){
                 camera.zoom += im.mouse.Y*GetFrameTime()*10;
@@ -178,13 +184,13 @@ int main() {
         }
 
         if(action==PlayerAction::MoveScene){
-            if(camera.zoom>1){
-                camera.target = Vector2Subtract(camera.target,im.mouse.world_delta_pos);
-            } else{
-                camera.target = Vector2Subtract(camera.target,im.mouse.screen_delta_pos);
-            }
-            camera.target.x = Clamp(camera.target.x,-world_width/2+width/2,world_width/2-width/2);
-            camera.target.y = Clamp(camera.target.y,-world_height/2+height/2,world_height/2-height/2);
+            float t = GetFrameTime();
+            float f = 40/camera.zoom;
+//            camera.target = Vector2Subtract(camera.target,Vector2Scale(im.mouse.world_delta_pos,f*t));
+
+            camera.target = Vector2Subtract(camera.target,im.mouse.world_delta_pos);
+//            camera.target.x = Clamp(camera.target.x,-world_width/2+width/2,world_width/2-width/2);
+//            camera.target.y = Clamp(camera.target.y,-world_height/2+height/2,world_height/2-height/2);
         }
 
         if(action==PlayerAction::MoveNode){
