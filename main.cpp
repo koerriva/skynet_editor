@@ -6,6 +6,9 @@
 #define SUPPORT_GIF_RECORDING
 #define SUPPORT_DATA_STORAGE
 #include <raylib.h>
+#define RAYGUI_IMPLEMENTATION
+#define RAYGUI_SUPPORT_ICONS
+#include <raygui.h>
 #include <mycolor.h>
 #include <raymath.h>
 #include <glm/glm.hpp>
@@ -90,6 +93,7 @@ int main() {
     CursorState cursorState = CursorState::OnGround;
     Neural* selected = nullptr;
     Neural* picked = nullptr;
+    Neural* edit = nullptr;
     Neural* linkFrom = nullptr;
     Neural* linkTo = nullptr;
     NeuralLinkState linkState = UNLINK;
@@ -161,7 +165,12 @@ int main() {
             }
 
             if(im.mouse.RB_PRESS){
-                action = PlayerAction::AddNode;
+                if(cursorState==InNode){
+                    edit = selected;
+                    action = PlayerAction::EditNode;
+                }else{
+                    action = PlayerAction::AddNode;
+                }
             }
         }
 
@@ -228,10 +237,7 @@ int main() {
         BeginDrawing();
         ClearBackground(SHENHAILV);
         BeginMode2D(camera);
-
         myGame.DrawGrid();
-
-
         {
 //            sol::table neural_pool = lua["neural"];
 //            for (auto& n:neural_pool) {
@@ -283,6 +289,20 @@ int main() {
         DrawText(TextFormat("Mouse Zoom %2.f",camera.zoom),5,40,16,DARKBROWN);
         DrawText(TextFormat("Mouse World Pos %2.f,%2.f",im.mouse.world_pos.x,im.mouse.world_pos.y),5,60,16,DARKBROWN);
         DrawText(TextFormat("Neural Size %d",nn.neural_count),5,80,16,DARKBROWN);
+
+        {
+            if(action==PlayerAction::EditNode){
+                if(edit){
+                    auto rec = GetWorldToScreen2D(edit->center,camera);
+                    if(GuiWindowBox({rec.x,rec.y,100,100},"编辑节点")){
+//                        GuiLabel({rec.x,rec.y,50,20},"weight");
+
+                    }
+                    GuiSlider({rec.x,rec.y,100,20},"left","right",0.5,0.0,1.0);
+                }
+            }
+        }
+
         if(action==PlayerAction::MoveScene){
             DrawText("Move Scene",5,100,16,WHITE);
         }

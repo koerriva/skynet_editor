@@ -74,7 +74,7 @@ struct NeuralNetwork{
 };
 
 enum PlayerAction{
-    Idle,MoveScene,AddNode,MoveNode,LinkNode
+    Idle,MoveScene,AddNode,EditNode,MoveNode,LinkNode
 };
 
 
