@@ -1,7 +1,8 @@
 #ifndef MYGAME_H
 #define MYGAME_H
 #include <easings.h>
-
+#include <raylib.h>
+#include <glm/glm.hpp>
 #ifndef BEZIER_LINE_DIVISIONS
 #define BEZIER_LINE_DIVISIONS 24
 #endif
@@ -21,8 +22,11 @@
 struct Neural{
     Vector2 center;
     Color color;
+    Color colors[2] = {DARKGREEN,GREEN};
     bool isActive;
     float radius;
+    int weight;
+    bool isLearn;
 
     Neural* in[MAX_NEURAL_SYNAPSE_SIZE];
     int in_count;
@@ -31,12 +35,12 @@ struct Neural{
 
     void Active(){
         isActive = true;
-        color = GREEN;
+        color = colors[1];
     }
 
     void DeActive(){
         isActive = false;
-        color = DARKGREEN;
+        color = colors[0];
     }
 
     void Link(Neural* neural){
@@ -108,6 +112,13 @@ struct MyGame{
     int height=720;
     int world_width = 4000;
     int world_height = height*world_width/width;
+    Font font;
+    Texture icons;
+    Neural* editNode;
+    int editType=0;
+    int editActiveColorType = 0;
+    bool editActiveColorMode = false;
+    PlayerAction action;
 
     void DrawGrid() const{
         int start_x = -world_width/2;
@@ -138,5 +149,14 @@ struct MyGame{
                     ,BLACK);
         }
     }
+
+    void DrawDebugText(const char* text,Vector2 pos);
+
+    void OpenNeuralMenu(Neural* neural,Vector2 pos);
+
+    void CloseNeuralMenu(Neural* neural);
+
+    void ShowToolBar();
 };
+
 #endif

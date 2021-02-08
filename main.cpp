@@ -1,14 +1,5 @@
 #include <iostream>
-#define SUPPORT_EVENTS_WAITING
-//F12
-#define SUPPORT_SCREEN_CAPTURE
-//CTRL+F12
-#define SUPPORT_GIF_RECORDING
-#define SUPPORT_DATA_STORAGE
 #include <raylib.h>
-#define RAYGUI_IMPLEMENTATION
-#define RAYGUI_SUPPORT_ICONS
-#include <raygui.h>
 #include <mycolor.h>
 #include <raymath.h>
 #include <glm/glm.hpp>
@@ -56,7 +47,6 @@ int main() {
 #ifdef _WIN32
     system("chcp 65001");
 #endif
-
     sol::state lua;
     lua.open_libraries();
     lua.new_usertype<Vector2>("vec2","x",&Vector2::x,"y",&Vector2::y);
@@ -78,6 +68,21 @@ int main() {
     InitWindow(myGame.width,myGame.height,"Skynet Editor");
     SetWindowPosition(100,100);
     SetTargetFPS(60);
+
+
+    //基本汉字 4E00-9FA5
+    int charsCount = 0xFFF0+1;
+    int* fontChars = (int*)MemAlloc(sizeof(int)*charsCount);
+    TraceLog(LOG_INFO,"Init SC Font Memory");
+    for (int i = 0; i < charsCount; ++i) {
+        fontChars[i] = i;
+    }
+    TraceLog(LOG_INFO,"Load SC Font");
+//    Font scFont = LoadFontEx("data/font/NotoSansSC-Regular.otf",16,fontChars,charsCount);
+    Font scFont = LoadFontEx("data/font/LiHeiPro.ttf",16,fontChars,charsCount);
+    TraceLog(LOG_INFO,"SC Font Load");
+    myGame.font = scFont;
+
     Camera2D camera;
     camera.zoom = 1.0f;
     camera.target = {0};
@@ -85,15 +90,17 @@ int main() {
     camera.rotation = 0;
     float radius = 32.0f;
 
+    myGame.icons = LoadTexture("data/icons.png");
     Texture2D neural_texture = LoadTexture("data/neural.png");
 
     InputManager im={};
 
-    PlayerAction action = PlayerAction::Idle;
+    myGame.action = PlayerAction::Idle;
+
     CursorState cursorState = CursorState::OnGround;
     Neural* selected = nullptr;
     Neural* picked = nullptr;
-    Neural* edit = nullptr;
+    myGame.editNode = nullptr;
     Neural* linkFrom = nullptr;
     Neural* linkTo = nullptr;
     NeuralLinkState linkState = UNLINK;
@@ -143,38 +150,40 @@ int main() {
         }
 
         {
-            if(IsMouseButtonReleased(MOUSE_LEFT_BUTTON)){
-                action = PlayerAction::Idle;
-                picked = nullptr;
-                linkState = UNLINK;
-                linkFrom = nullptr;
-                linkTo = nullptr;
-            }
-
-            if(im.mouse.LB_PRESS){
-                if(cursorState==InNode){
-                    if(IsInsideInner(selected->radius,selected->center,im.mouse.world_pos)){
-                        picked = selected;
-                        action = PlayerAction::MoveNode;
-                    }else{
-                        action = PlayerAction::LinkNode;
-                    }
-                }else{
-                    action = PlayerAction::MoveScene;
+            if(myGame.action!=PlayerAction::EditNode){
+                if(IsMouseButtonReleased(MOUSE_LEFT_BUTTON)){
+                    myGame.action = PlayerAction::Idle;
+                    picked = nullptr;
+                    linkState = UNLINK;
+                    linkFrom = nullptr;
+                    linkTo = nullptr;
                 }
-            }
 
-            if(im.mouse.RB_PRESS){
-                if(cursorState==InNode){
-                    edit = selected;
-                    action = PlayerAction::EditNode;
-                }else{
-                    action = PlayerAction::AddNode;
+                if(im.mouse.LB_PRESS){
+                    if(cursorState==InNode){
+                        if(IsInsideInner(selected->radius,selected->center,im.mouse.world_pos)){
+                            picked = selected;
+                            myGame.action = PlayerAction::MoveNode;
+                        }else{
+                            myGame.action = PlayerAction::LinkNode;
+                        }
+                    }else{
+                        myGame.action = PlayerAction::MoveScene;
+                    }
+                }
+
+                if(im.mouse.RB_PRESS){
+                    if(cursorState==InNode){
+                        myGame.editNode = selected;
+                        myGame.action = PlayerAction::EditNode;
+                    }else{
+                        myGame.action = PlayerAction::AddNode;
+                    }
                 }
             }
         }
 
-        if(action==PlayerAction::MoveScene){
+        if(myGame.action==PlayerAction::MoveScene){
             if(im.mouse.screen_delta_pos.x!=0||im.mouse.screen_delta_pos.y!=0){
                 if(im.mouse.screen_delta_pos.x>0){
                     im.mouse.world_delta_pos.x = abs(im.mouse.world_delta_pos.x);
@@ -199,26 +208,25 @@ int main() {
             }
         }
 
-        if(action==PlayerAction::MoveNode){
+        if(myGame.action==PlayerAction::MoveNode){
             if(picked){
                 picked->center = Vector2Add(picked->center,im.mouse.world_delta_pos);
             }
         }
 
-        if(action==PlayerAction::AddNode){
+        if(myGame.action==PlayerAction::AddNode){
             if(cursorState!=InNode){
                 Neural neural{};
                 float x = im.mouse.world_pos.x;
                 float y = im.mouse.world_pos.y;
                 neural.center = {x,y};
-                neural.color = DARKGREEN;
                 neural.isActive = false;
                 neural.radius = radius;
                 nn.AddNeural(neural);
             }
         }
 
-        if(action==PlayerAction::LinkNode){
+        if(myGame.action==PlayerAction::LinkNode){
             if(linkState==BEGIN){
                 if(selected != nullptr && linkFrom!=selected){
                     TraceLog(LOG_INFO,"BEGIN");
@@ -252,7 +260,7 @@ int main() {
 //            }
         }
 
-        if(action==PlayerAction::LinkNode){
+        if(myGame.action==PlayerAction::LinkNode){
             auto* pIn = linkFrom;
             DrawLineBezier(pIn->center,im.mouse.world_pos,1.0,GRAY);
         }
@@ -285,42 +293,38 @@ int main() {
 
         EndMode2D();
         DrawFPS(5,5);
-        DrawText(TextFormat("Camera target %2.f,%2.f",camera.target.x,camera.target.y),5,20,16,DARKGREEN);
-        DrawText(TextFormat("Mouse Zoom %2.f",camera.zoom),5,40,16,DARKBROWN);
-        DrawText(TextFormat("Mouse World Pos %2.f,%2.f",im.mouse.world_pos.x,im.mouse.world_pos.y),5,60,16,DARKBROWN);
-        DrawText(TextFormat("Neural Size %d",nn.neural_count),5,80,16,DARKBROWN);
+        myGame.DrawDebugText(TextFormat("Camera target %2.f,%2.f",camera.target.x,camera.target.y),{5,20});
+        myGame.DrawDebugText(TextFormat("Mouse Zoom %2.f",camera.zoom),{5,40});
+        myGame.DrawDebugText(TextFormat("Mouse World Pos %2.f,%2.f",im.mouse.world_pos.x,im.mouse.world_pos.y),{5,60});
+        myGame.DrawDebugText(TextFormat("Neural Size %d",nn.neural_count),{5,80});
+        myGame.DrawDebugText("无边落木萧萧下，不尽长江滚滚来。",{5,240});
 
         {
-            if(action==PlayerAction::EditNode){
-                if(edit){
-                    auto rec = GetWorldToScreen2D(edit->center,camera);
-                    if(GuiWindowBox({rec.x,rec.y,100,100},"编辑节点")){
-//                        GuiLabel({rec.x,rec.y,50,20},"weight");
-
-                    }
-                    GuiSlider({rec.x,rec.y,100,20},"left","right",0.5,0.0,1.0);
-                }
+            if(myGame.action==PlayerAction::EditNode){
+                Vector2 screen_pos = GetWorldToScreen2D(myGame.editNode->center,camera);
+                myGame.OpenNeuralMenu(myGame.editNode,screen_pos);
             }
+            myGame.ShowToolBar();
         }
 
-        if(action==PlayerAction::MoveScene){
-            DrawText("Move Scene",5,100,16,WHITE);
+        if(myGame.action==PlayerAction::MoveScene){
+            myGame.DrawDebugText("Move Scene",{5,100});
         }
-        if(action==PlayerAction::MoveNode){
-            DrawText("Move Node",5,100,16,WHITE);
+        if(myGame.action==PlayerAction::MoveNode){
+            myGame.DrawDebugText("Move Node",{5,100});
         }
-        if(action==PlayerAction::AddNode){
-            DrawText("Add Node",5,100,16,WHITE);
+        if(myGame.action==PlayerAction::AddNode){
+            myGame.DrawDebugText("Add Node",{5,100});
         }
-        if(action==PlayerAction::LinkNode){
-            DrawText("Link Node",5,100,16,WHITE);
+        if(myGame.action==PlayerAction::LinkNode){
+            myGame.DrawDebugText("Link Node",{5,100});
         }
 
-        if(action==AddNode){
-            action = PlayerAction::Idle;
+        if(myGame.action==AddNode){
+            myGame.action = PlayerAction::Idle;
         }
-        if(action==LinkNode&&linkState==END){
-            action = PlayerAction::Idle;
+        if(myGame.action==LinkNode&&linkState==END){
+            myGame.action = PlayerAction::Idle;
         }
 
         EndDrawing();
@@ -332,7 +336,10 @@ int main() {
     }
 
     UnloadTexture(neural_texture);
+    UnloadFont(scFont);
+
     MemFree(nn.neurals);
+    MemFree(fontChars);
 
     CloseWindow();
     return 0;
