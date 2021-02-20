@@ -19,6 +19,10 @@
 #define MAX_NEURAL_LINK_SIZE MAX_NEURAL_SIZE * MAX_NEURAL_SYNAPSE_SIZE
 #endif
 
+#include "pthread.h"
+#include "stdatomic.h"
+#include "time.h"
+
 struct Neural{
     Vector2 center;
     Color color;
@@ -107,6 +111,12 @@ static void getBezierPoints2D(Vector2 startPos,Vector2 endPos,Vector2* points){
     }
 }
 
+enum GameState{LOAD_DATA,READY,RUNNING,PAUSE,STOP};
+
+struct DataWorkerParams{
+    void* obj_ptr;
+};
+
 struct MyGame{
     int width = 1280;
     int height=720;
@@ -119,6 +129,50 @@ struct MyGame{
     int editActiveColorType = 0;
     bool editActiveColorMode = false;
     PlayerAction action;
+    GameState state = STOP;
+    atomic_bool dataLoaded;
+    pthread_t dataLoadWorker;
+    DataWorkerParams dataWorkerParams;
+
+    void Init(){
+        dataWorkerParams.obj_ptr = this;
+        MyGame::LoadData(&dataWorkerParams);
+//        int err = pthread_create(&dataLoadWorker, nullptr,&MyGame::LoadData, &dataWorkerParams);
+//        if(err==0){
+//            TraceLog(LOG_INFO,"Create DataWorker successfully!");
+//        }else{
+//            TraceLog(LOG_ERROR,"Error create DataWorker!");
+//        }
+    }
+
+    static void* LoadData(void* args){
+        DataWorkerParams* params = (DataWorkerParams*)args;
+        MyGame* game = (MyGame*)params->obj_ptr;
+        game->state = LOAD_DATA;
+        game->dataLoaded = ATOMIC_VAR_INIT(false);
+
+        //基本汉字 4E00-9FA5
+        int charsCount = 0xFFF0+1;
+        int* fontChars = (int*)MemAlloc(sizeof(int)*charsCount);
+        TraceLog(LOG_INFO,"Init SC Font Memory");
+        for (int i = 0; i < charsCount; ++i) {
+            fontChars[i] = i;
+        }
+        TraceLog(LOG_INFO,"Load SC Font");
+//    Font scFont = LoadFontEx("data/font/NotoSansSC-Regular.otf",16,fontChars,charsCount);
+        Font scFont = LoadFontEx("data/font/LiHeiPro.ttf",16,fontChars,charsCount);
+        game->font = scFont;
+        MemFree(fontChars);
+
+        game->state = READY;
+        atomic_store(&game->dataLoaded,true);
+
+        return nullptr;
+    }
+
+    void Cleanup() const{
+        UnloadFont(font);
+    }
 
     void DrawGrid() const{
         int start_x = -world_width/2;
