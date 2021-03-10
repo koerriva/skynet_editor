@@ -22,6 +22,13 @@
 #define MAX_NEURAL_LINK_SIZE MAX_NEURAL_SIZE * MAX_NEURAL_SYNAPSE_SIZE
 #endif
 
+#ifndef MAX_INPUT_SIZE
+#define MAX_INPUT_SIZE 512
+#endif
+
+enum NeuralType{
+    NODE,INPUT,OUTPUT
+};
 struct Neural{
     Vector2 center;
     Color color;
@@ -30,6 +37,7 @@ struct Neural{
     float radius;
     int weight;
     bool isLearn;
+    NeuralType type = NODE;
 
     Neural* in[MAX_NEURAL_SYNAPSE_SIZE];
     int in_count;
@@ -66,14 +74,23 @@ enum NeuralLinkState{
 };
 
 struct NeuralNetwork{
-    Neural* neurals;
-    int neural_count;
+    Neural* neurals = nullptr;
+    int neural_count = 0;
+
+    Neural* inputs[MAX_INPUT_SIZE]={};
+    int input_count = 0;
+
+    Neural* nodes[MAX_NEURAL_SIZE]={};
+    int nodes_count = 0;
+
+    Neural* output[MAX_INPUT_SIZE] = {};
+    int output_count = 0 ;
 
     void Init(){
         neural_count = 0;
     }
 
-    void AddNeural(Neural neural){
+    void AddNode(Neural neural){
         neurals[neural_count++] = neural;
     }
 
@@ -86,6 +103,14 @@ struct NeuralNetwork{
         }else{
             neural_count -=1;
         }
+    }
+
+    void SetInput(Neural* neural){
+        neural->type=NeuralType::INPUT;
+        for (int i = 0; i < input_count; ++i) {
+            if(inputs[i]==neural)return;
+        }
+        inputs[input_count++]=neural;
     }
 };
 
@@ -214,7 +239,7 @@ struct MyGame{
 
     void CloseNeuralMenu(Neural* neural);
 
-    void ShowToolBar() const;
+    void DrawToolBar() const;
 
     void Cleanup() const;
 private:

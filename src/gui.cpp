@@ -44,7 +44,7 @@ void MyGame::DrawDebugText(const char* text,Vector2 screen_pos) const{
     DrawTextEx(font,text,screen_pos,font.baseSize,1.0,GREEN);
 }
 
-void MyGame::ShowToolBar() const {
+void MyGame::DrawToolBar() const {
     int id  = 131;
     int id_x = id%16;
     int id_y = id/16;
@@ -99,17 +99,15 @@ void MyGame::DrawGrid() const {
 
 void MyGame::DrawDebugInfo(){
     DrawFPS(5,5);
-    DrawDebugText(TextFormat("Camera target %2.f,%2.f",camera.target.x,camera.target.y),{5,20});
-    DrawDebugText(TextFormat("Mouse Zoom %2.f",camera.zoom),{5,40});
-    DrawDebugText(TextFormat("Mouse World Pos %2.f,%2.f",im.mouse.world_pos.x,im.mouse.world_pos.y),{5,60});
-    DrawDebugText(TextFormat("Neural Size %d",nn.neural_count),{5,80});
-    DrawDebugText("无边落木萧萧下，不尽长江滚滚来。",{5,240});
+    DrawDebugText(TextFormat("相机焦点 %2.f,%2.f",camera.target.x,camera.target.y),{5,20});
+    DrawDebugText(TextFormat("Zoom %2.f",camera.zoom),{5,40});
+    DrawDebugText(TextFormat("坐标(世界) %2.f,%2.f",im.mouse.world_pos.x,im.mouse.world_pos.y),{5,60});
+    DrawDebugText(TextFormat("神经元数量 %d",nn.neural_count),{5,80});
 
     if(action==PlayerAction::EditNode){
         Vector2 screen_pos = GetWorldToScreen2D(editNode->center,camera);
         OpenNeuralMenu(editNode,screen_pos);
     }
-    ShowToolBar();
 
     if(action==PlayerAction::MoveScene){
         DrawDebugText("Move Scene",{5,100});

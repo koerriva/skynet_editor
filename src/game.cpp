@@ -10,17 +10,16 @@ void MyGame::Render() {
     BeginMode2D(camera);
     DrawGrid();
 
+    //连接线渲染
     if(action==PlayerAction::LinkNode){
         auto* pIn = linkFrom;
         DrawLineBezier(pIn->center,im.mouse.world_pos,1.0,GRAY);
     }
 
-    int chosen = GetRandomValue(0,nn.neural_count+nn.neural_count*2);
-    for (int i = 0; i < nn.neural_count; ++i) {
-        Neural* p = &nn.neurals[i];
-        if(chosen==i&&p->in_count==0&&p->out_count!=0){
-            p->Active();
-        }
+    //随机模拟
+    for (int i = 0; i < nn.input_count; ++i) {
+        Neural* p = nn.inputs[i];
+        p->Active();
         for (int j = 0; j < p->out_count; ++j) {
             Neural* to = p->out[j];
             if(p->isActive)to->Active();
@@ -28,21 +27,25 @@ void MyGame::Render() {
         }
     }
 
+    //主渲染
     for (size_t i = 0; i < nn.neural_count; i++)
     {
         Neural* p = &nn.neurals[i];
         DrawTextureV(neural_texture, Vector2SubtractValue(p->center, radius), p->color);
-        if(selected==p){
-            if(IsInsideEdge(p->radius,p->center,im.mouse.world_pos)){
-                DrawRing(p->center,p->radius-5,p->radius,0,360,24,GRAY);
-            }else{
-                DrawRing(p->center,p->radius-2,p->radius,0,360,24,GREEN);
-            }
+    }
+
+    //gui
+    if(selected){
+        if(IsInsideEdge(selected->radius,selected->center,im.mouse.world_pos)){
+            DrawRing(selected->center,selected->radius-5,selected->radius,0,360,24,GRAY);
+        }else{
+            DrawRing(selected->center,selected->radius-2,selected->radius,0,360,24,GREEN);
         }
     }
 
     EndMode2D();
     DrawDebugInfo();
+    DrawToolBar();
     EndDrawing();
 }
 
