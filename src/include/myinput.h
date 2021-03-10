@@ -36,8 +36,17 @@ struct MouseState{
     };
 };
 
+struct KeyState{
+    bool DEL_PRESS;
+
+    void CleanState(){
+        DEL_PRESS = false;
+    }
+};
+
 struct InputManager{
     MouseState mouse;
+    KeyState key;
     void Update(Camera2D camera,float deltaTime){
         Vector2 mouseScreenPos = GetMousePosition();
         mouse.screen_delta_pos = Vector2Subtract(mouseScreenPos,mouse.screen_pos);
@@ -79,10 +88,15 @@ struct InputManager{
         if(mouse.Y!=0){
             mouse.MB_SCROLL = true;
         }
+
+        if(IsKeyPressed(KEY_DELETE)){
+            key.DEL_PRESS = true;
+        }
     };
 
     void Clean(){
         mouse.CleanState();
+        key.CleanState();
     }
 };
 

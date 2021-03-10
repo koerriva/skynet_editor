@@ -40,11 +40,11 @@ void MyGame::OpenNeuralMenu(Neural *neural,Vector2 screen_pos) {
     }
 }
 
-void MyGame::DrawDebugText(const char* text,Vector2 screen_pos){
+void MyGame::DrawDebugText(const char* text,Vector2 screen_pos) const{
     DrawTextEx(font,text,screen_pos,font.baseSize,1.0,GREEN);
 }
 
-void MyGame::ShowToolBar() {
+void MyGame::ShowToolBar() const {
     int id  = 131;
     int id_x = id%16;
     int id_y = id/16;
@@ -57,4 +57,83 @@ void MyGame::ShowToolBar() {
     id_x = id%16;
     id_y = id/16;
     GuiImageButtonEx({width/2+32+32,0,32,32},"",icons,{1+18*id_x,1+18*id_y,16,16});
+}
+
+void MyGame::CloseNeuralMenu(Neural *neural) {
+    if(editNode==neural){
+        editNode = nullptr;
+        editType = 0;
+        action = PlayerAction::Idle;
+    }
+}
+
+void MyGame::DrawGrid() const {
+    int start_x = -world_width/2;
+    int start_y = -world_height/2;
+
+    int end_x = world_width/2;
+    int end_y = world_height/2;
+    //draw grid
+    int seg = 20;
+    for (int i = 0; i < world_width / seg; ++i) {
+        DrawLine(start_x+i*seg,start_y
+                ,start_x+i*seg,end_y
+                ,DARKGRAY);
+    }
+    for (int i = 0; i < world_width / (seg*5); ++i) {
+        DrawLine(start_x+i*seg*5,start_y
+                ,start_x+i*seg*5,end_y
+                ,BLACK);
+    }
+    for (int i = 0; i < world_height/seg; ++i) {
+        DrawLine(start_x,i*seg+start_y
+                ,end_x,i*seg+start_y
+                ,DARKGRAY);
+    }
+    for (int i = 0; i < world_height/(seg*5); ++i) {
+        DrawLine(start_x,i*seg*5+start_y
+                ,end_x,i*seg*5+start_y
+                ,BLACK);
+    }
+}
+
+void MyGame::DrawDebugInfo(){
+    DrawFPS(5,5);
+    DrawDebugText(TextFormat("Camera target %2.f,%2.f",camera.target.x,camera.target.y),{5,20});
+    DrawDebugText(TextFormat("Mouse Zoom %2.f",camera.zoom),{5,40});
+    DrawDebugText(TextFormat("Mouse World Pos %2.f,%2.f",im.mouse.world_pos.x,im.mouse.world_pos.y),{5,60});
+    DrawDebugText(TextFormat("Neural Size %d",nn.neural_count),{5,80});
+    DrawDebugText("无边落木萧萧下，不尽长江滚滚来。",{5,240});
+
+    if(action==PlayerAction::EditNode){
+        Vector2 screen_pos = GetWorldToScreen2D(editNode->center,camera);
+        OpenNeuralMenu(editNode,screen_pos);
+    }
+    ShowToolBar();
+
+    if(action==PlayerAction::MoveScene){
+        DrawDebugText("Move Scene",{5,100});
+    }
+    if(action==PlayerAction::MoveNode){
+        DrawDebugText("Move Node",{5,100});
+    }
+    if(action==PlayerAction::AddNode){
+        DrawDebugText("Add Node",{5,100});
+    }
+    if(action==PlayerAction::LinkNode){
+        DrawDebugText("Link Node",{5,100});
+    }
+    if(action==PlayerAction::DelNode){
+        DrawDebugText("Del Node",{5,100});
+    }
+
+    if(action==AddNode){
+        action = PlayerAction::Idle;
+    }
+    if(action==LinkNode&&linkState==END){
+        action = PlayerAction::Idle;
+    }
+    if(action==DelNode){
+        action = PlayerAction::Idle;
+    }
 }
