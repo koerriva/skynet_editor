@@ -6,32 +6,13 @@
 #include <spdlog/spdlog.h>
 //#include <lua.hpp>
 //#include <entt/entt.hpp>
-#include <sol.hpp>
-#include <cassert>
+//#include <sol.hpp>
+//#include <cassert>
 
 #include <mygame.h>
 #include <myinput.h>
 //using namespace glm;
 //using namespace spdlog;
-
-bool IsInside(float r,Vector2 center, Vector2 pos){
-    float x = pos.x - center.x;
-    float y = pos.y - center.y;
-    return r*r>x*x+y*y;
-}
-
-bool IsInsideInner(float r,Vector2 center, Vector2 pos){
-    float x = pos.x - center.x;
-    float y = pos.y - center.y;
-    return (r-5)*(r-5)>x*x+y*y;
-}
-
-bool IsInsideEdge(float r,Vector2 center, Vector2 pos){
-    float x = pos.x - center.x;
-    float y = pos.y - center.y;
-    float a = x*x+y*y;
-    return r*r>a&&a>=(r-5)*(r-5);
-}
 
 #ifdef _WIN32
 // N卡使用独显运行
@@ -47,21 +28,9 @@ int main() {
 #ifdef _WIN32
     system("chcp 65001");
 #endif
-//    sol::state lua;
-//    lua.open_libraries();
-//    lua.new_usertype<Vector2>("vec2","x",&Vector2::x,"y",&Vector2::y);
-//    lua.new_usertype<Color>("color","r",&Color::r,"g",&Color::g,"b",&Color::b,"a",&Color::a);
-//    lua.set_function("GetMousePos",GetMousePosition);
-//    lua.set_function("GetDeltaTime",GetFrameTime);
-//    lua.script_file("data/script/id.lua");
-//    lua.script_file("data/script/tiny.lua");
-//    lua.script_file("data/script/a.lua");
-//    long script_last_modify_time = GetFileModTime("data/script/a.lua");
-//    sol::function update = lua["update"];
-
-    MyGame myGame;
-    myGame.width = 1600;
-    myGame.height = 900;
+    MyGame myGame = {};
+    myGame.width = 1280;
+    myGame.height = 720;
     myGame.world_width = 4000;
 
     SetConfigFlags(FLAG_VSYNC_HINT | FLAG_MSAA_4X_HINT | FLAG_WINDOW_HIGHDPI);
@@ -340,7 +309,6 @@ int main() {
     UnloadTexture(neural_texture);
     myGame.Cleanup();
     MemFree(nn.neurals);
-
     CloseWindow();
     return 0;
 }
