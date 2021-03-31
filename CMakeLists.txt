@@ -4,7 +4,7 @@ project(skynet_editor)
 set(CMAKE_CXX_STANDARD 20)
 
 # 设置源文件目录
-set (PROJECT_SOURCE_DIR src src/include/myinput.h src/include/myscript.h src/game.cpp src/gui.cpp)
+set (PROJECT_SOURCE_DIR src src/include/myinput.h src/include/myscript.h src/game.cpp src/gui.cpp src/include/node.h)
 
 set(CMAKE_CXX_FLAGS "-Wno-c++11-narrowing")
 # 查找当前目录下的所有源文件
