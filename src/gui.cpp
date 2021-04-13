@@ -102,7 +102,7 @@ void MyGame::DrawDebugInfo(){
     DrawDebugText(TextFormat("相机焦点 %2.f,%2.f",camera.target.x,camera.target.y),{5,20});
     DrawDebugText(TextFormat("Zoom %2.f",camera.zoom),{5,40});
     DrawDebugText(TextFormat("坐标(世界) %2.f,%2.f",im.mouse.world_pos.x,im.mouse.world_pos.y),{5,60});
-    DrawDebugText(TextFormat("神经元数量 %d",nn.neural_count),{5,80});
+    DrawDebugText(TextFormat("神经元数量 %d",brain.neural_count),{5,80});
 
     if(action==PlayerAction::EditNode){
         Vector2 screen_pos = GetWorldToScreen2D(editNode->center,camera);

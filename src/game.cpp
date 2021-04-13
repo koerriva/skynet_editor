@@ -10,38 +10,7 @@ void MyGame::Render() {
     BeginMode2D(camera);
     DrawGrid();
 
-    //连接线渲染
-    if(action==PlayerAction::LinkNode){
-        auto* pIn = linkFrom;
-        DrawLineBezier(pIn->center,im.mouse.world_pos,1.0,GRAY);
-    }
 
-    //随机模拟
-    for (int i = 0; i < nn.input_count; ++i) {
-        Neural* p = nn.inputs[i];
-        p->Active();
-        for (int j = 0; j < p->out_count; ++j) {
-            Neural* to = p->out[j];
-            if(p->isActive)to->Active();
-            DrawLineBezier(p->center,to->center,2.0,p->isActive?WHITE:GRAY);
-        }
-    }
-
-    //主渲染
-    for (size_t i = 0; i < nn.neural_count; i++)
-    {
-        Neural* p = &nn.neurals[i];
-        DrawTextureV(neural_texture, Vector2SubtractValue(p->center, radius), p->color);
-    }
-
-    //gui
-    if(selected){
-        if(IsInsideEdge(selected->radius,selected->center,im.mouse.world_pos)){
-            DrawRing(selected->center,selected->radius-5,selected->radius,0,360,24,GRAY);
-        }else{
-            DrawRing(selected->center,selected->radius-2,selected->radius,0,360,24,GREEN);
-        }
-    }
 
     EndMode2D();
     DrawDebugInfo();
@@ -52,8 +21,6 @@ void MyGame::Render() {
 void MyGame::Cleanup() const {
     UnloadTexture(neural_texture);
     UnloadFont(font);
-
-    MemFree(nn.neurals);
 }
 
 //private
@@ -134,7 +101,6 @@ void MyGame::UpdatePlayerAction() {
             neural.center = {x,y};
             neural.isActive = false;
             neural.radius = radius;
-            nn.AddNeural(neural);
         }
     }
 
@@ -143,7 +109,6 @@ void MyGame::UpdatePlayerAction() {
             if(selected != nullptr && linkFrom!=selected){
                 TraceLog(LOG_INFO,"BEGIN");
                 linkTo = selected;
-                linkFrom->Link(linkTo);
                 linkState = NeuralLinkState::END;
             }
         }
@@ -156,7 +121,6 @@ void MyGame::UpdatePlayerAction() {
 
     if(action==PlayerAction::DelNode){
         if(selected!= nullptr){
-            nn.DelNeural(selected);
         }
         selected = nullptr;
     }

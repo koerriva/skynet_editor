@@ -5,6 +5,7 @@
 #include <glm/glm.hpp>
 #include <iostream>
 #include "myinput.h"
+#include "../core/Brain.h"
 
 #ifndef BEZIER_LINE_DIVISIONS
 #define BEZIER_LINE_DIVISIONS 24
@@ -26,92 +27,37 @@
 #define MAX_INPUT_SIZE 512
 #endif
 
-enum NeuralType{
-    NODE,INPUT,OUTPUT
-};
-struct Neural{
-    Vector2 center;
-    Color color;
-    Color colors[2] = {DARKGREEN,GREEN};
-    bool isActive;
-    float radius;
-    int weight;
-    bool isLearn;
-    NeuralType type = NODE;
+#ifndef MAX_OUTPUT_SIZE
+#define MAX_OUTPUT_SIZE 512
+#endif
 
-    Neural* in[MAX_NEURAL_SYNAPSE_SIZE];
-    int in_count;
-    Neural* out[MAX_NEURAL_SYNAPSE_SIZE];
-    int out_count;
+struct Synapse;
 
-    void Active(){
-        isActive = true;
-        color = colors[1];
-    }
+enum neural_type {NEURAL,INPUT,OUTPUT,Node};
 
-    void DeActive(){
-        isActive = false;
-        color = colors[0];
-    }
+typedef struct Neural{
+    Vector2 center = {};
+    Color color = {};
+    Color colors[8] = {DARKGREEN,GREEN,DARKPURPLE,PURPLE,DARKBLUE,BLUE,DARKBROWN,BROWN};
+    neural_type type = NEURAL;
+    bool isActive = false;
+    float radius = 32.f;
+    int weight = 0.f;
+    bool isLearn = false;
+    bool isDel = false;
 
-    void Link(Neural* neural){
-        if(out_count<MAX_NEURAL_SYNAPSE_SIZE){
-            out[out_count++] = neural;
-            neural->LinkIn(this);
-        }
-    }
+    Synapse* synapses[1024]={};
+    int synapse_count = 0;
+}Neural;
 
-private:
-    void LinkIn(Neural* neural){
-        if(in_count<MAX_NEURAL_SYNAPSE_SIZE){
-            in[in_count++] = neural;
-        }
-    }
-};
+typedef struct Synapse{
+    Vector2 center = {};
+    Neural* from = nullptr;
+    Neural* to = nullptr;
+}Synapse;
 
 enum NeuralLinkState{
     UNLINK,BEGIN,END
-};
-
-struct NeuralNetwork{
-    Neural* neurals = nullptr;
-    int neural_count = 0;
-
-    Neural* inputs[MAX_INPUT_SIZE]={};
-    int input_count = 0;
-
-    Neural* nodes[MAX_NEURAL_SIZE]={};
-    int nodes_count = 0;
-
-    Neural* output[MAX_INPUT_SIZE] = {};
-    int output_count = 0 ;
-
-    void Init(){
-        neural_count = 0;
-    }
-
-    void AddNode(Neural neural){
-        neurals[neural_count++] = neural;
-    }
-
-    void DelNeural(Neural* pNeural){
-        size_t idx = pNeural-neurals;
-        std::cout << "idx" << idx << std::endl;
-        neurals[idx] = Neural{};
-        if(idx==0){
-            neural_count = 0;
-        }else{
-            neural_count -=1;
-        }
-    }
-
-    void SetInput(Neural* neural){
-        neural->type=NeuralType::INPUT;
-        for (int i = 0; i < input_count; ++i) {
-            if(inputs[i]==neural)return;
-        }
-        inputs[input_count++]=neural;
-    }
 };
 
 enum PlayerAction{
@@ -171,7 +117,7 @@ struct MyGame{
 
     InputManager im={};
 
-    NeuralNetwork nn{};
+    Brain brain;
 
     void Init(){
         //基本汉字 4E00-9FA5
@@ -195,8 +141,7 @@ struct MyGame{
         icons = LoadTexture("data/icons.png");
         neural_texture = LoadTexture("data/neural.png");
 
-        nn.Init();
-        nn.neurals = (Neural*)MemAlloc(sizeof(Neural)*MAX_NEURAL_SIZE);
+        brain.init();
     }
 
     void Input(){
@@ -210,21 +155,7 @@ struct MyGame{
     }
 
     void Update(){
-        for (size_t i = 0; i < nn.neural_count; i++)
-        {
-            nn.neurals[i].DeActive();
-
-            Neural* pN = &nn.neurals[i];
-            if(IsInside(pN->radius,pN->center,im.mouse.world_pos)){
-                cursorState = CursorState::InNode;
-                selected = pN;
-                break;
-            }
-            cursorState = OnGround;
-            selected = nullptr;
-        }
-
-        UpdatePlayerAction();
+        brain.update();
     }
 
     void Render();

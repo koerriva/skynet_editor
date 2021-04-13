@@ -4,7 +4,7 @@ project(skynet_editor)
 set(CMAKE_CXX_STANDARD 20)
 
 # 设置源文件目录
-set (PROJECT_SOURCE_DIR src src/include/myinput.h src/include/myscript.h src/game.cpp src/gui.cpp)
+set (PROJECT_SOURCE_DIR src src/include/myinput.h src/include/myscript.h src/game.cpp src/gui.cpp src/core/Cell.cpp src/core/Cell.h src/core/VisionCell.cpp src/core/VisionCell.h src/core/MuscleCell.cpp src/core/MuscleCell.h src/core/NeuralCell.cpp src/core/NeuralCell.h src/core/Brain.cpp src/core/Brain.h src/core/CellSignal.cpp src/core/CellSignal.h)
 
 set(CMAKE_CXX_FLAGS "-Wno-c++11-narrowing")
 # 查找当前目录下的所有源文件
@@ -20,7 +20,7 @@ include_directories(lib/entt/src)
 
 file(COPY data DESTINATION .)
 
-add_executable(skynet_editor main.cpp ${PROJECT_SOURCE_DIR})
+add_executable(skynet_editor src/main.cpp ${PROJECT_SOURCE_DIR})
 
 find_package(spdlog REQUIRED)
 
