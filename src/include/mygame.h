@@ -23,6 +23,10 @@
 #define MAX_NEURAL_LINK_SIZE MAX_NEURAL_SIZE * MAX_NEURAL_SYNAPSE_SIZE
 #endif
 
+#include "pthread.h"
+#include "stdatomic.h"
+#include "time.h"
+
 #ifndef MAX_INPUT_SIZE
 #define MAX_INPUT_SIZE 512
 #endif
@@ -89,6 +93,12 @@ static void getBezierPoints2D(Vector2 startPos,Vector2 endPos,Vector2* points){
         previous = current;
     }
 }
+
+enum GameState{LOAD_DATA,READY,RUNNING,PAUSE,STOP};
+
+struct DataWorkerParams{
+    void* obj_ptr;
+};
 
 struct MyGame{
     int width = 1280;
