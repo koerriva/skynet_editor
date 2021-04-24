@@ -4,23 +4,30 @@ project(skynet_editor)
 set(CMAKE_CXX_STANDARD 20)
 
 # 设置源文件目录
-set (PROJECT_SOURCE_DIR src src/include/myinput.h src/include/myscript.h src/game.cpp src/gui.cpp src/core/Cell.cpp src/core/Cell.h src/core/VisionCell.cpp src/core/VisionCell.h src/core/MuscleCell.cpp src/core/MuscleCell.h src/core/NeuralCell.cpp src/core/NeuralCell.h src/core/Brain.cpp src/core/Brain.h src/core/CellSignal.cpp src/core/CellSignal.h)
+set (PROJECT_SOURCE_DIR src)
 
 set(CMAKE_CXX_FLAGS "-Wno-c++11-narrowing")
 # 查找当前目录下的所有源文件
 # 并将名称保存到 DIR_SRCS 变量
 aux_source_directory(src DIR_SRCS)
+aux_source_directory(src/engine DIR_SRCS)
+aux_source_directory(src/core DIR_SRCS)
+aux_source_directory(src/brain DIR_SRCS)
 
 add_subdirectory(lib)
+
+include_directories(src)
+include_directories(src/engine)
+include_directories(src/core)
+include_directories(src/brain)
 include_directories(lib/raylib/src)
 include_directories(lib/raylib/src/raygui/src)
 include_directories(lib/lua/include)
-include_directories(src/include)
 include_directories(lib/entt/src)
 
 file(COPY data DESTINATION .)
 
-add_executable(skynet_editor src/main.cpp ${PROJECT_SOURCE_DIR})
+add_executable(skynet_editor src/main.cpp ${DIR_SRCS})
 
 find_package(spdlog REQUIRED)
 

@@ -5,7 +5,7 @@
 #include <glm/glm.hpp>
 #include <iostream>
 #include "myinput.h"
-#include "../core/Brain.h"
+#include "brain/NodeEditor.h"
 
 #ifndef BEZIER_LINE_DIVISIONS
 #define BEZIER_LINE_DIVISIONS 24
@@ -24,8 +24,7 @@
 #endif
 
 #include "pthread.h"
-#include "stdatomic.h"
-#include "time.h"
+#include <ctime>
 
 #ifndef MAX_INPUT_SIZE
 #define MAX_INPUT_SIZE 512
@@ -96,10 +95,6 @@ static void getBezierPoints2D(Vector2 startPos,Vector2 endPos,Vector2* points){
 
 enum GameState{LOAD_DATA,READY,RUNNING,PAUSE,STOP};
 
-struct DataWorkerParams{
-    void* obj_ptr;
-};
-
 struct MyGame{
     int width = 1280;
     int height=720;
@@ -110,6 +105,7 @@ struct MyGame{
     Texture icons = {};
     Camera2D camera = {};
     Texture2D neural_texture = {};
+    GameState state;
 
     CursorState cursorState = CursorState::OnGround;
 
@@ -127,7 +123,7 @@ struct MyGame{
 
     InputManager im={};
 
-    Brain brain;
+    GamePlay::NodeEditor brain;
 
     void Init(){
         //基本汉字 4E00-9FA5
@@ -151,7 +147,7 @@ struct MyGame{
         icons = LoadTexture("data/icons.png");
         neural_texture = LoadTexture("data/neural.png");
 
-        brain.init();
+        brain.Load(camera);
     }
 
     void Input(){
@@ -165,7 +161,7 @@ struct MyGame{
     }
 
     void Update(){
-        brain.update();
+        brain.Show();
     }
 
     void Render();

@@ -1,8 +1,8 @@
 //
 // Created by 50409 on 2021/2/8.
 //
-#include <mycolor.h>
-#include "mygame.h"
+#include "core/mycolor.h"
+#include "core/mygame.h"
 
 void MyGame::Render() {
     BeginDrawing();
