@@ -2,7 +2,7 @@
 #define MYGAME_H
 #include <easings.h>
 #include <raylib.h>
-#include <glm/glm.hpp>
+//#include <glm/glm.hpp>
 #include <iostream>
 #include "myinput.h"
 #include "brain/NodeEditor.h"
@@ -23,7 +23,7 @@
 #define MAX_NEURAL_LINK_SIZE MAX_NEURAL_SIZE * MAX_NEURAL_SYNAPSE_SIZE
 #endif
 
-#include "pthread.h"
+//#include "pthread.h"
 #include <ctime>
 
 #ifndef MAX_INPUT_SIZE
@@ -72,7 +72,7 @@ enum CursorState{
     OnGround,InNode,InNodeInner,InNodeEdge
 };
 
-using namespace glm;
+//using namespace glm;
 
 static void getBezierPoints2D(Vector2 startPos,Vector2 endPos,Vector2* points){
     Vector2 previous = startPos;

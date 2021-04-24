@@ -14,18 +14,19 @@ void MyGame::OpenNeuralMenu(Neural *neural,Vector2 screen_pos) {
     bool weightEditMode = false;
 
     GuiSetFont(font);
-    bool windows = GuiWindowBox((Rectangle){ start_x, start_y, w, h },TextFormat("神经元 0x%X",neural));
-    editType = GuiToggleGroup((Rectangle){ start_x+5, start_y+20+7, 62, 20 }, "行为;外观", editType);
+    bool windows = GuiWindowBox(Rectangle{ start_x, start_y, w, h },TextFormat("神经元 0x%X",neural));
+    editType = GuiToggleGroup(Rectangle{ start_x+5, start_y+20+7, 62, 20 }, "行为;外观", editType);
     if(editType==0){
-        GuiLabel((Rectangle){ start_x+5, start_y+20+43, 53, 25 }, "权重");
-        if (GuiSpinner((Rectangle){ start_x+89, start_y+20+43, 104, 25 }, nullptr, &neural->weight, 0, 100, weightEditMode)){
+        GuiLabel(Rectangle{ start_x+5, start_y+20+43, 53, 25 }, "权重");
+        if (GuiSpinner(Rectangle{ start_x+89, start_y+20+43, 104, 25 }, nullptr, &neural->weight, 0, 100, weightEditMode)){
             weightEditMode = !weightEditMode;
         }
         neural->isLearn = GuiCheckBox({start_x+5,start_y+20+43+45,15,15},"学习",neural->isLearn);
     }
 
     if(editType==1){
-        auto r = GuiDropdownBox({start_x+5,start_y+20+43,128,25},"未激活颜色;激活颜色",&editActiveColorType, editActiveColorMode);
+        Rectangle bounds = {start_x+5,start_y+20+43,128,25};
+        bool r = GuiDropdownBox(bounds,"Idle;Active",&editActiveColorType, editActiveColorMode);
         if(r){
             editActiveColorMode = !editActiveColorMode;
         }
@@ -48,15 +49,15 @@ void MyGame::DrawToolBar() const {
     int id  = 131;
     int id_x = id%16;
     int id_y = id/16;
-    GuiImageButtonEx({width/2,0,32,32},"",icons,{1+18*id_x,1+18*id_y,16,16});
+    GuiImageButtonEx({static_cast<float>(width/2),0,32,32},"",icons,{static_cast<float>(1+18*id_x),static_cast<float>(1+18*id_y),16,16});
     id  = 132;
     id_x = id%16;
     id_y = id/16;
-    GuiImageButtonEx({width/2+32,0,32,32},"",icons,{1+18*id_x,1+18*id_y,16,16});
+    GuiImageButtonEx({static_cast<float>(width/2+32),0,32,32},"",icons,{static_cast<float>(1+18*id_x),static_cast<float>(1+18*id_y),16,16});
     id  = 133;
     id_x = id%16;
     id_y = id/16;
-    GuiImageButtonEx({width/2+32+32,0,32,32},"",icons,{1+18*id_x,1+18*id_y,16,16});
+    GuiImageButtonEx({static_cast<float>(width/2+32+32),0,32,32},"",icons,{static_cast<float>(1+18*id_x),static_cast<float>(1+18*id_y),16,16});
 }
 
 void MyGame::CloseNeuralMenu(Neural *neural) {

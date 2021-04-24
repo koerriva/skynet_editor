@@ -1,12 +1,12 @@
 cmake_minimum_required(VERSION 3.0)
 project(skynet_editor)
 
-set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD 17)
 
 # 设置源文件目录
 set (PROJECT_SOURCE_DIR src)
 
-set(CMAKE_CXX_FLAGS "-Wno-c++11-narrowing")
+#set(CMAKE_CXX_FLAGS "-Wno-c++11-narrowing")
 # 查找当前目录下的所有源文件
 # 并将名称保存到 DIR_SRCS 变量
 aux_source_directory(src DIR_SRCS)
@@ -29,6 +29,9 @@ file(COPY data DESTINATION .)
 
 add_executable(skynet_editor src/main.cpp ${DIR_SRCS})
 
-find_package(spdlog REQUIRED)
+#find_package(spdlog REQUIRED)
 
-target_link_libraries(skynet_editor PRIVATE spdlog::spdlog raylib lua_static)
+add_compile_options("$<$<C_COMPILER_ID:MSVC>:/utf-8>")
+add_compile_options("$<$<CXX_COMPILER_ID:MSVC>:/utf-8>")
+
+target_link_libraries(skynet_editor raylib lua_static)
