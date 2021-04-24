@@ -1,4 +1,4 @@
-//
+﻿//
 // Created by 50409 on 2021/2/8.
 //
 #define RAYGUI_IMPLEMENTATION
@@ -26,7 +26,7 @@ void MyGame::OpenNeuralMenu(Neural *neural,Vector2 screen_pos) {
 
     if(editType==1){
         Rectangle bounds = {start_x+5,start_y+20+43,128,25};
-        bool r = GuiDropdownBox(bounds,"Idle;Active",&editActiveColorType, editActiveColorMode);
+        bool r = GuiDropdownBox(bounds,"未激活;激活",&editActiveColorType, editActiveColorMode);
         if(r){
             editActiveColorMode = !editActiveColorMode;
         }
@@ -42,7 +42,7 @@ void MyGame::OpenNeuralMenu(Neural *neural,Vector2 screen_pos) {
 }
 
 void MyGame::DrawDebugText(const char* text,Vector2 screen_pos) const{
-    DrawTextEx(font,text,screen_pos,font.baseSize,1.0,GREEN);
+    DrawTextEx(font,text,screen_pos,static_cast<float>(font.baseSize),1.0,GREEN);
 }
 
 void MyGame::DrawToolBar() const {

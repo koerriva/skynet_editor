@@ -31,7 +31,4 @@ add_executable(skynet_editor src/main.cpp ${DIR_SRCS})
 
 #find_package(spdlog REQUIRED)
 
-add_compile_options("$<$<C_COMPILER_ID:MSVC>:/utf-8>")
-add_compile_options("$<$<CXX_COMPILER_ID:MSVC>:/utf-8>")
-
 target_link_libraries(skynet_editor raylib lua_static)

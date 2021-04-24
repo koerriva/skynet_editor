@@ -13,19 +13,19 @@
 namespace GamePlay{
     //logic
     enum class NodeType{
-        Input,Synapse,Neural,Output,Value
+        Input,Pin,Synapse,Neural,Output,Node
     };
     struct Node{
         NodeType type;
         int value = 0;
         int weight = 100;
         bool isActive = false;
-        Node():type(NodeType::Value){}
+        Node():type(NodeType::Node){}
         explicit Node(NodeType t):type(t){}
     };
     struct NodeLink{
-        unsigned int form;
-        unsigned int to;
+        int form;
+        int to;
     };
 
     //ui
@@ -33,7 +33,9 @@ namespace GamePlay{
     {
         input,
         neural,
+        pin,
         synapse,
+        node,
         output
     };
     struct UiNode
@@ -48,8 +50,8 @@ namespace GamePlay{
     };
     struct UiLink{
         int id;
-        unsigned int form;
-        unsigned int to;
+        int form;
+        int to;
     };
 
     class NodeEditor {
@@ -62,13 +64,15 @@ namespace GamePlay{
         int GetNodeCount() { return m_UiNodes.size();}
     private:
         void AddNode();
-        void LinkNode();
+        void LinkNode(int form,int to);
         void DelNode();
 
         void DrawGrid();
         void DrawNode(const UiNode& uiNode);
+        void DrawLink(const UiLink& uiLink);
     private:
-        int selected=-1;
+        unsigned int selected=0;
+        unsigned int hovering=0;
 
         IdMap<UiNode> m_UiNodes;
         IdMap<Node> m_Nodes;
@@ -80,6 +84,7 @@ namespace GamePlay{
         int m_WorldHeight = 4000;
         Camera2D m_Camera;
         Vector2  m_MousePosition;
+        bool m_Linking = false;
     };
 
     static bool IsInside(float r,Vector2 center, Vector2 pos){
