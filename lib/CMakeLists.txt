@@ -1,3 +1,4 @@
+add_subdirectory(qb)
 add_subdirectory(raylib)
 
 project(lua LANGUAGES C VERSION 5.4.2)

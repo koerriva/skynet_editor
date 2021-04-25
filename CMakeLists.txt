@@ -24,6 +24,7 @@ include_directories(lib/raylib/src)
 include_directories(lib/raylib/src/raygui/src)
 include_directories(lib/lua/include)
 include_directories(lib/entt/src)
+include_directories(lib/qb/include)
 
 file(COPY data DESTINATION .)
 
@@ -31,4 +32,4 @@ add_executable(skynet_editor src/main.cpp ${DIR_SRCS})
 
 #find_package(spdlog REQUIRED)
 
-target_link_libraries(skynet_editor raylib lua_static)
+target_link_libraries(skynet_editor raylib lua_static qb-core)
