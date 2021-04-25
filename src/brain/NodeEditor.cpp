@@ -18,7 +18,6 @@ namespace GamePlay{
             TraceLog(LOG_INFO,"NodeEditor::AddNode");
             AddNode();
         }
-
         if(IsKeyPressed(KEY_X)){
             TraceLog(LOG_INFO,"NodeEditor::DelNode");
             DelNode();
@@ -28,22 +27,49 @@ namespace GamePlay{
             auto node = m_Nodes.find(uiNode.id);
             if(IsInside(uiNode.radius,uiNode.position,m_MousePosition)){
                 if(uiNode.type==UiNodeType::pin){
-                    node->isActive = true;
+                    m_UiNodes.find(uiNode.id)->CursorIn();
                     hovering = uiNode.id;
                 }
-            } else{
-                if(uiNode.type==UiNodeType::pin){
-                    node->isActive = false;
-//                    hovering = 0;
+                if(uiNode.type==UiNodeType::neural){
+                    if(IsInsideInner(uiNode.radius,uiNode.position,8,m_MousePosition)){
+                        m_UiNodes.find(uiNode.id)->CursorIn();
+                    }
                 }
+            } else{
+                m_UiNodes.find(uiNode.id)->CursorOut();
             }
 
+            //select
             if(IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
-                if(uiNode.type==UiNodeType::pin && node->isActive){
+                if(uiNode.type==UiNodeType::pin&&uiNode.cursorIn){
                     TraceLog(LOG_INFO, "Selected Synapse");
                     selected = uiNode.id;
                 }
+                if(uiNode.type==UiNodeType::neural&&uiNode.cursorIn){
+                    TraceLog(LOG_INFO, "Selected Neural");
+                    selected = uiNode.id;
+                }
             }
+        }
+
+        //drag
+        if(IsMouseButtonDown(MOUSE_LEFT_BUTTON)){
+            if(selected>0){
+                auto from = m_UiNodes.find(selected);
+                if(from->type==UiNodeType::neural&&from->cursorIn){
+                    Vector2 offset = Vector2Subtract(from->position,m_MousePosition);
+                    from->position = Vector2Subtract(from->position,offset);
+
+                    for (int i : from->children) {
+                        Vector2 pos = m_UiNodes.find(i)->position;
+                        m_UiNodes.find(i)->position = Vector2Subtract(pos,offset);
+                    }
+                    m_Dragging = true;
+                }
+            }
+        }
+        if(IsMouseButtonUp(MOUSE_LEFT_BUTTON)){
+            m_Dragging = false;
         }
     }
 
@@ -70,7 +96,7 @@ namespace GamePlay{
             if(selected>0&&hovering>0&&hovering!=selected){
                 auto from = m_UiNodes.find(selected);
                 auto to = m_UiNodes.find(hovering);
-                if(m_Nodes.find(to->id)->isActive){
+                if(from->type==UiNodeType::pin&&to->type==UiNodeType::pin&&to->cursorIn&&from->parent!=to->parent){
                     from->type = UiNodeType::node;
                     to->type = UiNodeType::synapse;
                     LinkNode(from->id,to->id);
@@ -91,7 +117,6 @@ namespace GamePlay{
         UiNode uiNode(UiNodeType::neural,m_UiNodeUniqueId++);
         uiNode.radius = 32;
         uiNode.position = position;
-        m_UiNodes.insert(uiNode.id,uiNode);
 
         Node neural(NodeType::Neural);
         m_Nodes.insert(uiNode.id,neural);
@@ -103,11 +128,16 @@ namespace GamePlay{
             pin.radius = 5;
             pin.position.x = position.x+uiNode.radius*cos(2*PI*(i-1)/n);
             pin.position.y = position.y+uiNode.radius*sin(2*PI*(i-1)/n);
+            pin.parent = uiNode.id;
             m_UiNodes.insert(pin.id,pin);
 
             Node pin_node(NodeType::Pin);
             m_Nodes.insert(pin.id,pin_node);
+
+            uiNode.children[i-1] = pin.id;
         }
+
+        m_UiNodes.insert(uiNode.id,uiNode);
     }
 
     void NodeEditor::LinkNode(int from,int to) {
@@ -160,16 +190,16 @@ namespace GamePlay{
         auto node = m_Nodes.find(uiNode.id);
 
         if(uiNode.type==UiNodeType::neural){
-            Color color = node->isActive?GREEN:DARKGREEN;
+            Color color = uiNode.cursorIn?GREEN:DARKGREEN;
             DrawTextureEx(m_NeuralTexture,Vector2SubtractValue(uiNode.position,uiNode.radius),0,scale,color);
         }
         if(uiNode.type==UiNodeType::pin){
-            Color color = node->isActive?BLUE:DARKBLUE;
+            Color color = uiNode.cursorIn?BLUE:DARKBLUE;
             DrawCircleV(uiNode.position,uiNode.radius,color);
 //            DrawTextureEx(m_NeuralTexture,uiNode.position,0,scale,color);
         }
         if(uiNode.type==UiNodeType::synapse){
-            Color color = node->isActive?GREEN:DARKGREEN;
+            Color color = uiNode.cursorIn?GREEN:DARKGREEN;
             DrawCircleV(uiNode.position,uiNode.radius,color);
         }
         if(uiNode.type==UiNodeType::node){

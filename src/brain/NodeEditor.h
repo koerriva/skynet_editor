@@ -44,9 +44,17 @@ namespace GamePlay{
         int id;
         Vector2 position;
         float radius;
+        bool cursorIn = false;
+        bool cursorOut = false;
+
+        int parent;
+        int children[8] = {};
 
         UiNode(){}
         UiNode(UiNodeType t,int id):type(t),id(id){}
+
+        void CursorIn(){ cursorIn = true;cursorOut= false;}
+        void CursorOut() {cursorIn = false;cursorOut = true;}
     };
     struct UiLink{
         int id;
@@ -84,13 +92,28 @@ namespace GamePlay{
         int m_WorldHeight = 4000;
         Camera2D m_Camera;
         Vector2  m_MousePosition;
+
         bool m_Linking = false;
+        bool m_Dragging = false;
     };
 
     static bool IsInside(float r,Vector2 center, Vector2 pos){
         float x = pos.x - center.x;
         float y = pos.y - center.y;
         return r*r>x*x+y*y;
+    }
+
+    static bool IsInsideInner(float r0,Vector2 center, float r1,Vector2 pos){
+        float x = pos.x - center.x;
+        float y = pos.y - center.y;
+        return (r0-r1)*(r0-r1)>x*x+y*y;
+    }
+
+    static bool IsInsideEdge(float r,Vector2 center, Vector2 pos){
+        float x = pos.x - center.x;
+        float y = pos.y - center.y;
+        float a = x*x+y*y;
+        return r*r>a&&a>=(r-5)*(r-5);
     }
 }
 
