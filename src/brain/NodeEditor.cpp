@@ -198,14 +198,14 @@ namespace GamePlay{
         float start_y = screen_pos.y;
         float w = 200;
         float h = 260;
-        bool weightEditMode = false;
+        bool thresholdEditMode = false;
 
         bool windows = GuiWindowBox(Rectangle{ start_x, start_y, w, h },TextFormat("神经元 0x%X",uiNode));
         uiNode->editType = GuiToggleGroup(Rectangle{ start_x+5, start_y+20+7, 62, 20 }, "行为;外观", uiNode->editType);
         if(uiNode->editType==0){
-            GuiLabel(Rectangle{ start_x+5, start_y+20+43, 53, 25 }, "权重");
-            if (GuiSpinner(Rectangle{ start_x+89, start_y+20+43, 104, 25 }, nullptr, &neural->weight, 0, 100, weightEditMode)){
-                weightEditMode = !weightEditMode;
+            GuiLabel(Rectangle{ start_x+5, start_y+20+43, 53, 25 }, "阈值");
+            if (GuiSpinner(Rectangle{ start_x+89, start_y+20+43, 104, 25 }, nullptr, &neural->threshold, 0, 100, thresholdEditMode)){
+                thresholdEditMode = !thresholdEditMode;
             }
             neural->isLearn = GuiCheckBox({start_x+5,start_y+20+43+45,15,15},"学习",neural->isLearn);
         }
@@ -297,6 +297,7 @@ namespace GamePlay{
                     m_NodeLinks.insert(nodeLink.id,nodeLink);
                     from->type = UiNodeType::node;
                     to->type = UiNodeType::synapse;
+                    m_LinkMap[from->parent].push_back(to->parent);
                 }
             }
         }
@@ -363,10 +364,12 @@ namespace GamePlay{
         }
         if(uiNode.type==UiNodeType::neural){
             Color color = uiNode.cursorIn?GREEN:DARKGREEN;
+            color = node->isActive?GREEN:color;
             DrawTextureEx(m_NeuralTexture,Vector2SubtractValue(uiNode.position,uiNode.radius),0,scale,color);
         }
         if(uiNode.type==UiNodeType::output){
             Color color = uiNode.cursorIn?YELLOW:Color{126, 124, 0, 255};
+            color = node->isActive?YELLOW:color;
             DrawTextureEx(m_NeuralTexture,Vector2SubtractValue(uiNode.position,uiNode.radius),0,scale,color);
         }
         if(uiNode.type==UiNodeType::pin){

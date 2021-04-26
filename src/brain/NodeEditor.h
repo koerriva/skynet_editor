@@ -10,75 +10,9 @@
 #include "unordered_map"
 #include "graph.h"
 #include "raylib.h"
+#include "node.h"
 
 namespace GamePlay{
-    //logic
-    enum class NodeType{
-        Input,Pin,Synapse,Neural,Output,Node
-    };
-    struct Node{
-        NodeType type;
-        int value = 0;
-        int weight = 100;
-        bool isLearn = false;
-        bool isActive = false;
-        Node():type(NodeType::Node){}
-        explicit Node(NodeType t):type(t){}
-    };
-    struct NodeLink{
-        int id;
-        int form;
-        int to;
-    };
-
-    //ui
-    enum class UiNodeType
-    {
-        input,
-        neural,
-        pin,
-        synapse,
-        node,
-        output
-    };
-    struct UiNode
-    {
-        UiNodeType type;
-        int id;
-        Vector2 position;
-        float radius;
-        bool cursorIn = false;
-        bool cursorOut = false;
-        //editor
-        int editType = 0;
-        int editColorType = 0;
-        bool editColorMode = false;
-        Color colors[2] = {DARKGREEN,GREEN};
-
-        int parent;
-        int children[8] = {};
-
-        UiNode(){}
-        UiNode(UiNodeType t,int id):type(t),id(id){}
-
-        void CursorIn(){ cursorIn = true;cursorOut= false;}
-        void CursorOut() {cursorIn = false;cursorOut = true;}
-    };
-    struct UiLink{
-        int id;
-        int form;
-        int to;
-    };
-    enum class MenuType{
-        AddNode,Input,Neural,Output
-    };
-    struct Menu{
-        MenuType type;
-        Vector2 position;
-        Rectangle rec;
-        int uiNode;
-    };
-
     class NodeEditor {
     public:
         void Load(Camera2D camera,Font font);
@@ -89,10 +23,54 @@ namespace GamePlay{
 
         void Run(){
             TraceLog(LOG_INFO,"running...");
-            for(auto node:inputs){
+            m_SignalTick++;
+            for(int node:inputs){
                 auto in = m_Nodes.find(node);
-                TraceLog(LOG_INFO,TextFormat("%d",in->isActive));
                 in->isActive = !in->isActive;
+                in->value = GetRandomValue(0,100);
+                in->t = m_SignalTick.load();
+                if(in->isActive){
+                    for (int toNode:m_LinkMap[node]) {
+                        m_Signals[toNode].push_back(NodeSignal{node,in->t,in->value});
+                    }
+                }
+            }
+            for (int node:neurals) {
+                auto in = m_Nodes.find(node);
+                in->value = 0;
+                in->t = m_SignalTick.load();
+                auto iter = m_Signals[node].begin();
+                while (iter!=m_Signals[node].end()){
+                    if(iter->t==m_SignalTick){
+                        in->value += iter->value;
+                        iter=m_Signals[node].erase(iter);
+                    }
+                }
+                if(in->value>=in->threshold){
+                    in->isActive = true;
+                }else{
+                    in->isActive = false;
+                }
+                if(in->isActive){
+                    for (int toNode:m_LinkMap[node]) {
+                        m_Signals[toNode].push_back(NodeSignal{node,m_SignalTick.load(),in->value});
+                        //if toNode's type is Neural,t+1.
+                    }
+                }
+            }
+            for (int node:outputs) {
+                auto in = m_Nodes.find(node);
+                in->value = 0;
+                in->t = m_SignalTick.load();
+                in->isActive = false;
+                auto iter = m_Signals[node].begin();
+                while (iter!=m_Signals[node].end()){
+                    if(iter->t==m_SignalTick){
+                        in->value += iter->value;
+                        iter=m_Signals[node].erase(iter);
+                        in->isActive = true;
+                    }
+                }
             }
             std::this_thread::sleep_for(std::chrono::milliseconds(1000));
         }
@@ -153,31 +131,10 @@ namespace GamePlay{
         std::vector<int> neurals;
         std::vector<int> outputs;
         std::unordered_map<int,std::vector<int>> m_LinkMap;
+
+        std::unordered_map<int,std::vector<NodeSignal>> m_Signals;
+        std::atomic_int m_SignalTick;
     };
-
-    static bool IsInside(float r,Vector2 center, Vector2 pos){
-        float x = pos.x - center.x;
-        float y = pos.y - center.y;
-        return r*r>x*x+y*y;
-    }
-
-    static bool IsInsideInner(float r0,Vector2 center, float r1,Vector2 pos){
-        float x = pos.x - center.x;
-        float y = pos.y - center.y;
-        return (r0-r1)*(r0-r1)>x*x+y*y;
-    }
-
-    static bool IsInsideEdge(float r,Vector2 center, Vector2 pos){
-        float x = pos.x - center.x;
-        float y = pos.y - center.y;
-        float a = x*x+y*y;
-        return r*r>a&&a>=(r-5)*(r-5);
-    }
-
-    static bool IsInRect(Rectangle rec,Vector2 pos){
-        return pos.x>rec.x&&pos.x<rec.x+rec.width
-        && pos.y>rec.y&&pos.y<rec.y+rec.height;
-    }
 }
 
 
