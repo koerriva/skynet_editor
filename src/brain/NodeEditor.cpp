@@ -155,8 +155,8 @@ namespace GamePlay{
             ShowNodeMenu(menu);
         }
 
-        DrawDebugText(TextFormat("神经元数量 %d",m_UiNodes.size()),{5,80});
-        DrawDebugText(TextFormat("连接数 %d",m_UiLinks.size()),{5,105});
+        DrawDebugText(TextFormat("神经元数\t%d",m_NeuralNum),{5,80});
+        DrawDebugText(TextFormat("连接数\t%d",m_UiLinks.size()),{5,105});
     }
 
     void NodeEditor::ShowAddMenu(Menu &menu) {
@@ -235,9 +235,18 @@ namespace GamePlay{
         NodeType nodeType;
 
         switch (uiNodeType) {
-            case UiNodeType::neural:nodeType=NodeType::Neural;break;
-            case UiNodeType::input:nodeType=NodeType::Input;break;
-            case UiNodeType::output:nodeType=NodeType::Output;break;
+            case UiNodeType::neural:{
+                m_NeuralNum++;
+                nodeType=NodeType::Neural;break;
+            }
+            case UiNodeType::input:{
+                m_InputNum++;
+                nodeType=NodeType::Input;break;
+            }
+            case UiNodeType::output:{
+                m_OutputNum++;
+                nodeType=NodeType::Output;break;
+            }
             default:return;
         }
         Node node(nodeType);
@@ -291,7 +300,15 @@ namespace GamePlay{
             m_UiNodes.clear();
             m_Nodes.clear();
             m_UiLinks.clear();
+            m_NodeLinks.clear();
         }
+        selected = 0;
+        m_Hovering = 0;
+        selected_point = {0};
+
+        m_InputNum = 0;
+        m_NeuralNum = 0;
+        m_OutputNum = 0;
     }
 
     void NodeEditor::DrawGrid() {

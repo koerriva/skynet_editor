@@ -121,7 +121,6 @@ namespace GamePlay{
         std::stack<Menu> m_Menus;
         int m_UiNodeUniqueId=1;
 
-
         Texture2D m_NeuralTexture;
         int m_WorldWidth = 4000;
         int m_WorldHeight = 4000;
@@ -132,6 +131,10 @@ namespace GamePlay{
         bool m_Linking = false;
         bool m_Dragging = false;
         bool m_Editing = false;
+
+        int m_InputNum = 0;
+        int m_NeuralNum = 0;
+        int m_OutputNum = 0;
     };
 
     static bool IsInside(float r,Vector2 center, Vector2 pos){
