@@ -1,4 +1,3 @@
-add_subdirectory(qb)
 add_subdirectory(raylib)
 
 project(lua LANGUAGES C VERSION 5.4.2)
@@ -7,7 +6,7 @@ option(LUA_SUPPORT_DL "Support dynamic loading of compiled modules" OFF)
 
 if(${PROJECT_NAME} STREQUAL ${CMAKE_PROJECT_NAME})
     set(TOP_LEVEL TRUE)
-else()
+else()    
     set(TOP_LEVEL FALSE)
 endif()
 
@@ -20,3 +19,5 @@ else()
 endif()
 
 add_subdirectory(lua)
+
+add_subdirectory(qb)

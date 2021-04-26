@@ -6,7 +6,6 @@
 #define SKYNET_EDITOR_APPLICATION_H
 
 #include "raylib.h"
-
 #include "LayerStack.h"
 
 namespace Engine{
