@@ -1,4 +1,4 @@
-//
+﻿//
 // Created by 50409 on 2021/4/24.
 //
 
@@ -6,48 +6,94 @@
 #include "NodeEditor.h"
 #include "graph.h"
 
+#define RAYGUI_IMPLEMENTATION
+#define RAYGUI_SUPPORT_ICONS
+#include <raygui.h>
+#include <ricons.h>
+
 namespace GamePlay{
 
-    void NodeEditor::Load(Camera2D camera) {
+    void NodeEditor::Load(Camera2D camera,Font font) {
         m_NeuralTexture = LoadTexture("data/neural.png");
         m_Camera = camera;
+        m_UiFont = font;
+
+        GuiSetFont(m_UiFont);
     }
+    void NodeEditor::Save() {}
 
     void NodeEditor::Update() {
-        if(IsKeyPressed(KEY_A)){
-            TraceLog(LOG_INFO,"NodeEditor::AddNode");
-            AddNode();
-        }
         if(IsKeyPressed(KEY_X)){
             TraceLog(LOG_INFO,"NodeEditor::DelNode");
             DelNode();
+            ClearMenu();
+        }
+        if(IsKeyPressed(KEY_A)){
+            TraceLog(LOG_INFO,"NodeEditor::PopMenu");
+            ClearMenu();
+            Vector2 pos = GetWorldToScreen2D(m_MousePosition,m_Camera);
+            Menu menu{MenuType::AddNode,pos,{pos.x,pos.y,100,80},0};
+            m_Menus.push(menu);
+            m_Editing = true;
+        }
+        if(selected>0&&IsMouseButtonPressed(MOUSE_RIGHT_BUTTON)){
+            auto uiNode = m_UiNodes.find(selected);
+            if(uiNode->cursorOut){
+                selected = 0;
+                selected_point = {0};
+                return;
+            }
+            TraceLog(LOG_INFO,"NodeEditor::NodeMenu");
+            Vector2 pos = GetWorldToScreen2D(m_MousePosition,m_Camera);
+            Menu menu{MenuType::Neural,pos,{pos.x,pos.y,200,260},selected};
+            m_Menus.push(menu);
+            m_Editing = true;
         }
 
+        if(m_Editing){
+            auto& menu = m_Menus.top();
+            Vector2 pos = GetWorldToScreen2D(m_MousePosition,m_Camera);
+            if(!IsInRect(menu.rec,pos)&&IsMouseButtonPressed(MOUSE_LEFT_BUTTON)){
+                ClearMenu();
+                m_Editing = false;
+            }
+        }
+        if(m_Editing)return;
         for(const auto& uiNode:m_UiNodes){
             auto node = m_Nodes.find(uiNode.id);
             if(IsInside(uiNode.radius,uiNode.position,m_MousePosition)){
                 if(uiNode.type==UiNodeType::pin){
                     m_UiNodes.find(uiNode.id)->CursorIn();
-                    hovering = uiNode.id;
+                    m_Hovering = uiNode.id;
+                    //select
+                    if(IsMouseButtonPressed(MOUSE_LEFT_BUTTON)){
+                        selected = uiNode.id;
+                        selected_point = m_MousePosition;
+                    }
                 }
-                if(uiNode.type==UiNodeType::neural){
+                if(uiNode.type==UiNodeType::neural||uiNode.type==UiNodeType::input||uiNode.type==UiNodeType::output){
                     if(IsInsideInner(uiNode.radius,uiNode.position,8,m_MousePosition)){
                         m_UiNodes.find(uiNode.id)->CursorIn();
+                        m_Hovering = uiNode.id;
+                        //select
+                        if(IsMouseButtonPressed(MOUSE_LEFT_BUTTON)){
+                            selected = uiNode.id;
+                            selected_point = m_MousePosition;
+                        }
                     }
                 }
             } else{
                 m_UiNodes.find(uiNode.id)->CursorOut();
             }
+        }
 
-            //select
-            if(IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
-                if(uiNode.type==UiNodeType::pin&&uiNode.cursorIn){
-                    TraceLog(LOG_INFO, "Selected Synapse");
-                    selected = uiNode.id;
-                }
-                if(uiNode.type==UiNodeType::neural&&uiNode.cursorIn){
-                    TraceLog(LOG_INFO, "Selected Neural");
-                    selected = uiNode.id;
+        //deselect
+        if(IsMouseButtonPressed(MOUSE_LEFT_BUTTON)){
+            if(selected>0){
+                auto uiNode = m_UiNodes.find(selected);
+                if(uiNode->cursorOut){
+                    selected = 0;
+                    selected_point = {0};
                 }
             }
         }
@@ -56,8 +102,9 @@ namespace GamePlay{
         if(IsMouseButtonDown(MOUSE_LEFT_BUTTON)){
             if(selected>0){
                 auto from = m_UiNodes.find(selected);
-                if(from->type==UiNodeType::neural&&from->cursorIn){
-                    Vector2 offset = Vector2Subtract(from->position,m_MousePosition);
+                if(from->cursorIn&&(from->type==UiNodeType::neural||from->type==UiNodeType::input||from->type==UiNodeType::output)){
+                    Vector2 offset = Vector2Subtract(selected_point,m_MousePosition);
+                    selected_point = m_MousePosition;
                     from->position = Vector2Subtract(from->position,offset);
 
                     for (int i : from->children) {
@@ -93,33 +140,108 @@ namespace GamePlay{
             }
         }
         if(IsMouseButtonUp(MOUSE_LEFT_BUTTON)&&m_Linking){
-            if(selected>0&&hovering>0&&hovering!=selected){
-                auto from = m_UiNodes.find(selected);
-                auto to = m_UiNodes.find(hovering);
-                if(from->type==UiNodeType::pin&&to->type==UiNodeType::pin&&to->cursorIn&&from->parent!=to->parent){
-                    from->type = UiNodeType::node;
-                    to->type = UiNodeType::synapse;
-                    LinkNode(from->id,to->id);
-                }
+            if(selected>0 && m_Hovering > 0 && m_Hovering != selected){
+                LinkNode(selected,m_Hovering);
             }
             m_Linking = false;
             selected = 0;
         }
     }
 
-    void NodeEditor::Save() {
+    void NodeEditor::ShowMenu() {
+        if(!m_Menus.empty()){
+            auto& menu = m_Menus.top();
+            ShowAddMenu(menu);
+            ShowNodeMenu(menu);
+        }
 
+        DrawDebugText(TextFormat("神经元数量 %d",m_UiNodes.size()),{5,80});
+        DrawDebugText(TextFormat("连接数 %d",m_UiLinks.size()),{5,105});
     }
 
-    void NodeEditor::AddNode() {
+    void NodeEditor::ShowAddMenu(Menu &menu) {
+        if(menu.type!=MenuType::AddNode)return;
+        float start_x = menu.position.x;
+        float start_y = menu.position.y;
+        float w = menu.rec.width;
+        float h = menu.rec.height;
+        GuiPanel(menu.rec);
+        GuiSetFont(m_UiFont);
+        if(GuiButton(Rectangle{start_x+5,start_y+5,w-10,20},"输入节点")){
+            AddNode(UiNodeType::input);
+            m_Editing = false;
+            m_Menus.pop();
+        }
+        if(GuiButton(Rectangle{start_x+5,start_y+30,w-10,20},"神经元")){
+            AddNode(UiNodeType::neural);
+            m_Editing = false;
+            m_Menus.pop();
+        }
+        if(GuiButton(Rectangle{start_x+5,start_y+55,w-10,20},"输出节点")){
+            AddNode(UiNodeType::output);
+            m_Editing = false;
+            m_Menus.pop();
+        }
+    }
+
+    void NodeEditor::ShowNodeMenu(Menu& menu){
+        if(menu.type!=MenuType::Neural)return;
+        auto uiNode = m_UiNodes.find(menu.uiNode);
+        auto neural = m_Nodes.find(menu.uiNode);
+
+        Vector2 screen_pos = menu.position;
+        float start_x = screen_pos.x;
+        float start_y = screen_pos.y;
+        float w = 200;
+        float h = 260;
+        bool weightEditMode = false;
+
+        bool windows = GuiWindowBox(Rectangle{ start_x, start_y, w, h },TextFormat("神经元 0x%X",uiNode));
+        uiNode->editType = GuiToggleGroup(Rectangle{ start_x+5, start_y+20+7, 62, 20 }, "行为;外观", uiNode->editType);
+        if(uiNode->editType==0){
+            GuiLabel(Rectangle{ start_x+5, start_y+20+43, 53, 25 }, "权重");
+            if (GuiSpinner(Rectangle{ start_x+89, start_y+20+43, 104, 25 }, nullptr, &neural->weight, 0, 100, weightEditMode)){
+                weightEditMode = !weightEditMode;
+            }
+            neural->isLearn = GuiCheckBox({start_x+5,start_y+20+43+45,15,15},"学习",neural->isLearn);
+        }
+
+        if(uiNode->editType==1){
+            Rectangle bounds = {start_x+5,start_y+20+43,128,25};
+            int state = neural->isActive?1:0;
+            bool r = GuiDropdownBox(bounds,"未激活;激活",&uiNode->editColorType, uiNode->editColorMode);
+            if(r){
+                uiNode->editColorMode = !uiNode->editColorMode;
+            }
+            int padding = 0;
+            if(uiNode->editColorMode){
+                padding=70;
+            }
+            uiNode->colors[state] = GuiColorPicker({start_x+5,start_y+20+43+25+padding,128,95},uiNode->colors[state]);
+        }
+        if(windows){
+            m_Menus.pop();
+            m_Editing = false;
+        }
+    }
+
+    void NodeEditor::AddNode(UiNodeType uiNodeType) {
         Vector2 position = m_MousePosition;
 
-        UiNode uiNode(UiNodeType::neural,m_UiNodeUniqueId++);
+        UiNode uiNode(uiNodeType,m_UiNodeUniqueId++);
         uiNode.radius = 32;
         uiNode.position = position;
 
-        Node neural(NodeType::Neural);
-        m_Nodes.insert(uiNode.id,neural);
+        NodeType nodeType;
+
+        switch (uiNodeType) {
+            case UiNodeType::neural:nodeType=NodeType::Neural;break;
+            case UiNodeType::input:nodeType=NodeType::Input;break;
+            case UiNodeType::output:nodeType=NodeType::Output;break;
+            default:return;
+        }
+        Node node(nodeType);
+        m_Nodes.insert(uiNode.id,node);
 
         //(p+r*cos(2π*(n-1)/n),q+r*sin(2π*(n-1)/n))
         int n = 8;
@@ -140,10 +262,27 @@ namespace GamePlay{
         m_UiNodes.insert(uiNode.id,uiNode);
     }
 
-    void NodeEditor::LinkNode(int from,int to) {
-        UiLink uiLink = {static_cast<int>((from<<16)+to),from,to};
-        if(!m_UiLinks.contains(uiLink.id)){
-            m_UiLinks.insert(uiLink.id,uiLink);
+    void NodeEditor::LinkNode(int fromId,int toId) {
+        auto from = m_UiNodes.find(fromId);
+        auto to = m_UiNodes.find(toId);
+        if(from->type!=UiNodeType::pin||to->type!=UiNodeType::pin){
+            return;
+        }
+        auto fromParent = m_UiNodes.find(from->parent);
+        auto toParent = m_UiNodes.find(to->parent);
+        if(fromParent->type==UiNodeType::input&&toParent->type==UiNodeType::neural
+           ||fromParent->type==UiNodeType::neural&&toParent->type==UiNodeType::neural
+           ||fromParent->type==UiNodeType::neural&&toParent->type==UiNodeType::output){
+            if(to->cursorIn&&from->parent!=to->parent){
+                UiLink uiLink = {(fromId<<16)+toId,fromId,toId};
+                NodeLink nodeLink = {(from->parent<<16)+to->parent,from->parent,to->parent};
+                if(!m_UiLinks.contains(uiLink.id)&&!m_NodeLinks.contains(nodeLink.id)){
+                    m_UiLinks.insert(uiLink.id,uiLink);
+                    m_NodeLinks.insert(nodeLink.id,nodeLink);
+                    from->type = UiNodeType::node;
+                    to->type = UiNodeType::synapse;
+                }
+            }
         }
     }
 
@@ -186,11 +325,22 @@ namespace GamePlay{
     }
 
     void NodeEditor::DrawNode(const UiNode &uiNode) {
+        if(selected>0){
+            auto _uiNode = m_UiNodes.find(selected);
+            DrawCircleLines(_uiNode->position.x,_uiNode->position.y,_uiNode->radius,WHITE);
+        }
         float scale = uiNode.radius/32;
         auto node = m_Nodes.find(uiNode.id);
-
+        if(uiNode.type==UiNodeType::input){
+            Color color = uiNode.cursorIn?RED:Color{ 115, 20, 27, 255 };
+            DrawTextureEx(m_NeuralTexture,Vector2SubtractValue(uiNode.position,uiNode.radius),0,scale,color);
+        }
         if(uiNode.type==UiNodeType::neural){
             Color color = uiNode.cursorIn?GREEN:DARKGREEN;
+            DrawTextureEx(m_NeuralTexture,Vector2SubtractValue(uiNode.position,uiNode.radius),0,scale,color);
+        }
+        if(uiNode.type==UiNodeType::output){
+            Color color = uiNode.cursorIn?YELLOW:Color{126, 124, 0, 255};
             DrawTextureEx(m_NeuralTexture,Vector2SubtractValue(uiNode.position,uiNode.radius),0,scale,color);
         }
         if(uiNode.type==UiNodeType::pin){

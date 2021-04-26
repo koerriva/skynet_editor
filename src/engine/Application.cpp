@@ -39,9 +39,12 @@ namespace Engine{
 
             BeginMode2D(m_Camera2D);
             for (Layer* layer:m_LayerStack) {
-                layer->OnGUIRender();
+                layer->OnRender();
             }
             EndMode2D();
+            for (Layer* layer:m_LayerStack) {
+                layer->OnGUIRender();
+            }
 
             DrawFPS(5,5);
             EndDrawing();

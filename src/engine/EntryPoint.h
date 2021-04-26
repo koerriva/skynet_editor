@@ -6,7 +6,6 @@
 #define SKYNET_EDITOR_ENTRYPOINT_H
 
 #include "Application.h"
-#include "qb/main.h"
 
 #ifdef _WIN32
 // N卡使用独显运行

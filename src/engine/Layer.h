@@ -11,6 +11,7 @@ namespace Engine{
         virtual ~Layer() = default;
         virtual void OnAttach() = 0;
         virtual void OnUpdate() = 0;
+        virtual void OnRender() = 0;
         virtual void OnGUIRender() = 0;
         virtual void OnDeAttach() = 0;
     };

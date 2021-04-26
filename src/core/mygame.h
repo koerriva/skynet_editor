@@ -147,7 +147,7 @@ struct MyGame{
         icons = LoadTexture("data/icons.png");
         neural_texture = LoadTexture("data/neural.png");
 
-        brain.Load(camera);
+        brain.Load(camera,font);
     }
 
     void Input(){
