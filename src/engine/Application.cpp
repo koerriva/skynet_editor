@@ -52,6 +52,14 @@ namespace Engine{
         }
     }
 
+    void Application::RunAsync() {
+        while (m_Running){
+            for (Layer* layer:m_LayerStack) {
+                layer->OnAsyncUpdate();
+            }
+        }
+    }
+
     void Application::PushLayer(Layer *layer) {
         m_LayerStack.PushLayer(layer);
         layer->OnAttach();

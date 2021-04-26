@@ -15,6 +15,7 @@ namespace Engine{
         virtual ~Application();;
 
         void Run();
+        void RunAsync();
         void PushLayer(Layer* layer);
         void PopLayer(Layer* layer);
 
@@ -31,6 +32,10 @@ namespace Engine{
     };
 
     Application* Create();
+
+    static void AsyncRun(Application* application){
+        application->RunAsync();
+    }
 }
 
 #endif //SKYNET_EDITOR_APPLICATION_H

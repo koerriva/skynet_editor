@@ -6,6 +6,7 @@
 #define SKYNET_EDITOR_ENTRYPOINT_H
 
 #include "Application.h"
+#include "thread"
 
 #ifdef _WIN32
 // N卡使用独显运行
@@ -21,9 +22,10 @@ int main(int argc,char** argv){
 #ifdef _WIN32
     system("chcp 65001");
 #endif
-
     auto app = Engine::Create();
+    std::thread async_worker(Engine::AsyncRun,app);
     app->Run();
+    async_worker.join();
     delete app;
     return 0;
 }

@@ -5,6 +5,7 @@
 #ifndef SKYNET_EDITOR_NODEEDITOR_H
 #define SKYNET_EDITOR_NODEEDITOR_H
 
+#include "thread"
 #include "vector"
 #include "unordered_map"
 #include "graph.h"
@@ -86,6 +87,16 @@ namespace GamePlay{
         void Update();
         void Save();
 
+        void Run(){
+            TraceLog(LOG_INFO,"running...");
+            for(auto node:inputs){
+                auto in = m_Nodes.find(node);
+                TraceLog(LOG_INFO,TextFormat("%d",in->isActive));
+                in->isActive = !in->isActive;
+            }
+            std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+        }
+
         int GetNodeCount() { return m_UiNodes.size();}
     private:
         void AddNode(UiNodeType type);
@@ -99,8 +110,10 @@ namespace GamePlay{
         void DrawNode(const UiNode& uiNode);
         void DrawLink(const UiLink& uiLink);
 
-        void DrawDebugText(const char* text,Vector2 screen_pos){
-            DrawTextEx(m_UiFont,text,screen_pos,static_cast<float>(m_UiFont.baseSize),1.0,GREEN);
+        int debugTextLine = 0;
+        void DrawDebugText(const char* text){
+            DrawTextEx(m_UiFont,text,Vector2{5,static_cast<float>(30+debugTextLine*16)},static_cast<float>(m_UiFont.baseSize),1.0,GREEN);
+            debugTextLine++;
         }
 
         void ClearMenu(){
@@ -135,6 +148,11 @@ namespace GamePlay{
         int m_InputNum = 0;
         int m_NeuralNum = 0;
         int m_OutputNum = 0;
+
+        std::vector<int> inputs;
+        std::vector<int> neurals;
+        std::vector<int> outputs;
+        std::unordered_map<int,std::vector<int>> m_LinkMap;
     };
 
     static bool IsInside(float r,Vector2 center, Vector2 pos){

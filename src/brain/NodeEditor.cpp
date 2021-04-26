@@ -155,8 +155,11 @@ namespace GamePlay{
             ShowNodeMenu(menu);
         }
 
-        DrawDebugText(TextFormat("神经元数\t%d",m_NeuralNum),{5,80});
-        DrawDebugText(TextFormat("连接数\t%d",m_UiLinks.size()),{5,105});
+        DrawDebugText(TextFormat("输入数\t%d",m_InputNum));
+        DrawDebugText(TextFormat("输出数\t%d",m_OutputNum));
+        DrawDebugText(TextFormat("神经元数\t%d",m_NeuralNum));
+        DrawDebugText(TextFormat("连接数\t%d",m_UiLinks.size()));
+        debugTextLine=0;
     }
 
     void NodeEditor::ShowAddMenu(Menu &menu) {
@@ -187,6 +190,7 @@ namespace GamePlay{
     void NodeEditor::ShowNodeMenu(Menu& menu){
         if(menu.type!=MenuType::Neural)return;
         auto uiNode = m_UiNodes.find(menu.uiNode);
+        if(uiNode->type!=UiNodeType::neural)return;
         auto neural = m_Nodes.find(menu.uiNode);
 
         Vector2 screen_pos = menu.position;
@@ -237,14 +241,17 @@ namespace GamePlay{
         switch (uiNodeType) {
             case UiNodeType::neural:{
                 m_NeuralNum++;
+                neurals.push_back(uiNode.id);
                 nodeType=NodeType::Neural;break;
             }
             case UiNodeType::input:{
                 m_InputNum++;
+                inputs.push_back(uiNode.id);
                 nodeType=NodeType::Input;break;
             }
             case UiNodeType::output:{
                 m_OutputNum++;
+                outputs.push_back(uiNode.id);
                 nodeType=NodeType::Output;break;
             }
             default:return;
@@ -348,8 +355,10 @@ namespace GamePlay{
         }
         float scale = uiNode.radius/32;
         auto node = m_Nodes.find(uiNode.id);
+
         if(uiNode.type==UiNodeType::input){
             Color color = uiNode.cursorIn?RED:Color{ 115, 20, 27, 255 };
+            color = node->isActive?RED:color;
             DrawTextureEx(m_NeuralTexture,Vector2SubtractValue(uiNode.position,uiNode.radius),0,scale,color);
         }
         if(uiNode.type==UiNodeType::neural){

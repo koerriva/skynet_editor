@@ -22,6 +22,10 @@ public:
         m_NodeEditor->Update();
     }
 
+    void OnAsyncUpdate() override{
+        m_NodeEditor->Run();
+    }
+
     void OnRender() override{
         m_NodeEditor->Show();
     }
