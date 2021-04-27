@@ -124,8 +124,11 @@ namespace GamePlay{
                     from->position = Vector2Subtract(from->position,offset);
 
                     for (int i : from->children) {
-                        Vector2 pos = m_UiNodes.find(i)->position;
-                        m_UiNodes.find(i)->position = Vector2Subtract(pos,offset);
+                        auto uiNode = m_UiNodes.find(i);
+                        Vector2 pos = uiNode->position;
+                        Vector2 pinPos = uiNode->pinPosition;
+                        uiNode->position = Vector2Subtract(pos,offset);
+                        uiNode->pinPosition = Vector2Subtract(pinPos,offset);
                     }
                     m_Dragging = true;
                 }
@@ -150,7 +153,7 @@ namespace GamePlay{
             if(selected>0){
                 auto from = m_UiNodes.find(selected);
                 if(from->type==UiNodeType::pin){
-                    DrawLineBezier(from->position,m_MousePosition,4,WHITE);
+                    DrawMyBezierLine(from->position,m_MousePosition,4,WHITE);
                     m_Linking = true;
                 }
             }
@@ -357,6 +360,8 @@ namespace GamePlay{
             pin.position.x = position.x+uiNode.radius*cos(2*PI*(i-1)/n);
             pin.position.y = position.y+uiNode.radius*sin(2*PI*(i-1)/n);
             pin.parent = uiNode.id;
+            pin.pinPosition.x = pin.position.x+pin.radius*cos(2*PI*(i-1)/n);
+            pin.pinPosition.y = pin.position.y+pin.radius*sin(2*PI*(i-1)/n);
             m_UiNodes.insert(pin.id,pin);
 
             Node pin_node(NodeType::Pin);
@@ -511,7 +516,8 @@ namespace GamePlay{
         float factor = abs(nodeLink->weight*0.01f);
         float thick = factor*2+2;
         unsigned char gray = static_cast<unsigned char>(factor*(255-130))+130;
+        Color color = {gray,gray,gray,255};
 
-        DrawLineBezier(from->position,to->position,thick,Color{gray,gray,gray,255});
+        DrawMyBezierLine(from->position,to->position,thick,color);
     }
 }

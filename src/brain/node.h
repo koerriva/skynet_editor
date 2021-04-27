@@ -4,6 +4,9 @@
 
 #ifndef SKYNET_EDITOR_NODE_H
 #define SKYNET_EDITOR_NODE_H
+
+#include <easings.h>
+
 namespace GamePlay{
     enum class NodeType{
         Input,Pin,Synapse,Neural,Output,Node
@@ -56,6 +59,7 @@ namespace GamePlay{
         Color colors[2] = {DARKGREEN,GREEN};
 
         int parent;
+        Vector2 pinPosition={};
         int children[8] = {};
         int linkId;
 
@@ -80,28 +84,51 @@ namespace GamePlay{
         int uiNode;
     };
 
-    static bool IsInside(float r,Vector2 center, Vector2 pos){
+    inline static bool IsInside(float r,Vector2 center, Vector2 pos){
         float x = pos.x - center.x;
         float y = pos.y - center.y;
         return r*r>x*x+y*y;
     }
 
-    static bool IsInsideInner(float r0,Vector2 center, float r1,Vector2 pos){
+    inline static bool IsInsideInner(float r0,Vector2 center, float r1,Vector2 pos){
         float x = pos.x - center.x;
         float y = pos.y - center.y;
         return (r0-r1)*(r0-r1)>x*x+y*y;
     }
 
-    static bool IsInsideEdge(float r,Vector2 center, Vector2 pos){
+    inline static bool IsInsideEdge(float r,Vector2 center, Vector2 pos){
         float x = pos.x - center.x;
         float y = pos.y - center.y;
         float a = x*x+y*y;
         return r*r>a&&a>=(r-5)*(r-5);
     }
 
-    static bool IsInRect(Rectangle rec,Vector2 pos){
+    inline static bool IsInRect(Rectangle rec,Vector2 pos){
         return pos.x>rec.x&&pos.x<rec.x+rec.width
                && pos.y>rec.y&&pos.y<rec.y+rec.height;
+    }
+
+    inline static float easeCubicInOut(float t, float b, float c, float d)
+    {
+        if ((t/=d*0.5f) < 1.0f) return (c*0.5f*t*t*t + b);
+        t -= 2.0f; return (c*0.5f*(t*t*t + 2.0f) + b);
+    }
+
+    static void DrawMyBezierLine(Vector2 startPos,Vector2 endPos,float thick,Color color){
+        Vector2 previous = startPos;
+        Vector2 current;
+
+        for (int i = 1; i <= BEZIER_LINE_DIVISIONS; i++)
+        {
+            // Cubic easing in-out
+            // NOTE: Easing is calculated only for y position value
+            current.y = easeCubicInOut((float)i, startPos.y, endPos.y - startPos.y, (float)BEZIER_LINE_DIVISIONS);
+//            current.x = EaseCubicInOut((float)i, startPos.x, endPos.x - startPos.x, (float)BEZIER_LINE_DIVISIONS);
+            current.x = previous.x + (endPos.x - startPos.x)/ (float)BEZIER_LINE_DIVISIONS;
+
+            DrawLineEx(previous, current, thick, color);
+            previous = current;
+        }
     }
 }
 #endif //SKYNET_EDITOR_NODE_H

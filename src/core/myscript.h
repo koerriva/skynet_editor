@@ -1,8 +1,0 @@
-//
-// Created by 50409 on 2021/2/4.
-//
-
-#ifndef SKYNET_EDITOR_MYSCRIPT_H
-#define SKYNET_EDITOR_MYSCRIPT_H
-
-#endif //SKYNET_EDITOR_MYSCRIPT_H
