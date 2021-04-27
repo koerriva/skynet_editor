@@ -12,7 +12,10 @@ namespace Engine{
             TraceLog(LOG_ERROR,"程序实例已存在");
         }
         SetConfigFlags(FLAG_VSYNC_HINT | FLAG_MSAA_4X_HINT | FLAG_WINDOW_HIGHDPI);
-        InitWindow(800,600,"Ruling Ring");
+        InitWindow(800,600,"Ruling Ring rules them all");
+        Image icon = LoadImage("data/neural.png");
+        Image icon2 = GenImageCellular(64,64,8);
+        SetWindowIcon(icon2);
         int monitor = GetCurrentMonitor();
         int screenWidth = GetMonitorWidth(monitor);
         int screenHeight = GetMonitorHeight(monitor);
@@ -30,6 +33,9 @@ namespace Engine{
 
     void Application::Run() {
         while (m_Running){
+            if(IsKeyPressed(KEY_F11)){
+                ToggleFullscreen();
+            }
             for (Layer* layer:m_LayerStack){
                 layer->OnUpdate();
             }
