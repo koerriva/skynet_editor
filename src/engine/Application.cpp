@@ -12,7 +12,7 @@ namespace Engine{
             TraceLog(LOG_ERROR,"程序实例已存在");
         }
         SetConfigFlags(FLAG_VSYNC_HINT | FLAG_MSAA_4X_HINT | FLAG_WINDOW_HIGHDPI);
-        InitWindow(800,600,"tech");
+        InitWindow(800,600,"Ruling Ring");
         int monitor = GetCurrentMonitor();
         int screenWidth = GetMonitorWidth(monitor);
         int screenHeight = GetMonitorHeight(monitor);

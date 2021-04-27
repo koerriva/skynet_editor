@@ -20,8 +20,10 @@ namespace GamePlay{
     };
     struct NodeLink{
         int id;
-        int form;
+        int from;
         int to;
+        int weight;
+        int type;//14 input->neural,44 neural->neural,45 neural->output
     };
     struct NodeSignal{
         int from=0;
@@ -55,6 +57,7 @@ namespace GamePlay{
 
         int parent;
         int children[8] = {};
+        int linkId;
 
         UiNode(){}
         UiNode(UiNodeType t,int id):type(t),id(id){}
@@ -68,7 +71,7 @@ namespace GamePlay{
         int to;
     };
     enum class MenuType{
-        AddNode,Input,Neural,Output
+        AddNode,Input,Neural,Output,Synapse
     };
     struct Menu{
         MenuType type;
