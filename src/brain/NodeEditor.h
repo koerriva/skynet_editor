@@ -83,7 +83,6 @@ namespace GamePlay{
         std::vector<int> neurals;
         std::vector<int> outputs;
         std::unordered_map<int,std::vector<int>> m_LinkMap;
-
         std::unordered_map<int,std::vector<NodeSignal>> m_Signals;
         std::atomic_int m_SignalTick;
     };

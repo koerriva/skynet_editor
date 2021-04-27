@@ -11,7 +11,7 @@ namespace GamePlay{
     struct Node{
         NodeType type;
         int value = 0;
-        int threshold = 100;
+        int threshold = 50;
         int t=0;
         bool isLearn = false;
         bool isActive = false;

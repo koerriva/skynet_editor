@@ -218,9 +218,10 @@ namespace GamePlay{
         uiNode->editType = GuiToggleGroup(Rectangle{ start_x+5, start_y+20+7, 62, 20 }, "行为;外观", uiNode->editType);
         if(uiNode->editType==0){
             GuiLabel(Rectangle{ start_x+5, start_y+20+43, 53, 25 }, "阈值");
-            if (GuiSpinner(Rectangle{ start_x+89, start_y+20+43, 104, 25 }, nullptr, &neural->threshold, 0, 100, thresholdEditMode)){
-                thresholdEditMode = !thresholdEditMode;
-            }
+//            if (GuiSpinner(Rectangle{ start_x+89, start_y+20+43, 104, 25 }, nullptr, &neural->threshold, -100, 100, thresholdEditMode)){
+//                thresholdEditMode = !thresholdEditMode;
+//            }
+            neural->threshold = GuiSlider(Rectangle{ start_x+89, start_y+20+43, 104, 25 },TextFormat("%d",neural->threshold),"",neural->threshold,-100,100);
             neural->isLearn = GuiCheckBox({start_x+5,start_y+20+43+45,15,15},"学习",neural->isLearn);
         }
 
@@ -261,9 +262,10 @@ namespace GamePlay{
         uiNode->editType = GuiToggleGroup(Rectangle{ start_x+5, start_y+20+7, 62, 20 }, "行为;外观", uiNode->editType);
         if(uiNode->editType==0){
             GuiLabel(Rectangle{ start_x+5, start_y+20+43, 53, 25 }, "权重");
-            if (GuiSpinner(Rectangle{ start_x+89, start_y+20+43, 104, 25 }, nullptr, &nodeLink->weight, 0, 100, thresholdEditMode)){
-                thresholdEditMode = !thresholdEditMode;
-            }
+//            if (GuiSpinner(Rectangle{ start_x+89, start_y+20+43, 104, 25 }, nullptr, &nodeLink->weight, -100, 100, thresholdEditMode)){
+//                thresholdEditMode = !thresholdEditMode;
+//            }
+            nodeLink->weight = GuiSlider(Rectangle{ start_x+89, start_y+20+43, 104, 25 },TextFormat("%d",nodeLink->weight),"",nodeLink->weight,-100,100);
             synapse->isLearn = GuiCheckBox({start_x + 5, start_y + 20 + 43 + 45, 15, 15}, "学习", synapse->isLearn);
         }
 
@@ -389,7 +391,7 @@ namespace GamePlay{
             if(to->cursorIn&&from->parent!=to->parent){
                 UiLink uiLink = {(fromId<<16)+toId,fromId,toId};
 
-                NodeLink nodeLink = {(from->parent<<16)+to->parent,from->parent,to->parent,GetRandomValue(0,100),linkType};
+                NodeLink nodeLink = {(from->parent<<16)+to->parent,from->parent,to->parent,GetRandomValue(-100,100),linkType};
                 if(!m_UiLinks.contains(uiLink.id)&&!m_NodeLinks.contains(nodeLink.id)){
                     m_UiLinks.insert(uiLink.id,uiLink);
                     m_NodeLinks.insert(nodeLink.id,nodeLink);
@@ -414,6 +416,14 @@ namespace GamePlay{
             m_Nodes.clear();
             m_UiLinks.clear();
             m_NodeLinks.clear();
+
+            inputs.clear();
+            neurals.clear();
+            outputs.clear();
+            m_LinkMap.clear();
+            m_Signals.clear();
+
+            m_SignalTick.store(0);
         }
         selected = 0;
         m_Hovering = 0;
@@ -498,7 +508,7 @@ namespace GamePlay{
         int linkid = (from->parent<<16)+to->parent;
         auto nodeLink = m_NodeLinks.find(linkid);
 
-        float factor = nodeLink->weight*0.01f;
+        float factor = abs(nodeLink->weight*0.01f);
         float thick = factor*2+2;
         unsigned char gray = static_cast<unsigned char>(factor*(255-130))+130;
 
