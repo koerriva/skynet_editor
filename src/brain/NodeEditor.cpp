@@ -143,11 +143,15 @@ namespace GamePlay{
         m_MousePosition = GetScreenToWorld2D(GetMousePosition(), m_Camera);
 
         DrawGrid();
-        for(const auto& uiNode:m_UiNodes){
-            DrawNode(uiNode);
+        if(selected>0){
+            auto _uiNode = m_UiNodes.find(selected);
+            DrawCircleLines(_uiNode->position.x,_uiNode->position.y,_uiNode->radius,RAYWHITE);
         }
         for(const auto& uiLink:m_UiLinks){
             DrawLink(uiLink);
+        }
+        for(const auto& uiNode:m_UiNodes){
+            DrawNode(uiNode);
         }
         if(IsMouseButtonDown(MOUSE_LEFT_BUTTON)){
             if(selected>0){
@@ -357,8 +361,8 @@ namespace GamePlay{
         for (int i = 1; i <= n; ++i) {
             UiNode pin(UiNodeType::pin, m_UiNodeUniqueId++);
             pin.radius = 5;
-            pin.position.x = position.x+uiNode.radius*cos(2*PI*(i-1)/n);
-            pin.position.y = position.y+uiNode.radius*sin(2*PI*(i-1)/n);
+            pin.position.x = position.x+(uiNode.radius-pin.radius*0.2)*cos(2*PI*(i-1)/n);
+            pin.position.y = position.y+(uiNode.radius-pin.radius*0.2)*sin(2*PI*(i-1)/n);
             pin.parent = uiNode.id;
             pin.pinPosition.x = pin.position.x+pin.radius*cos(2*PI*(i-1)/n);
             pin.pinPosition.y = pin.position.y+pin.radius*sin(2*PI*(i-1)/n);
@@ -470,10 +474,6 @@ namespace GamePlay{
     }
 
     void NodeEditor::DrawNode(const UiNode &uiNode) {
-        if(selected>0){
-            auto _uiNode = m_UiNodes.find(selected);
-            DrawCircleLines(_uiNode->position.x,_uiNode->position.y,_uiNode->radius,WHITE);
-        }
         float scale = uiNode.radius/32;
         auto node = m_Nodes.find(uiNode.id);
 
