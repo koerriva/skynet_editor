@@ -6,7 +6,8 @@
 #define SKYNET_EDITOR_NODE_H
 
 #include <easings.h>
-
+#include <glm/glm.hpp>
+using namespace glm;
 namespace GamePlay{
     enum class NodeType{
         Input,Pin,Synapse,Neural,Output,Node
@@ -108,27 +109,59 @@ namespace GamePlay{
                && pos.y>rec.y&&pos.y<rec.y+rec.height;
     }
 
-    inline static float easeCubicInOut(float t, float b, float c, float d)
-    {
-        if ((t/=d*0.5f) < 1.0f) return (c*0.5f*t*t*t + b);
-        t -= 2.0f; return (c*0.5f*(t*t*t + 2.0f) + b);
-    }
+//    static vec2 smooth3(float t,vec2 p0,vec2 p1,vec2 p2,vec2 p3){
+//        float x = (1-t)*(1-t)*(1-t)*p0.x+3*(1-t)*(1-t)*t*p1.x+3*(1-t)*t*t*p2.x+t*t*t*p3.x;
+//        float y = (1-t)*(1-t)*(1-t)*p0.y+3*(1-t)*(1-t)*t*p1.y+3*(1-t)*t*t*p2.y+t*t*t*p3.y;
+//        return vec2(x,y);
+//    }
 
-    static void DrawMyBezierLine(Vector2 startPos,Vector2 endPos,float thick,Color color){
-        Vector2 previous = startPos;
-        Vector2 current;
+//    static void DrawMyBezierLine(Vector2 startPos,Vector2 startPinPos,Vector2 endPos,Vector2 endPinPos,float thick,Color color){
+//        vec2 p0 = {startPos.x,startPos.y};
+//        vec2 p3 = {endPos.x,endPos.y};
+//
+//        float length = glm::length(p3-p0);
+////        float start_k = (startPinPos.y-startPinPos.y)/(startPinPos.x-startPos.x);
+////        float end_k = (endPinPos.y-endPos.y)/(endPinPos.x-endPos.x);
+//        float k1,k2;
+//        if(startPinPos.x<startPos.x){
+//            k1=-0.2;
+//        }else if(startPinPos.x==startPos.x){
+//            k1 = 0;
+//        }else{
+//            k1=0.2;
+//        }
+//
+//        if(startPinPos.y<startPos.y){
+//            k2 = -0.2f;
+//        }else if(startPos.y==startPinPos.y){
+//            k2 = 0;
+//        }else{
+//            k2 = 0.2f;
+//        }
+//
+//        vec2 offset = {k1*length,k2*length};
+//        vec2 p1 = p0+offset;
+//        vec2 p2 = p3-offset;
+//
+//        std::vector<Vector2> points;
+//        points.push_back(startPos);
+//        for (int i = 0; i < BEZIER_LINE_DIVISIONS; i++)
+//        {
+//            float t = float(i)/BEZIER_LINE_DIVISIONS;
+//            vec2 p = smooth3(t,p0,p1,p2,p3);
+//            points[i] = {p.x,p.y};
+//            points.push_back({p.x,p.y});
+//        }
+//        points.push_back(endPos);
+//        DrawLineStrip(points.data(),points.size(),color);
+//    }
 
-        for (int i = 1; i <= BEZIER_LINE_DIVISIONS; i++)
-        {
-            // Cubic easing in-out
-            // NOTE: Easing is calculated only for y position value
-            current.y = easeCubicInOut((float)i, startPos.y, endPos.y - startPos.y, (float)BEZIER_LINE_DIVISIONS);
-//            current.x = EaseCubicInOut((float)i, startPos.x, endPos.x - startPos.x, (float)BEZIER_LINE_DIVISIONS);
-            current.x = previous.x + (endPos.x - startPos.x)/ (float)BEZIER_LINE_DIVISIONS;
-
-            DrawLineEx(previous, current, thick, color);
-            previous = current;
-        }
+    static void DrawMyBezierLine(Vector2 startPos,Vector2 startPinPos,Vector2 endPos,Vector2 endPinPos,float thick,Color color){
+        DrawLineEx(startPos,startPinPos,thick,color);
+        DrawCircleV(startPinPos,thick*0.6f,color);
+        DrawLineEx(startPinPos,endPinPos,thick,color);
+        DrawCircleV(endPinPos,thick*0.6f,color);
+        DrawLineEx(endPinPos,endPos,thick,color);
     }
 }
 #endif //SKYNET_EDITOR_NODE_H

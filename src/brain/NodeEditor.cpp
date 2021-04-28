@@ -153,7 +153,7 @@ namespace GamePlay{
             if(selected>0){
                 auto from = m_UiNodes.find(selected);
                 if(from->type==UiNodeType::pin){
-                    DrawMyBezierLine(from->position,m_MousePosition,4,WHITE);
+                    DrawMyBezierLine(from->position,from->pinPosition,m_MousePosition,Vector2Add(m_MousePosition,{2,0}),4,WHITE);
                     m_Linking = true;
                 }
             }
@@ -518,6 +518,6 @@ namespace GamePlay{
         unsigned char gray = static_cast<unsigned char>(factor*(255-130))+130;
         Color color = {gray,gray,gray,255};
 
-        DrawMyBezierLine(from->position,to->position,thick,color);
+        DrawMyBezierLine(from->position,from->pinPosition,to->position,to->pinPosition,thick,color);
     }
 }
