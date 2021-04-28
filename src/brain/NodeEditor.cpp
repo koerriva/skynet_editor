@@ -67,7 +67,6 @@ namespace GamePlay{
         }
         if(m_Editing)return;
         for(const auto& uiNode:m_UiNodes){
-            auto node = m_Nodes.find(uiNode.id);
             if(IsInside(uiNode.radius,uiNode.position,m_MousePosition)){
                 if(uiNode.type==UiNodeType::pin){
                     m_UiNodes.find(uiNode.id)->CursorIn();
@@ -131,6 +130,9 @@ namespace GamePlay{
                         uiNode->pinPosition = Vector2Subtract(pinPos,offset);
                     }
                     m_Dragging = true;
+                }
+                if(from->cursorOut&&from->type==UiNodeType::synapse){
+                    UnLinkNode(from->linkFrom,from->id);
                 }
             }
         }
@@ -335,11 +337,14 @@ namespace GamePlay{
 
         NodeType nodeType;
 
+        int startAngle = 1;
+        int endAngle = 8;
         switch (uiNodeType) {
             case UiNodeType::neural:{
                 m_NeuralNum++;
                 neurals.push_back(uiNode.id);
-                nodeType=NodeType::Neural;break;
+                nodeType=NodeType::Neural;
+                break;
             }
             case UiNodeType::input:{
                 m_InputNum++;
@@ -347,6 +352,8 @@ namespace GamePlay{
                 nodeType=NodeType::Input;break;
             }
             case UiNodeType::output:{
+                startAngle = 5;
+                endAngle = 5;
                 m_OutputNum++;
                 outputs.push_back(uiNode.id);
                 nodeType=NodeType::Output;break;
@@ -358,14 +365,14 @@ namespace GamePlay{
 
         //(p+r*cos(2π*(n-1)/n),q+r*sin(2π*(n-1)/n))
         int n = 8;
-        for (int i = 1; i <= n; ++i) {
+        for (int i = startAngle; i <= endAngle; ++i) {
             UiNode pin(UiNodeType::pin, m_UiNodeUniqueId++);
             pin.radius = 5;
-            pin.position.x = position.x+(uiNode.radius-pin.radius*0.2)*cos(2*PI*(i-1)/n);
-            pin.position.y = position.y+(uiNode.radius-pin.radius*0.2)*sin(2*PI*(i-1)/n);
+            pin.position.x = position.x+(uiNode.radius-pin.radius*0.2f)*cos(2.0f*PI*(i-1)/n);
+            pin.position.y = position.y+(uiNode.radius-pin.radius*0.2f)*sin(2.0f*PI*(i-1)/n);
             pin.parent = uiNode.id;
-            pin.pinPosition.x = pin.position.x+pin.radius*cos(2*PI*(i-1)/n);
-            pin.pinPosition.y = pin.position.y+pin.radius*sin(2*PI*(i-1)/n);
+            pin.pinPosition.x = pin.position.x+pin.radius*cos(2.0f*PI*(i-1)/n);
+            pin.pinPosition.y = pin.position.y+pin.radius*sin(2.0f*PI*(i-1)/n);
             m_UiNodes.insert(pin.id,pin);
 
             Node pin_node(NodeType::Pin);
@@ -408,14 +415,46 @@ namespace GamePlay{
                     auto fromNode = m_Nodes.find(from->id);
                     fromNode->type = NodeType::Node;
 
-                    to->type = UiNodeType::synapse;
-                    auto toNode = m_Nodes.find(to->id);
-                    toNode->type = NodeType::Synapse;
+                    if(linkType==45){
+                        to->type = UiNodeType::node;
+                        auto toNode = m_Nodes.find(to->id);
+                        toNode->type = NodeType::Node;
+                    }else{
+                        to->type = UiNodeType::synapse;
+                        auto toNode = m_Nodes.find(to->id);
+                        toNode->type = NodeType::Synapse;
+                    }
+
+                    to->linkFrom = fromId;
                     to->linkId = nodeLink.id;
 
                     m_LinkMap[from->parent].push_back(to->parent);
                 }
             }
+        }
+    }
+
+    void NodeEditor::UnLinkNode(int fromId,int toId){
+        TraceLog(LOG_INFO,TextFormat("UnLink %d->%d",fromId,toId));
+        auto from = m_UiNodes.find(fromId);
+        auto to = m_UiNodes.find(toId);
+
+        m_UiLinks.erase((fromId<<16)+toId);
+        m_NodeLinks.erase((from->parent<<16)+to->parent);
+
+        from->type = UiNodeType::pin;
+        auto fromNode = m_Nodes.find(from->id);
+        fromNode->type = NodeType::Pin;
+        to->type = UiNodeType::pin;
+        auto toNode = m_Nodes.find(to->id);
+        toNode->type = NodeType::Pin;
+        to->linkFrom = 0;
+        to->linkId = 0;
+
+        auto& links = m_LinkMap[from->parent];
+        auto iter = std::find(links.begin(),links.end(),to->parent);
+        if(iter!=links.end()){
+            links.erase(iter);
         }
     }
 
@@ -494,7 +533,8 @@ namespace GamePlay{
         }
         if(uiNode.type==UiNodeType::pin){
             Color color = uiNode.cursorIn?BLUE:DARKBLUE;
-            DrawCircleV(uiNode.position,uiNode.radius,color);
+//            DrawCircleV(uiNode.position,uiNode.radius,color);
+            DrawCircleLines(uiNode.position.x,uiNode.position.y,uiNode.radius,color);
 //            DrawTextureEx(m_NeuralTexture,uiNode.position,0,scale,color);
         }
         if(uiNode.type==UiNodeType::synapse){

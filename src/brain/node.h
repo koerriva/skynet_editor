@@ -62,7 +62,8 @@ namespace GamePlay{
         int parent;
         Vector2 pinPosition={};
         int children[8] = {};
-        int linkId;
+        int linkFrom=0;
+        int linkId=0;
 
         UiNode(){}
         UiNode(UiNodeType t,int id):type(t),id(id){}

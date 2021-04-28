@@ -30,6 +30,7 @@ namespace GamePlay{
         void AddNode(UiNodeType type);
         void LinkNode(int from,int to);
         void DelNode();
+        void UnLinkNode(int from,int to);
 
         void ShowAddMenu(Menu& menu);
         void ShowNeuralMenu(Menu& menu);
