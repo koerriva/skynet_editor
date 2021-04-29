@@ -13,13 +13,23 @@
 #define BEZIER_LINE_DIVISIONS 32
 #include "raylib.h"
 #include "node.h"
+#include "raymath.h"
 
 namespace GamePlay{
+    struct Light{
+        int enabled;
+        int type;
+        Vector3 position;
+        Vector3 target;
+        Color color;
+    };
+
     class NodeEditor {
     public:
-        void Load(Camera2D camera,Font font);
-        void Show();
-        void ShowMenu();
+        void Load(Font font);
+        void Render2D();
+        void Render3D();
+        void RenderGUI();
         void Update();
         void Save();
 
@@ -37,9 +47,10 @@ namespace GamePlay{
         void ShowSynapseMenu(Menu& menu);
         void ShowStatusBar();
 
-        void DrawGrid();
+        void DrawBgGrid();
         void DrawNode(const UiNode& uiNode);
         void DrawLink(const UiLink& uiLink);
+        void DrawLight();
 
         int debugTextLine = 0;
         void DrawDebugText(const char* text){
@@ -53,10 +64,37 @@ namespace GamePlay{
                 m_Menus.pop();
             }
         }
+
+        static Material LoadMaterialPBR(Color albedo, float metalness, float roughness);
+
+    private:
+        void MoveBug(ActionSignal actionSignal){
+            if(actionSignal.type==1&&!m_BugStop){
+                float speed = 0.02f;
+                m_BugPosition  = Vector3Add(m_BugPosition,Vector3Multiply(m_BugDirection,{speed,0,speed}));
+            }
+        }
+        void TurnBug(ActionSignal actionSignal){
+            if(actionSignal.type==3&&!m_BugStop){
+                //左转
+                m_BugDirection = Vector3Transform(m_BugDirection,MatrixRotateY(-PI/180.f));
+            }
+            if(actionSignal.type==4&&!m_BugStop){
+                //右转
+                m_BugDirection = Vector3Transform(m_BugDirection,MatrixRotateY(PI/180.0f));
+            }
+        }
+        void StopBug(ActionSignal actionSignal){
+            if(actionSignal.type==0){
+                m_BugStop = true;
+            }
+        }
     private:
         int selected=0;
         Vector2 selected_point;
         int m_Hovering=0;
+
+        int width=800,height=600;
 
         IdMap<UiNode> m_UiNodes;
         IdMap<Node> m_Nodes;
@@ -69,6 +107,9 @@ namespace GamePlay{
         int m_WorldWidth = 4000;
         int m_WorldHeight = 4000;
         Camera2D m_Camera;
+        Camera m_Camera3d;
+        RenderTexture2D m_RenderTarget;
+        Vector2 m_TargetSize = {400,300};
         Vector2  m_MousePosition;
         Font m_UiFont;
 
@@ -86,6 +127,19 @@ namespace GamePlay{
         std::unordered_map<int,std::vector<int>> m_LinkMap;
         std::unordered_map<int,std::vector<NodeSignal>> m_Signals;
         std::atomic_int m_SignalTick;
+
+        Shader m_LightingShader;
+        Texture2D m_LightingTexture;
+        Shader m_BaseShader;
+        Model m_Playground;
+        Model m_Bug;
+        Vector3 m_BugPosition;
+        Vector3 m_BugDirection = {0,0,1};
+        bool m_BugStop = false;
+
+        Light mainLight;
+
+        std::vector<ActionSignal> m_BugSignal;
     };
 }
 

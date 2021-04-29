@@ -3,14 +3,13 @@
 
 class EditorLayer: public Engine::Layer{
 public:
-    EditorLayer(Camera2D camera,Font font){
+    EditorLayer(Font font){
         m_NodeEditor = new GamePlay::NodeEditor();
-        m_Camera = camera;
         m_Font = font;
     }
 
     void OnAttach() override{
-        m_NodeEditor->Load(m_Camera,m_Font);
+        m_NodeEditor->Load(m_Font);
     }
 
     void OnDeAttach() override{
@@ -27,16 +26,15 @@ public:
     }
 
     void OnRender() override{
-        m_NodeEditor->Show();
+        m_NodeEditor->Render2D();
     }
 
     void OnGUIRender() override{
-        m_NodeEditor->ShowMenu();
+        m_NodeEditor->RenderGUI();
     }
 
 private:
     GamePlay::NodeEditor* m_NodeEditor;
-    Camera2D m_Camera;
     Font m_Font;
 };
 
@@ -44,7 +42,7 @@ class Game: public Engine::Application{
 public:
     Game(){
         LoadFont();
-        m_EditorLayer = new EditorLayer(m_Camera2D,m_Font);
+        m_EditorLayer = new EditorLayer(m_Font);
         PushLayer(m_EditorLayer);
     }
     ~Game() override{

@@ -19,6 +19,7 @@ namespace GamePlay{
         int t=0;
         bool isLearn = false;
         bool isActive = false;
+        int outputAction=0;
         Node():type(NodeType::Node){}
         explicit Node(NodeType t):type(t){}
     };
@@ -33,6 +34,10 @@ namespace GamePlay{
         int from=0;
         int t=0;
         int value=0;
+    };
+    struct ActionSignal{
+        int type = 0;//0停止,1移动,2跳跃,3左转,4右转
+        int value = 0;
     };
 
     //ui
@@ -164,5 +169,9 @@ namespace GamePlay{
         DrawCircleV(endPinPos,thick*0.6f,color);
         DrawLineEx(endPinPos,endPos,thick,color);
     }
+
+    //bug controller
+
+
 }
 #endif //SKYNET_EDITOR_NODE_H

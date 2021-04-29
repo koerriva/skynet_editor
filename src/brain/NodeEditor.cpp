@@ -7,22 +7,59 @@
 #include "graph.h"
 
 #define RAYGUI_IMPLEMENTATION
-#define RAYGUI_SUPPORT_ICONS
 #include <raygui.h>
-#include <ricons.h>
 
 namespace GamePlay{
 
-    void NodeEditor::Load(Camera2D camera,Font font) {
+    void NodeEditor::Load(Font font) {
+        width = GetScreenWidth();
+        height = GetScreenHeight();
+
         m_NeuralTexture = LoadTexture("data/neural.png");
-        m_Camera = camera;
+        m_Camera.offset = {};
+        m_Camera.zoom  = 1.0;
+        m_Camera.target = {};
+        m_Camera.rotation = 0.0;
+
+        m_Camera3d.position = { 0.0f, 25.0f, 50.0f };
+        m_Camera3d.target = {0.0f, 0.0f, 0.0f};
+        m_Camera3d.up = {0.0f, 1.0f, 0.0f};
+        m_Camera3d.fovy = 45.0f;
+        m_Camera3d.type = CAMERA_PERSPECTIVE;
+        SetCameraMode(m_Camera3d,CAMERA_FREE);
+
+        m_Playground = LoadModelFromMesh(GenMeshPlane(100,100,10,10));
+        m_Playground.materials[0] = LoadMaterialPBR(DARKGREEN,0.0,1.0);
+        m_Bug  = LoadModelFromMesh(GenMeshCube(1,1,1));
+        m_Bug.materials[0]= LoadMaterialPBR(DARKBROWN,0.9,0.1);
+//        mainLight = {1,0,{10,10,10},{0,0,0},BLACK};
+//
+//        Shader shader = m_Playground.materials[0].shader;
+//        SetShaderValue(shader,GetShaderLocation(shader,"lights[0].enabled"),&mainLight.enabled,UNIFORM_INT);
+//        SetShaderValue(shader,GetShaderLocation(shader,"lights[0].type"),&mainLight.type,UNIFORM_INT);
+//        auto* position = new float[3] {mainLight.position.x,mainLight.position.y,mainLight.position.z};
+//        SetShaderValue(shader,GetShaderLocation(shader,"lights[0].position"),position,UNIFORM_VEC3);
+//        auto* target = new float[3] {mainLight.target.x,mainLight.target.y,mainLight.target.z};
+//        SetShaderValue(shader,GetShaderLocation(shader,"lights[0].target"),target,UNIFORM_VEC3);
+//        auto* color = new float[4] {mainLight.color.r/255.0f,mainLight.color.g/255.0f,mainLight.color.b/255.0f,mainLight.color.a/255.0f};
+//        SetShaderValue(shader,GetShaderLocation(shader,"lights[0].color"),color,UNIFORM_VEC4);
+
         m_UiFont = font;
+
+        m_LightingShader = LoadShader(nullptr,"data/shader/lighting.glsl.frag");
+        m_LightingTexture = LoadTextureFromImage(GenImageColor(width,height,BLACK));
+
+        m_BaseShader = LoadShader(nullptr,"data/shader/base.frag");
+        m_RenderTarget = LoadRenderTexture(m_TargetSize.x,m_TargetSize.y);
 
         GuiSetFont(m_UiFont);
     }
     void NodeEditor::Save() {}
 
     void NodeEditor::Update() {
+        width = GetScreenWidth();
+        height = GetScreenHeight();
+
         if(IsKeyPressed(KEY_X)){
             TraceLog(LOG_INFO,"NodeEditor::DelNode");
             DelNode();
@@ -136,15 +173,27 @@ namespace GamePlay{
                 }
             }
         }
+
+        //link
+        if(IsMouseButtonUp(MOUSE_LEFT_BUTTON)&&m_Linking){
+            if(selected>0 && m_Hovering > 0 && m_Hovering != selected){
+                LinkNode(selected,m_Hovering);
+            }
+            m_Linking = false;
+            selected = 0;
+        }
+
         if(IsMouseButtonUp(MOUSE_LEFT_BUTTON)){
             m_Dragging = false;
         }
     }
 
-    void NodeEditor::Show() {
+    void NodeEditor::Render2D() {
+        BeginMode2D(m_Camera);
+
         m_MousePosition = GetScreenToWorld2D(GetMousePosition(), m_Camera);
 
-        DrawGrid();
+        DrawBgGrid();
         if(selected>0){
             auto _uiNode = m_UiNodes.find(selected);
             DrawCircleLines(_uiNode->position.x,_uiNode->position.y,_uiNode->radius,RAYWHITE);
@@ -164,23 +213,20 @@ namespace GamePlay{
                 }
             }
         }
-        if(IsMouseButtonUp(MOUSE_LEFT_BUTTON)&&m_Linking){
-            if(selected>0 && m_Hovering > 0 && m_Hovering != selected){
-                LinkNode(selected,m_Hovering);
-            }
-            m_Linking = false;
-            selected = 0;
-        }
+
+        Render3D();
+
+        EndMode2D();
+//        DrawLight();
     }
 
-    void NodeEditor::ShowMenu() {
+    void NodeEditor::RenderGUI() {
         if(!m_Menus.empty()){
             auto& menu = m_Menus.top();
             ShowAddMenu(menu);
             ShowNeuralMenu(menu);
             ShowSynapseMenu(menu);
         }
-
         ShowStatusBar();
         debugTextLine=0;
     }
@@ -298,11 +344,13 @@ namespace GamePlay{
     }
 
     void NodeEditor::ShowStatusBar() {
-        Rectangle rec1 = {0,600-16,400,16};
-        Rectangle rec2 = {400,600-16,100,16};
-        Rectangle rec3 = {500,600-16,100,16};
-        Rectangle rec4 = {600,600-16,100,16};
-        Rectangle rec5 = {700,600-16,100,16};
+        float h = height;
+        float w = width;
+        Rectangle rec1 = {0,h-16,w*0.5f,16};
+        Rectangle rec2 = {w*0.5f,h-16,w*0.125f,16};
+        Rectangle rec3 = {w*0.625f,h-16,w*0.125f,16};
+        Rectangle rec4 = {w*0.75f,h-16,w*0.125f,16};
+        Rectangle rec5 = {w*0.875f,h-16,w*0.125f,16};
         GuiSetFont(m_UiFont);
         if(selected>0){
             auto uiNode = m_UiNodes.find(selected);
@@ -344,19 +392,30 @@ namespace GamePlay{
                 m_NeuralNum++;
                 neurals.push_back(uiNode.id);
                 nodeType=NodeType::Neural;
+                Vector3 c = ColorToHSV(GREEN);
+                uiNode.colors[0] = ColorFromHSV(c.x,c.y,0.1);
+                uiNode.colors[1] = ColorFromHSV(c.x,c.y,1.0);
                 break;
             }
             case UiNodeType::input:{
                 m_InputNum++;
                 inputs.push_back(uiNode.id);
-                nodeType=NodeType::Input;break;
+                nodeType=NodeType::Input;
+                Vector3 c = ColorToHSV(RED);
+                uiNode.colors[0] = ColorFromHSV(c.x,c.y,0.1);
+                uiNode.colors[1] = ColorFromHSV(c.x,c.y,1.0);
+                break;
             }
             case UiNodeType::output:{
                 startAngle = 5;
                 endAngle = 5;
                 m_OutputNum++;
                 outputs.push_back(uiNode.id);
-                nodeType=NodeType::Output;break;
+                nodeType=NodeType::Output;
+                Vector3 c = ColorToHSV(YELLOW);
+                uiNode.colors[0] = ColorFromHSV(c.x,c.y,0.1);
+                uiNode.colors[1] = ColorFromHSV(c.x,c.y,1.0);
+                break;
             }
             default:return;
         }
@@ -373,6 +432,11 @@ namespace GamePlay{
             pin.parent = uiNode.id;
             pin.pinPosition.x = pin.position.x+pin.radius*cos(2.0f*PI*(i-1)/n);
             pin.pinPosition.y = pin.position.y+pin.radius*sin(2.0f*PI*(i-1)/n);
+
+            Vector3 c = ColorToHSV(BLUE);
+            pin.colors[0] = ColorFromHSV(c.x,c.y,0.3);
+            pin.colors[1] = ColorFromHSV(c.x,c.y,1.0);
+
             m_UiNodes.insert(pin.id,pin);
 
             Node pin_node(NodeType::Pin);
@@ -409,8 +473,6 @@ namespace GamePlay{
 
                 NodeLink nodeLink = {(from->parent<<16)+to->parent,from->parent,to->parent,GetRandomValue(-100,100),linkType};
                 if(!m_UiLinks.contains(uiLink.id)&&!m_NodeLinks.contains(nodeLink.id)){
-                    m_UiLinks.insert(uiLink.id,uiLink);
-                    m_NodeLinks.insert(nodeLink.id,nodeLink);
                     from->type = UiNodeType::node;
                     auto fromNode = m_Nodes.find(from->id);
                     fromNode->type = NodeType::Node;
@@ -419,6 +481,7 @@ namespace GamePlay{
                         to->type = UiNodeType::node;
                         auto toNode = m_Nodes.find(to->id);
                         toNode->type = NodeType::Node;
+                        nodeLink.weight = 100;
                     }else{
                         to->type = UiNodeType::synapse;
                         auto toNode = m_Nodes.find(to->id);
@@ -429,6 +492,9 @@ namespace GamePlay{
                     to->linkId = nodeLink.id;
 
                     m_LinkMap[from->parent].push_back(to->parent);
+
+                    m_UiLinks.insert(uiLink.id,uiLink);
+                    m_NodeLinks.insert(nodeLink.id,nodeLink);
                 }
             }
         }
@@ -482,7 +548,7 @@ namespace GamePlay{
         m_OutputNum = 0;
     }
 
-    void NodeEditor::DrawGrid() {
+    void NodeEditor::DrawBgGrid() {
         int start_x = -m_WorldWidth/2;
         int start_y = -m_WorldHeight/2;
 
@@ -559,5 +625,11 @@ namespace GamePlay{
         Color color = {gray,gray,gray,255};
 
         DrawMyBezierLine(from->position,from->pinPosition,to->position,to->pinPosition,thick,color);
+    }
+
+    void NodeEditor::DrawLight() {
+        BeginShaderMode(m_LightingShader);
+            DrawTextureRec(m_LightingTexture,{0,0,static_cast<float>(width),static_cast<float>(-height)},{-400,-300},BLACK);
+        EndShaderMode();
     }
 }

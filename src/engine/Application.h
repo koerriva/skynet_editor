@@ -21,9 +21,6 @@ namespace Engine{
 
         static Application* Instance() {return s_Instance;}
 
-    protected:
-        Camera2D m_Camera2D{};
-
     private:
         LayerStack m_LayerStack;
         bool m_Running = true;

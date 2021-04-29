@@ -75,8 +75,19 @@ namespace GamePlay{
             if(in->value>0){
                 in->isActive = true;
                 in->value = 100;
+                m_BugSignal.push_back(ActionSignal{4,in->value});
             }
         }
-        std::this_thread::sleep_for(std::chrono::milliseconds(static_cast<long>((1.0f/60.0f)*1000)));
+
+        auto iter = m_BugSignal.begin();
+        while (iter!=m_BugSignal.end()){
+            ActionSignal signal = ActionSignal{iter->type,iter->value};
+            StopBug(signal);
+            MoveBug(signal);
+            TurnBug(signal);
+            iter = m_BugSignal.erase(iter);
+            TraceLog(LOG_INFO,TextFormat("t %d,turn",t));
+        }
+        std::this_thread::sleep_for(std::chrono::milliseconds(static_cast<long>((1.0f/10.0f)*1000)));
     }
 }
