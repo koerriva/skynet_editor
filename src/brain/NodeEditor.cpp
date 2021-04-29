@@ -532,10 +532,10 @@ namespace GamePlay{
             DrawTextureEx(m_NeuralTexture,Vector2SubtractValue(uiNode.position,uiNode.radius),0,scale,color);
         }
         if(uiNode.type==UiNodeType::pin){
-            Color color = uiNode.cursorIn?BLUE:DARKBLUE;
-//            DrawCircleV(uiNode.position,uiNode.radius,color);
-            DrawCircleLines(uiNode.position.x,uiNode.position.y,uiNode.radius,color);
-//            DrawTextureEx(m_NeuralTexture,uiNode.position,0,scale,color);
+            DrawCircleGradient(uiNode.position.x,uiNode.position.y,uiNode.radius,BLUE,DARKBLUE);
+            if(uiNode.cursorIn){
+                DrawCircleLines(uiNode.position.x,uiNode.position.y,uiNode.radius,BLUE);
+            }
         }
         if(uiNode.type==UiNodeType::synapse){
             Color color = uiNode.cursorIn?GREEN:DARKGREEN;
