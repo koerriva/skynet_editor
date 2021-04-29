@@ -471,7 +471,7 @@ namespace GamePlay{
             if(to->cursorIn&&from->parent!=to->parent){
                 UiLink uiLink = {(fromId<<16)+toId,fromId,toId};
 
-                NodeLink nodeLink = {(from->parent<<16)+to->parent,from->parent,to->parent,GetRandomValue(-100,100),linkType};
+                NodeLink nodeLink = {(from->parent<<16)+to->parent,from->parent,to->parent,100,linkType};
                 if(!m_UiLinks.contains(uiLink.id)&&!m_NodeLinks.contains(nodeLink.id)){
                     from->type = UiNodeType::node;
                     auto fromNode = m_Nodes.find(from->id);

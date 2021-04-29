@@ -84,7 +84,7 @@ namespace GamePlay{
 
         // Set up material properties color
         mat.maps[MAP_ALBEDO].color = albedo;
-        mat.maps[MAP_NORMAL].color = (Color){ 128, 128, 255, 255 };
+        mat.maps[MAP_NORMAL].color = Color{ 128, 128, 255, 255 };
         mat.maps[MAP_METALNESS].value = metalness;
         mat.maps[MAP_ROUGHNESS].value = roughness;
         mat.maps[MAP_OCCLUSION].value = 1.0f;
