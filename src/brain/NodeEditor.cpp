@@ -494,6 +494,29 @@ namespace GamePlay{
 
                     m_LinkMap[from->parent].push_back(to->parent);
 
+                    {
+                        std::stack<int> stack;
+
+                        stack.push(to->parent);
+                        bool stop = false;
+
+                        while (!stack.empty()&&!stop)
+                        {
+                            const int current_node = stack.top();
+                            stack.pop();
+
+                            for (const int toNode : m_LinkMap[current_node])
+                            {
+                                stop = toNode==from->parent;
+                                if(stop){
+                                    TraceLog(LOG_INFO,TextFormat("找到循环连接 %d->%d",to->parent,toNode));
+                                    nodeLink.circle = true;
+                                }
+                                stack.push(toNode);
+                            }
+                        }
+                    }
+
                     m_UiLinks.insert(uiLink.id,uiLink);
                     m_NodeLinks.insert(nodeLink.id,nodeLink);
                 }

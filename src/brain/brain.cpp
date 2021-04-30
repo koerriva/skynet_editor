@@ -50,7 +50,7 @@ namespace GamePlay{
                         auto linkNode = m_NodeLinks.find((node<<16)+toNode);
                         int signal = linkNode->weight;
                         if(linkNode->type==44){
-                            m_Signals[toNode].push_back(NodeSignal{node,in->t+1,signal});
+                            m_Signals[toNode].push_back(NodeSignal{node,linkNode->circle?in->t+1:in->t,signal});
                         }else{
                             m_Signals[toNode].push_back(NodeSignal{node,in->t,signal});
                         }

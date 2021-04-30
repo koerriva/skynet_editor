@@ -29,6 +29,7 @@ namespace GamePlay{
         int to;
         int weight;
         int type;//14 input->neural,44 neural->neural,45 neural->output
+        bool circle = false;
     };
     struct NodeSignal{
         int from=0;
