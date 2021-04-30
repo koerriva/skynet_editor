@@ -3274,7 +3274,7 @@ unsigned int rlCompileShader(const char *shaderCode, int type)
             int length = 0;
             char *log = RL_CALLOC(maxLength, sizeof(char));
             glGetShaderInfoLog(shader, maxLength, &length, log);
-            TRACELOG(LOG_WARNING, "SHADER: [ID %i] Compile error: %s", shader, log);
+            TRACELOG(LOG_ERROR, "SHADER: [ID %i] Compile error: %s\nSOURCE:%s", shader, log,shaderCode);
             RL_FREE(log);
         }
     }

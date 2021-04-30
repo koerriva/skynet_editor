@@ -8,15 +8,15 @@
 #include "Application.h"
 #include "thread"
 
-#ifdef _WIN32
-// N卡使用独显运行
-extern "C" __declspec(dllexport) unsigned long NvOptimusEnablement = 0x00000001;
-#endif
-
-#ifndef __APPLE__
-// A显卡使用独显运行
-extern "C" __declspec(dllexport) int AmdPowerXpressRequestHighPerformance = 0x00000001;
-#endif
+//#ifdef _WIN32
+//// N卡使用独显运行
+//extern "C" __declspec(dllexport) unsigned long NvOptimusEnablement = 0x00000001;
+//#endif
+//
+//#ifndef __APPLE__
+//// A显卡使用独显运行
+//extern "C" __declspec(dllexport) int AmdPowerXpressRequestHighPerformance = 0x00000001;
+//#endif
 
 int main(int argc,char** argv){
 #ifdef _WIN32

@@ -28,20 +28,13 @@ namespace GamePlay{
         SetCameraMode(m_Camera3d,CAMERA_FREE);
 
         m_Playground = LoadModelFromMesh(GenMeshPlane(200,200,10,10));
-
         m_Bug = LoadModel("data/Model/GLTF/Frog.glb");
-        static int animsCount=0;
-        ModelAnimation * anims = LoadModelAnimations("data/Model/GLTF/Frog.glb",&animsCount);
-        TraceLog(LOG_INFO,TextFormat("animation count %d",animsCount));
-        for (int i = 0; i < animsCount; ++i) {
-            m_BugAnimation.push_back(Animation{anims[0],0});
+        static int animCount=0;
+        ModelAnimation * anim = LoadModelAnimations("data/Model/GLTF/Frog.glb",&animCount);
+        TraceLog(LOG_INFO,TextFormat("animation count %d",animCount));
+        for (int i = 0; i < animCount; ++i) {
+            m_BugAnimation.push_back(Animation{anim[0],0});
         }
-
-//        static int count = 0;
-//        m_Bug.materials = LoadMaterials("data/Model/OBJ/Rat.mtl",&count);
-
-//        m_Bug = LoadModelFromMesh(GenMeshCube(2,2,2));
-//        m_Bug.materials[0] = LoadMaterialPBR(DARKBROWN,0.2,1.0);
 
         m_BugActionIcons[0] = LoadTexture("data/stop.png");
         m_BugActionIcons[1] = LoadTexture("data/move.png");
@@ -53,10 +46,12 @@ namespace GamePlay{
 
         m_UiFont = font;
 
-        m_LightingShader = LoadShader(nullptr,"data/shader/lighting.glsl.frag");
-        m_LightingTexture = LoadTextureFromImage(GenImageColor(width,height,BLACK));
+//        m_LightingShader = LoadShader(0,"data/shader/lighting.frag");
+//        m_LightingTexture = LoadTextureFromImage(GenImageColor(width,height,BLACK));
 
-        m_BaseShader = LoadShader(nullptr,"data/shader/base.frag");
+        m_BaseShader = LoadShader(0,"data/shader/base.frag");
+        m_TargetSize.x = width/2;
+        m_TargetSize.y = height/2;
         m_RenderTarget = LoadRenderTexture(m_TargetSize.x,m_TargetSize.y);
 
         GuiSetFont(m_UiFont);
@@ -64,9 +59,6 @@ namespace GamePlay{
     void NodeEditor::Save() {}
 
     void NodeEditor::Update() {
-        width = GetScreenWidth();
-        height = GetScreenHeight();
-
         if(IsKeyPressed(KEY_X)){
             TraceLog(LOG_INFO,"NodeEditor::DelNode");
             DelNode();
@@ -76,9 +68,12 @@ namespace GamePlay{
             TraceLog(LOG_INFO,"NodeEditor::PopMenu");
             ClearMenu();
             Vector2 pos = GetWorldToScreen2D(m_MousePosition,m_Camera);
-            Menu menu{MenuType::AddNode,pos,{pos.x,pos.y,100,80},0};
+            Menu menu{MenuType::AddNode,pos,{pos.x,pos.y,200,160},0};
             m_Menus.push(menu);
             m_Editing = true;
+        }
+        if(IsInRect({0,0,m_TargetSize.x,m_TargetSize.y},m_MousePosition)){
+            UpdateCamera(&m_Camera3d);
         }
         if(selected>0&&IsMouseButtonPressed(MOUSE_RIGHT_BUTTON)){
             auto uiNode = m_UiNodes.find(selected);
@@ -239,6 +234,10 @@ namespace GamePlay{
         debugTextLine=0;
     }
 
+    static int inputNodeActive = 0;
+    static int nodeTypeActive=0;
+    static int nodeActive=0;
+    static int scrollIndex = 0;
     void NodeEditor::ShowAddMenu(Menu &menu) {
         if(menu.type!=MenuType::AddNode)return;
         float start_x = menu.position.x;
@@ -247,20 +246,93 @@ namespace GamePlay{
         float h = menu.rec.height;
         GuiPanel(menu.rec);
         GuiSetFont(m_UiFont);
-        if(GuiButton(Rectangle{start_x+5,start_y+5,w-10,20},"输入节点")){
-            AddNode(UiNodeType::input);
-            m_Editing = false;
-            m_Menus.pop();
+
+        nodeTypeActive = GuiToggleGroup(Rectangle{start_x+5,start_y+5,50,20},"输入;神经元;输出",nodeTypeActive);
+        if(nodeTypeActive==0){
+            Rectangle rec = {start_x+5,start_y+30,w-10,18};
+            bool r0 = GuiButton(rec,"感光器");
+            rec.y += 20;
+            bool r1 = GuiButton(rec,"定位器");
+            rec.y += 20;
+            bool r2 = GuiButton(rec,"网络节点");
+            rec.y += 20;
+            bool r3 = GuiButton(rec,"文件节点");
+            int category = -1;
+            if(r0){
+                TraceLog(LOG_INFO,"选择 感光器");
+                category = 0;
+            }
+            if(r1){
+                TraceLog(LOG_INFO,"选择 定位器");
+                category = 1;
+            }
+            if(r2){
+                TraceLog(LOG_INFO,"选择 网络节点");
+                category = 2;
+            }
+            if(r3){
+                TraceLog(LOG_INFO,"选择 文件节点");
+                category = 3;
+            }
+            if(category!=-1){
+                AddNode(UiNodeType::input,category);
+                m_Editing = false;
+                m_Menus.pop();
+            }
         }
-        if(GuiButton(Rectangle{start_x+5,start_y+30,w-10,20},"神经元")){
-            AddNode(UiNodeType::neural);
-            m_Editing = false;
-            m_Menus.pop();
+        if(nodeTypeActive==1){
+            Rectangle rec = {start_x+5,start_y+30,w-10,18};
+            bool r0 = GuiButton(rec,"通用节点");
+            rec.y += 20;
+            bool r1 = GuiButton(rec,"记忆体");
+            rec.y += 20;
+            bool r2 = GuiButton(rec,"异或节点");
+            int category = -1;
+            if(r0){
+                TraceLog(LOG_INFO,"选择 通用节点");
+                category = 0;
+            }
+            if(r1){
+                TraceLog(LOG_INFO,"选择 记忆体");
+                category = 1;
+            }
+            if(r2){
+                TraceLog(LOG_INFO,"选择 异或节点");
+                category = 2;
+            }
+            if(category!=-1){
+                AddNode(UiNodeType::neural,category);
+                m_Editing = false;
+                m_Menus.pop();
+            }
         }
-        if(GuiButton(Rectangle{start_x+5,start_y+55,w-10,20},"输出节点")){
-            AddNode(UiNodeType::output);
-            m_Editing = false;
-            m_Menus.pop();
+        if(nodeTypeActive==2){
+            Rectangle rec = {start_x+5,start_y+30,w-10,18};
+            int category = -1;
+            if(GuiButton(rec,"停止")){
+                category = 0;
+            }
+            rec.y += 20;
+            if(GuiButton(rec,"移动")){
+                category = 1;
+            }
+            rec.y += 20;
+            if(GuiButton(rec,"跳跃")){
+                category = 2;
+            }
+            rec.y += 20;
+            if(GuiButton(rec,"左转")){
+                category = 3;
+            }
+            rec.y += 20;
+            if(GuiButton(rec,"右转")){
+                category = 4;
+            }
+            if(category!=-1){
+                AddNode(UiNodeType::output,category);
+                m_Editing = false;
+                m_Menus.pop();
+            }
         }
     }
 
@@ -384,7 +456,7 @@ namespace GamePlay{
         GuiStatusBar(rec5,TextFormat("连接数\t%d",m_UiLinks.size()));
     }
 
-    void NodeEditor::AddNode(UiNodeType uiNodeType) {
+    void NodeEditor::AddNode(UiNodeType uiNodeType,int category) {
         Vector2 position = m_MousePosition;
 
         UiNode uiNode(uiNodeType,m_UiNodeUniqueId++);
@@ -410,7 +482,7 @@ namespace GamePlay{
                 inputs.push_back(uiNode.id);
                 node.type=NodeType::Input;
                 node.inputFrequency = GetRandomValue(11,41);
-                node.inputAction = GetRandomValue(0,1);
+                node.inputAction = category;
                 Vector3 c = ColorToHSV(RED);
                 uiNode.colors[0] = ColorFromHSV(c.x,c.y,0.1);
                 uiNode.colors[1] = ColorFromHSV(c.x,c.y,1.0);
@@ -422,7 +494,7 @@ namespace GamePlay{
                 m_OutputNum++;
                 outputs.push_back(uiNode.id);
                 node.type=NodeType::Output;
-                node.outputAction  = GetRandomValue(0,4);
+                node.outputAction  = category;
                 Vector3 c = ColorToHSV(YELLOW);
                 uiNode.colors[0] = ColorFromHSV(c.x,c.y,0.1);
                 uiNode.colors[1] = ColorFromHSV(c.x,c.y,1.0);

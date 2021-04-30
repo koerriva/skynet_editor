@@ -7,7 +7,6 @@ in vec4 fragColor;
 // Input uniform values
 uniform sampler2D texture0;
 uniform vec4 colDiffuse;
-uniform float ttime;
 
 // Output fragment color
 out vec4 finalColor;
@@ -56,9 +55,10 @@ float trace(vec2 origin,vec2 dir){
     float t = 0.0f;
     for (int i = 0; i < MAX_STEP && t < MAX_DISTANCE; i++) {
         Result r = scene(origin+dir*t);
-        if (r.sd < EPSILON)
+        if (r.sd < EPSILON){
             return r.emissive;
-        t += r.sd;
+        }
+        t+=r.sd;
     }
     return 0.0f;
 }

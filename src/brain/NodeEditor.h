@@ -40,7 +40,7 @@ namespace GamePlay{
 
         int GetNodeCount() { return m_UiNodes.size();}
     private:
-        void AddNode(UiNodeType type);
+        void AddNode(UiNodeType type,int category);
         void LinkNode(int from,int to);
         void DelNode();
         void UnLinkNode(int from,int to);
@@ -79,16 +79,18 @@ namespace GamePlay{
         }
         void TurnBug(ActionSignal actionSignal){
             float angle = 0;
-            float unitDeg = 1.0f/10.f;
+            float unitDeg = 0;
             if(actionSignal.type==3&&!m_BugStop){
                 //左转
+                unitDeg = 1.0f/10.0f;
                 angle = -unitDeg*PI/180.f;
             }
             if(actionSignal.type==4&&!m_BugStop){
                 //右转
+                unitDeg = 1.0f/10.0f;
                 angle = unitDeg*PI/180.f;
             }
-            m_BugRotation += angle;
+            m_BugRotation += unitDeg;
             m_BugDirection = Vector3Transform(m_BugDirection,MatrixRotateY(angle));
         }
         void StopBug(ActionSignal actionSignal){
@@ -124,7 +126,7 @@ namespace GamePlay{
         Camera2D m_Camera;
         Camera m_Camera3d;
         RenderTexture2D m_RenderTarget;
-        Vector2 m_TargetSize = {400,300};
+        Vector2 m_TargetSize;
         Vector2  m_MousePosition;
         Font m_UiFont;
 
