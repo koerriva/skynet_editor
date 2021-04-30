@@ -511,6 +511,7 @@ namespace GamePlay{
                                 if(stop){
                                     TraceLog(LOG_INFO,TextFormat("找到循环连接 %d->%d",to->parent,toNode));
                                     nodeLink.circle = true;
+                                    break;
                                 }
                                 stack.push(toNode);
                             }
