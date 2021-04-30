@@ -160,6 +160,7 @@ namespace GamePlay{
                     from->position = Vector2Subtract(from->position,offset);
 
                     for (int i : from->children) {
+                        if(i==0)continue;
                         auto uiNode = m_UiNodes.find(i);
                         Vector2 pos = uiNode->position;
                         Vector2 pinPos = uiNode->pinPosition;
