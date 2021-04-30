@@ -86,8 +86,7 @@ namespace GamePlay{
             MoveBug(signal);
             TurnBug(signal);
             iter = m_BugSignal.erase(iter);
-            TraceLog(LOG_INFO,TextFormat("t %d,turn",t));
         }
-        std::this_thread::sleep_for(std::chrono::milliseconds(static_cast<long>((1.0f/10.0f)*1000)));
+        std::this_thread::sleep_for(std::chrono::milliseconds(static_cast<long>((1.0f/60.0f)*1000)));
     }
 }
