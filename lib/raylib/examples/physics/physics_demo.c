@@ -51,10 +51,10 @@ int main(void)
         //----------------------------------------------------------------------------------
         UpdatePhysics();            // Update physics system
 
-        if (IsKeyPressed('R'))      // Reset physics system
+        if (IsKeyPressed(KEY_R))    // Reset physics system
         {
             ResetPhysics();
-            
+
             floor = CreatePhysicsBodyRectangle((Vector2){ screenWidth/2, screenHeight }, 500, 100, 10);
             floor->enabled = false;
 

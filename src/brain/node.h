@@ -19,16 +19,24 @@ namespace GamePlay{
         int t=0;
         bool isLearn = false;
         bool isActive = false;
+
+        //input
+        int inputFrequency=11;
+        int inputAction=0;//1视觉遮挡,0视觉正常
+        //output
         int outputAction=0;
+        //synapse
+        int link=0;
+
         Node():type(NodeType::Node){}
         explicit Node(NodeType t):type(t){}
     };
     struct NodeLink{
-        int id;
-        int from;
-        int to;
-        int weight;
-        int type;//14 input->neural,44 neural->neural,45 neural->output
+        int id=0;
+        int from=0;
+        int to=0;
+        int weight=0;
+        int type=0;//14 input->neural,44 neural->neural,45 neural->output
         bool circle = false;
     };
     struct NodeSignal{
@@ -39,6 +47,10 @@ namespace GamePlay{
     struct ActionSignal{
         int type = 0;//0停止,1移动,2跳跃,3左转,4右转
         int value = 0;
+    };
+    struct Animation{
+        ModelAnimation data;
+        int frameCounter=0;
     };
 
     //ui

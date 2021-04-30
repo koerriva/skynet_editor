@@ -5,9 +5,8 @@
 #include <raymath.h>
 #include "NodeEditor.h"
 #include "graph.h"
-
 #define RAYGUI_IMPLEMENTATION
-#include <raygui.h>
+#include <raygui/raygui.h>
 
 namespace GamePlay{
 
@@ -25,24 +24,32 @@ namespace GamePlay{
         m_Camera3d.target = {0.0f, 0.0f, 0.0f};
         m_Camera3d.up = {0.0f, 1.0f, 0.0f};
         m_Camera3d.fovy = 45.0f;
-        m_Camera3d.type = CAMERA_PERSPECTIVE;
+        m_Camera3d.projection = CAMERA_PERSPECTIVE;
         SetCameraMode(m_Camera3d,CAMERA_FREE);
 
-        m_Playground = LoadModelFromMesh(GenMeshPlane(100,100,10,10));
-        m_Playground.materials[0] = LoadMaterialPBR(DARKGREEN,0.0,1.0);
-        m_Bug  = LoadModelFromMesh(GenMeshCube(1,1,1));
-        m_Bug.materials[0]= LoadMaterialPBR(DARKBROWN,0.9,0.1);
-//        mainLight = {1,0,{10,10,10},{0,0,0},BLACK};
-//
-//        Shader shader = m_Playground.materials[0].shader;
-//        SetShaderValue(shader,GetShaderLocation(shader,"lights[0].enabled"),&mainLight.enabled,UNIFORM_INT);
-//        SetShaderValue(shader,GetShaderLocation(shader,"lights[0].type"),&mainLight.type,UNIFORM_INT);
-//        auto* position = new float[3] {mainLight.position.x,mainLight.position.y,mainLight.position.z};
-//        SetShaderValue(shader,GetShaderLocation(shader,"lights[0].position"),position,UNIFORM_VEC3);
-//        auto* target = new float[3] {mainLight.target.x,mainLight.target.y,mainLight.target.z};
-//        SetShaderValue(shader,GetShaderLocation(shader,"lights[0].target"),target,UNIFORM_VEC3);
-//        auto* color = new float[4] {mainLight.color.r/255.0f,mainLight.color.g/255.0f,mainLight.color.b/255.0f,mainLight.color.a/255.0f};
-//        SetShaderValue(shader,GetShaderLocation(shader,"lights[0].color"),color,UNIFORM_VEC4);
+        m_Playground = LoadModelFromMesh(GenMeshPlane(200,200,10,10));
+
+        m_Bug = LoadModel("data/Model/GLTF/Frog.glb");
+        static int animsCount=0;
+        ModelAnimation * anims = LoadModelAnimations("data/Model/GLTF/Frog.glb",&animsCount);
+        TraceLog(LOG_INFO,TextFormat("animation count %d",animsCount));
+        for (int i = 0; i < animsCount; ++i) {
+            m_BugAnimation.push_back(Animation{anims[0],0});
+        }
+
+//        static int count = 0;
+//        m_Bug.materials = LoadMaterials("data/Model/OBJ/Rat.mtl",&count);
+
+//        m_Bug = LoadModelFromMesh(GenMeshCube(2,2,2));
+//        m_Bug.materials[0] = LoadMaterialPBR(DARKBROWN,0.2,1.0);
+
+        m_BugActionIcons[0] = LoadTexture("data/stop.png");
+        m_BugActionIcons[1] = LoadTexture("data/move.png");
+        m_BugActionIcons[2] = LoadTexture("data/jump.png");
+        m_BugActionIcons[3] = LoadTexture("data/left-turn.png");
+        m_BugActionIcons[4] = LoadTexture("data/right-turn.png");
+
+        m_Icons = LoadTexture("data/icons.png");
 
         m_UiFont = font;
 
@@ -384,7 +391,7 @@ namespace GamePlay{
         uiNode.radius = 32;
         uiNode.position = position;
 
-        NodeType nodeType;
+        Node node;
 
         int startAngle = 1;
         int endAngle = 8;
@@ -392,7 +399,7 @@ namespace GamePlay{
             case UiNodeType::neural:{
                 m_NeuralNum++;
                 neurals.push_back(uiNode.id);
-                nodeType=NodeType::Neural;
+                node.type=NodeType::Neural;
                 Vector3 c = ColorToHSV(GREEN);
                 uiNode.colors[0] = ColorFromHSV(c.x,c.y,0.1);
                 uiNode.colors[1] = ColorFromHSV(c.x,c.y,1.0);
@@ -401,7 +408,9 @@ namespace GamePlay{
             case UiNodeType::input:{
                 m_InputNum++;
                 inputs.push_back(uiNode.id);
-                nodeType=NodeType::Input;
+                node.type=NodeType::Input;
+                node.inputFrequency = GetRandomValue(11,41);
+                node.inputAction = GetRandomValue(0,1);
                 Vector3 c = ColorToHSV(RED);
                 uiNode.colors[0] = ColorFromHSV(c.x,c.y,0.1);
                 uiNode.colors[1] = ColorFromHSV(c.x,c.y,1.0);
@@ -412,7 +421,8 @@ namespace GamePlay{
                 endAngle = 5;
                 m_OutputNum++;
                 outputs.push_back(uiNode.id);
-                nodeType=NodeType::Output;
+                node.type=NodeType::Output;
+                node.outputAction  = GetRandomValue(0,4);
                 Vector3 c = ColorToHSV(YELLOW);
                 uiNode.colors[0] = ColorFromHSV(c.x,c.y,0.1);
                 uiNode.colors[1] = ColorFromHSV(c.x,c.y,1.0);
@@ -420,7 +430,7 @@ namespace GamePlay{
             }
             default:return;
         }
-        Node node(nodeType);
+
         m_Nodes.insert(uiNode.id,node);
 
         //(p+r*cos(2π*(n-1)/n),q+r*sin(2π*(n-1)/n))
@@ -487,6 +497,7 @@ namespace GamePlay{
                         to->type = UiNodeType::synapse;
                         auto toNode = m_Nodes.find(to->id);
                         toNode->type = NodeType::Synapse;
+                        toNode->link = nodeLink.id;
                     }
 
                     to->linkFrom = fromId;
@@ -608,9 +619,11 @@ namespace GamePlay{
         auto node = m_Nodes.find(uiNode.id);
 
         if(uiNode.type==UiNodeType::input){
-            Color color = uiNode.cursorIn?RED:Color{ 115, 20, 27, 255 };
-            color = node->isActive?RED:color;
-            DrawTextureEx(m_NeuralTexture,Vector2SubtractValue(uiNode.position,uiNode.radius),0,scale,color);
+            DrawTextureEx(m_NeuralTexture,Vector2SubtractValue(uiNode.position,uiNode.radius),0,scale,DARKRED);
+            Vector2 iconPos = Vector2SubtractValue(uiNode.position,8);
+            Color color = node->isActive?RED:BLACK;
+            int index = 12+node->inputAction;
+            DrawTextureRec(m_Icons,{static_cast<float>(16*index+index*2),16*2+2*2,16,16},iconPos,color);
         }
         if(uiNode.type==UiNodeType::neural){
             Color color = uiNode.cursorIn?GREEN:DARKGREEN;
@@ -618,19 +631,23 @@ namespace GamePlay{
             DrawTextureEx(m_NeuralTexture,Vector2SubtractValue(uiNode.position,uiNode.radius),0,scale,color);
         }
         if(uiNode.type==UiNodeType::output){
-            Color color = uiNode.cursorIn?YELLOW:Color{126, 124, 0, 255};
-            color = node->isActive?YELLOW:color;
-            DrawTextureEx(m_NeuralTexture,Vector2SubtractValue(uiNode.position,uiNode.radius),0,scale,color);
+            DrawTextureEx(m_NeuralTexture,Vector2SubtractValue(uiNode.position,uiNode.radius),0,scale,DARKYELLOW);
+            Vector2 iconPos = Vector2SubtractValue(uiNode.position,8);
+            Color color = node->isActive?YELLOW:BLACK;
+            DrawTextureEx(m_BugActionIcons[node->outputAction],iconPos,0,scale,color);
         }
         if(uiNode.type==UiNodeType::pin){
-            DrawCircleGradient(uiNode.position.x,uiNode.position.y,uiNode.radius,BLUE,DARKBLUE);
+//            DrawCircleGradient(uiNode.position.x,uiNode.position.y,uiNode.radius,BLUE,RAYWHITE);
             if(uiNode.cursorIn){
                 DrawCircleLines(uiNode.position.x,uiNode.position.y,uiNode.radius,BLUE);
             }
         }
         if(uiNode.type==UiNodeType::synapse){
-            Color color = uiNode.cursorIn?GREEN:DARKGREEN;
-            DrawCircleV(uiNode.position,uiNode.radius,color);
+            auto nodeLink = m_NodeLinks.find(node->link);
+            Color color1 = nodeLink->weight>=0?BLUE:RED;
+            Color color2 = nodeLink->weight>=0?DARKBLUE:DARKRED;
+
+            DrawCircleGradient(uiNode.position.x,uiNode.position.y,uiNode.radius,color1,color2);
         }
         if(uiNode.type==UiNodeType::node){
 //            Color color = node->isActive?YELLOW:Color{153, 149, 10, 255};

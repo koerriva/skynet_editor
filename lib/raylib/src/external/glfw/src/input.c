@@ -137,30 +137,30 @@ static GLFWbool parseMapping(_GLFWmapping* mapping, const char* string)
         const char* name;
         _GLFWmapelement* element;
     } fields[] =
-            {
-                    { "platform",      NULL },
-                    { "a",             mapping->buttons + GLFW_GAMEPAD_BUTTON_A },
-                    { "b",             mapping->buttons + GLFW_GAMEPAD_BUTTON_B },
-                    { "x",             mapping->buttons + GLFW_GAMEPAD_BUTTON_X },
-                    { "y",             mapping->buttons + GLFW_GAMEPAD_BUTTON_Y },
-                    { "back",          mapping->buttons + GLFW_GAMEPAD_BUTTON_BACK },
-                    { "start",         mapping->buttons + GLFW_GAMEPAD_BUTTON_START },
-                    { "guide",         mapping->buttons + GLFW_GAMEPAD_BUTTON_GUIDE },
-                    { "leftshoulder",  mapping->buttons + GLFW_GAMEPAD_BUTTON_LEFT_BUMPER },
-                    { "rightshoulder", mapping->buttons + GLFW_GAMEPAD_BUTTON_RIGHT_BUMPER },
-                    { "leftstick",     mapping->buttons + GLFW_GAMEPAD_BUTTON_LEFT_THUMB },
-                    { "rightstick",    mapping->buttons + GLFW_GAMEPAD_BUTTON_RIGHT_THUMB },
-                    { "dpup",          mapping->buttons + GLFW_GAMEPAD_BUTTON_DPAD_UP },
-                    { "dpright",       mapping->buttons + GLFW_GAMEPAD_BUTTON_DPAD_RIGHT },
-                    { "dpdown",        mapping->buttons + GLFW_GAMEPAD_BUTTON_DPAD_DOWN },
-                    { "dpleft",        mapping->buttons + GLFW_GAMEPAD_BUTTON_DPAD_LEFT },
-                    { "lefttrigger",   mapping->axes + GLFW_GAMEPAD_AXIS_LEFT_TRIGGER },
-                    { "righttrigger",  mapping->axes + GLFW_GAMEPAD_AXIS_RIGHT_TRIGGER },
-                    { "leftx",         mapping->axes + GLFW_GAMEPAD_AXIS_LEFT_X },
-                    { "lefty",         mapping->axes + GLFW_GAMEPAD_AXIS_LEFT_Y },
-                    { "rightx",        mapping->axes + GLFW_GAMEPAD_AXIS_RIGHT_X },
-                    { "righty",        mapping->axes + GLFW_GAMEPAD_AXIS_RIGHT_Y }
-            };
+    {
+        { "platform",      NULL },
+        { "a",             mapping->buttons + GLFW_GAMEPAD_BUTTON_A },
+        { "b",             mapping->buttons + GLFW_GAMEPAD_BUTTON_B },
+        { "x",             mapping->buttons + GLFW_GAMEPAD_BUTTON_X },
+        { "y",             mapping->buttons + GLFW_GAMEPAD_BUTTON_Y },
+        { "back",          mapping->buttons + GLFW_GAMEPAD_BUTTON_BACK },
+        { "start",         mapping->buttons + GLFW_GAMEPAD_BUTTON_START },
+        { "guide",         mapping->buttons + GLFW_GAMEPAD_BUTTON_GUIDE },
+        { "leftshoulder",  mapping->buttons + GLFW_GAMEPAD_BUTTON_LEFT_BUMPER },
+        { "rightshoulder", mapping->buttons + GLFW_GAMEPAD_BUTTON_RIGHT_BUMPER },
+        { "leftstick",     mapping->buttons + GLFW_GAMEPAD_BUTTON_LEFT_THUMB },
+        { "rightstick",    mapping->buttons + GLFW_GAMEPAD_BUTTON_RIGHT_THUMB },
+        { "dpup",          mapping->buttons + GLFW_GAMEPAD_BUTTON_DPAD_UP },
+        { "dpright",       mapping->buttons + GLFW_GAMEPAD_BUTTON_DPAD_RIGHT },
+        { "dpdown",        mapping->buttons + GLFW_GAMEPAD_BUTTON_DPAD_DOWN },
+        { "dpleft",        mapping->buttons + GLFW_GAMEPAD_BUTTON_DPAD_LEFT },
+        { "lefttrigger",   mapping->axes + GLFW_GAMEPAD_AXIS_LEFT_TRIGGER },
+        { "righttrigger",  mapping->axes + GLFW_GAMEPAD_AXIS_RIGHT_TRIGGER },
+        { "leftx",         mapping->axes + GLFW_GAMEPAD_AXIS_LEFT_X },
+        { "lefty",         mapping->axes + GLFW_GAMEPAD_AXIS_LEFT_Y },
+        { "rightx",        mapping->axes + GLFW_GAMEPAD_AXIS_RIGHT_X },
+        { "righty",        mapping->axes + GLFW_GAMEPAD_AXIS_RIGHT_Y }
+    };
 
     length = strcspn(c, ",");
     if (length != 32 || c[length] != ',')
@@ -1188,8 +1188,8 @@ GLFWAPI int glfwUpdateGamepadMappings(const char* string)
                     {
                         _glfw.mappingCount++;
                         _glfw.mappings =
-                                realloc(_glfw.mappings,
-                                        sizeof(_GLFWmapping) * _glfw.mappingCount);
+                            realloc(_glfw.mappings,
+                                    sizeof(_GLFWmapping) * _glfw.mappingCount);
                         _glfw.mappings[_glfw.mappingCount - 1] = mapping;
                     }
                 }
@@ -1377,7 +1377,7 @@ GLFWAPI double glfwGetTime(void)
 {
     _GLFW_REQUIRE_INIT_OR_RETURN(0.0);
     return (double) (_glfwPlatformGetTimerValue() - _glfw.timer.offset) /
-           _glfwPlatformGetTimerFrequency();
+        _glfwPlatformGetTimerFrequency();
 }
 
 GLFWAPI void glfwSetTime(double time)
@@ -1391,7 +1391,7 @@ GLFWAPI void glfwSetTime(double time)
     }
 
     _glfw.timer.offset = _glfwPlatformGetTimerValue() -
-                         (uint64_t) (time * _glfwPlatformGetTimerFrequency());
+        (uint64_t) (time * _glfwPlatformGetTimerFrequency());
 }
 
 GLFWAPI uint64_t glfwGetTimerValue(void)

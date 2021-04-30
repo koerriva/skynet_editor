@@ -11,7 +11,7 @@
 *
 ********************************************************************************************
 *
-* To export a model from blender, make sure it is not posed, the vertices need to be in the 
+* To export a model from blender, make sure it is not posed, the vertices need to be in the
 * same position as they would be in edit mode.
 * and that the scale of your models is set to 0. Scaling can be done from the export menu.
 *
@@ -37,7 +37,7 @@ int main(void)
     camera.target = (Vector3){ 0.0f, 0.0f, 0.0f };      // Camera looking at point
     camera.up = (Vector3){ 0.0f, 1.0f, 0.0f };          // Camera up vector (rotation towards target)
     camera.fovy = 45.0f;                                // Camera field-of-view Y
-    camera.type = CAMERA_PERSPECTIVE;                   // Camera mode type
+    camera.projection = CAMERA_PERSPECTIVE;                   // Camera mode type
 
     Model model = LoadModel("resources/gltf/rigged_figure.glb");               // Load the animated model mesh and
     // basic data
@@ -50,10 +50,11 @@ int main(void)
     int animsCount = 0;
     ModelAnimation *anims = LoadModelAnimations("resources/gltf/rigged_figure.glb", &animsCount);
     int animFrameCounter = 0;
+    int animationDirection = 1;
 
     SetCameraMode(camera, CAMERA_FREE); // Set free camera mode
 
-    SetTargetFPS(60);                   // Set our game to run at 60 frames-per-second
+    SetTargetFPS(30);                   // Set our game to run at 60 frames-per-second
     //--------------------------------------------------------------------------------------
 
     // Main game loop
@@ -66,9 +67,15 @@ int main(void)
         // Play animation when spacebar is held down
         if (IsKeyDown(KEY_SPACE))
         {
-            animFrameCounter++;
+            animFrameCounter += animationDirection;
+
+            if (animFrameCounter >= anims[0].frameCount || animFrameCounter <= 0)
+            {
+                animationDirection *= -1;
+                animFrameCounter += animationDirection;
+            }
+
             UpdateModelAnimation(model, anims[0], animFrameCounter);
-            if (animFrameCounter >= anims[0].frameCount) animFrameCounter = 0;
         }
         //----------------------------------------------------------------------------------
 
@@ -101,7 +108,7 @@ int main(void)
     // De-Initialization
     //--------------------------------------------------------------------------------------
 //    UnloadTexture(texture);     // Unload texture
-    
+
     // Unload model animations data
     for (int i = 0; i < animsCount; i++) UnloadModelAnimation(anims[i]);
     RL_FREE(anims);

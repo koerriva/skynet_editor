@@ -9,7 +9,7 @@ namespace GamePlay{
         int t = m_SignalTick.load();
         for(int node:inputs){
             auto in = m_Nodes.find(node);
-            if(m_SignalTick%21==0){
+            if(m_SignalTick%in->inputFrequency==0){
                 in->isActive = !in->isActive;
             }
             if(in->isActive){
@@ -75,10 +75,11 @@ namespace GamePlay{
             if(in->value>0){
                 in->isActive = true;
                 in->value = 100;
-                m_BugSignal.push_back(ActionSignal{4,in->value});
+                m_BugSignal.push_back(ActionSignal{in->outputAction,in->value});
             }
         }
 
+        m_BugStop = false;
         auto iter = m_BugSignal.begin();
         while (iter!=m_BugSignal.end()){
             ActionSignal signal = ActionSignal{iter->type,iter->value};

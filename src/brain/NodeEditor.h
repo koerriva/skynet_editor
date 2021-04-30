@@ -15,6 +15,9 @@
 #include "node.h"
 #include "raymath.h"
 
+#define DARKRED ColorFromHSV(0,1.0,0.5)
+#define DARKYELLOW ColorFromHSV(58,0.8,0.5)
+
 namespace GamePlay{
     struct Light{
         int enabled;
@@ -75,18 +78,30 @@ namespace GamePlay{
             }
         }
         void TurnBug(ActionSignal actionSignal){
+            float angle = 0;
+            float unitDeg = 1.0f/10.f;
             if(actionSignal.type==3&&!m_BugStop){
                 //左转
-                m_BugDirection = Vector3Transform(m_BugDirection,MatrixRotateY(-PI/180.f));
+                angle = -unitDeg*PI/180.f;
             }
             if(actionSignal.type==4&&!m_BugStop){
                 //右转
-                m_BugDirection = Vector3Transform(m_BugDirection,MatrixRotateY(PI/180.0f));
+                angle = unitDeg*PI/180.f;
             }
+            m_BugRotation += angle;
+            m_BugDirection = Vector3Transform(m_BugDirection,MatrixRotateY(angle));
         }
         void StopBug(ActionSignal actionSignal){
             if(actionSignal.type==0){
                 m_BugStop = true;
+            }
+        }
+
+        void PlayBugAnimation(Animation& animation){
+            animation.frameCounter++;
+            UpdateModelAnimation(m_Bug,animation.data,animation.frameCounter);
+            if (animation.frameCounter >= animation.data.frameCount) {
+                animation.frameCounter = 0;
             }
         }
     private:
@@ -128,6 +143,7 @@ namespace GamePlay{
         std::unordered_map<int,std::vector<NodeSignal>> m_Signals;
         std::atomic_int m_SignalTick;
 
+        Texture2D m_Icons;
         Shader m_LightingShader;
         Texture2D m_LightingTexture;
         Shader m_BaseShader;
@@ -135,10 +151,10 @@ namespace GamePlay{
         Model m_Bug;
         Vector3 m_BugPosition;
         Vector3 m_BugDirection = {0,0,1};
+        float m_BugRotation=0.0f;
         bool m_BugStop = false;
-
-        Light mainLight;
-
+        Texture2D m_BugActionIcons[5];
+        std::vector<Animation> m_BugAnimation;
         std::vector<ActionSignal> m_BugSignal;
     };
 }
