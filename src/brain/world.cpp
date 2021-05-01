@@ -5,7 +5,7 @@
 #include "NodeEditor.h"
 
 namespace GamePlay{
-    void NodeEditor::Init3DWorld() {
+    void NodeEditor::Init3D() {
         m_Camera3d.position = { 0.0f, 10.0f, 20.0f };
         m_Camera3d.target = {0.0f, 0.0f, 0.0f};
         m_Camera3d.up = {0.0f, 1.0f, 0.0f};
@@ -21,14 +21,17 @@ namespace GamePlay{
             m_BugAnimation.push_back(Animation{anim[0],0});
         }
     }
-    void NodeEditor::Render3D() {
+    void NodeEditor::Update3D() {
+
+    }
+    void NodeEditor::Render3D(Viewport& viewport) {
         float cameraPos[3] = { m_Camera3d.position.x, m_Camera3d.position.y, m_Camera3d.position.z };
         Shader shader = m_Playground.materials[0].shader;
         SetShaderValue(shader, shader.locs[SHADER_LOC_VECTOR_VIEW], cameraPos, SHADER_UNIFORM_VEC3);
         shader = m_Bug.materials[0].shader;
         SetShaderValue(shader, shader.locs[SHADER_LOC_VECTOR_VIEW], cameraPos, SHADER_UNIFORM_VEC3);
 
-        BeginTextureMode(m_RenderTarget);
+//        BeginTextureMode(frameBuffer);
         ClearBackground(SKYBLUE);
 
         BeginMode3D(m_Camera3d);
@@ -40,11 +43,7 @@ namespace GamePlay{
         DrawRay(Ray{m_BugPosition,m_BugDirection},RED);
 
         EndMode3D();
-        EndTextureMode();
-
-        BeginShaderMode(m_BaseShader);
-        DrawTextureRec(m_RenderTarget.texture,{0,0,m_TargetSize.x,-m_TargetSize.y},{0,0},BLACK);
-        EndShaderMode();
+//        EndTextureMode();
     }
 
     Material NodeEditor::LoadMaterialPBR(Color albedo, float metalness, float roughness)

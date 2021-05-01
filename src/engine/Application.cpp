@@ -37,8 +37,6 @@ namespace Engine{
             }
 
             BeginDrawing();
-                ClearBackground({26, 59, 50, 255});
-
                 for (Layer* layer:m_LayerStack) {
                     layer->OnRender();
                 }

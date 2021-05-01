@@ -28,7 +28,7 @@ include_directories(lib/glm)
 
 file(COPY data DESTINATION .)
 
-add_executable(skynet_editor src/main.cpp ${DIR_SRCS} src/brain/world.cpp)
+add_executable(skynet_editor src/main.cpp ${DIR_SRCS} src/brain/world.cpp src/brain/editor.cpp src/brain/menu.cpp)
 
 #find_package(spdlog REQUIRED)
 

@@ -26,7 +26,7 @@ public:
     }
 
     void OnRender() override{
-        m_NodeEditor->Render2D();
+        m_NodeEditor->Render();
     }
 
     void OnGUIRender() override{

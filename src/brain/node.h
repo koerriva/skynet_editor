@@ -26,7 +26,10 @@ namespace GamePlay{
         //output
         int outputAction=0;
         //synapse
+        int decay=0;
         int link=0;
+        //neural
+        int activeType=0;//0step,1linear,2error cals,3sigmoid
 
         Node():type(NodeType::Node){}
         explicit Node(NodeType t):type(t){}
@@ -48,6 +51,8 @@ namespace GamePlay{
         int type = 0;//0停止,1移动,2跳跃,3左转,4右转
         int value = 0;
     };
+
+    //render
     struct Animation{
         ModelAnimation data;
         int frameCounter=0;
@@ -61,7 +66,8 @@ namespace GamePlay{
         pin,
         synapse,
         node,
-        output
+        output,
+        viewport
     };
     struct UiNode
     {
@@ -102,6 +108,20 @@ namespace GamePlay{
         Vector2 position;
         Rectangle rec;
         int uiNode;
+    };
+    struct Viewport{
+        int id;
+        Rectangle rec{};
+        Rectangle source{};
+        RenderTexture2D framebuffer{};
+        Viewport(){};
+        Viewport(int width,int height){
+            id = 0;
+            source = {0,0,static_cast<float>(width),static_cast<float>(-height)};
+            rec = {0,0,static_cast<float>(width),static_cast<float>(height)};
+            framebuffer = LoadRenderTexture(width,height);
+            SetTextureWrap(framebuffer.texture,TEXTURE_WRAP_CLAMP);
+        }
     };
 
     inline static bool IsInside(float r,Vector2 center, Vector2 pos){

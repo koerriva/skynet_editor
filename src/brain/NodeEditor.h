@@ -17,6 +17,7 @@
 
 #define DARKRED ColorFromHSV(0,1.0,0.5)
 #define DARKYELLOW ColorFromHSV(58,0.8,0.5)
+#define SHENHAILV Color{26, 59, 50, 255}
 
 namespace GamePlay{
     struct Light{
@@ -30,8 +31,7 @@ namespace GamePlay{
     class NodeEditor {
     public:
         void Load(Font font);
-        void Render2D();
-        void Render3D();
+        void Render();
         void RenderGUI();
         void Update();
         void Save();
@@ -54,6 +54,7 @@ namespace GamePlay{
         void DrawNode(const UiNode& uiNode);
         void DrawLink(const UiLink& uiLink);
         void DrawLight();
+        void DrawViewport(Viewport& viewport);
 
         int debugTextLine = 0;
         void DrawDebugText(const char* text){
@@ -70,8 +71,12 @@ namespace GamePlay{
 
         static Material LoadMaterialPBR(Color albedo, float metalness, float roughness);
     private:
-        void Init3DWorld();
         void Init2D();
+        void Init3D();
+        void Update2D();
+        void Update3D();
+        void Render2D(Viewport& viewport);
+        void Render3D(Viewport& viewport);
     private:
         void MoveBug(ActionSignal actionSignal){
             if(actionSignal.type==1&&!m_BugStop){
@@ -111,6 +116,7 @@ namespace GamePlay{
     private:
         int selected=0;
         Vector2 selected_point;
+        Vector2 drag_point;
         int m_Hovering=0;
 
         int width=800,height=600;
@@ -127,10 +133,13 @@ namespace GamePlay{
         int m_WorldHeight = 4000;
         Camera2D m_Camera;
         Camera m_Camera3d;
-        RenderTexture2D m_RenderTarget;
-        Vector2 m_TargetSize;
         Vector2  m_MousePosition;
         Font m_UiFont;
+        bool editorMode = true;
+        bool fullMode = false;
+        Viewport m_MainCanvas;
+        Viewport m_2dCanvas;
+        Viewport m_3dCanvas;
 
         bool m_Linking = false;
         bool m_Dragging = false;
@@ -151,7 +160,6 @@ namespace GamePlay{
         Texture2D m_OutputIcons[5];
         Shader m_LightingShader;
         Texture2D m_LightingTexture;
-        Shader m_BaseShader;
         Model m_Playground;
         Model m_Bug;
         Vector3 m_BugPosition;
