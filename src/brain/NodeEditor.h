@@ -69,7 +69,9 @@ namespace GamePlay{
         }
 
         static Material LoadMaterialPBR(Color albedo, float metalness, float roughness);
-
+    private:
+        void Init3DWorld();
+        void Init2D();
     private:
         void MoveBug(ActionSignal actionSignal){
             if(actionSignal.type==1&&!m_BugStop){
@@ -146,6 +148,7 @@ namespace GamePlay{
         std::atomic_int m_SignalTick;
 
         Texture2D m_Icons;
+        Texture2D m_OutputIcons[5];
         Shader m_LightingShader;
         Texture2D m_LightingTexture;
         Shader m_BaseShader;
@@ -155,7 +158,6 @@ namespace GamePlay{
         Vector3 m_BugDirection = {0,0,1};
         float m_BugRotation=0.0f;
         bool m_BugStop = false;
-        Texture2D m_BugActionIcons[5];
         std::vector<Animation> m_BugAnimation;
         std::vector<ActionSignal> m_BugSignal;
     };

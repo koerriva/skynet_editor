@@ -5,6 +5,22 @@
 #include "NodeEditor.h"
 
 namespace GamePlay{
+    void NodeEditor::Init3DWorld() {
+        m_Camera3d.position = { 0.0f, 10.0f, 20.0f };
+        m_Camera3d.target = {0.0f, 0.0f, 0.0f};
+        m_Camera3d.up = {0.0f, 1.0f, 0.0f};
+        m_Camera3d.fovy = 45.0f;
+        m_Camera3d.projection = CAMERA_PERSPECTIVE;
+
+        m_Playground = LoadModelFromMesh(GenMeshPlane(200,200,10,10));
+        m_Bug = LoadModel("data/Model/GLTF/Frog.glb");
+        static int animCount=0;
+        ModelAnimation * anim = LoadModelAnimations("data/Model/GLTF/Frog.glb",&animCount);
+        TraceLog(LOG_INFO,TextFormat("animation count %d",animCount));
+        for (int i = 0; i < animCount; ++i) {
+            m_BugAnimation.push_back(Animation{anim[0],0});
+        }
+    }
     void NodeEditor::Render3D() {
         float cameraPos[3] = { m_Camera3d.position.x, m_Camera3d.position.y, m_Camera3d.position.z };
         Shader shader = m_Playground.materials[0].shader;

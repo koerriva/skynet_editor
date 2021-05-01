@@ -9,56 +9,24 @@
 #include <raygui/raygui.h>
 
 namespace GamePlay{
-
     void NodeEditor::Load(Font font) {
+        m_UiFont = font;
+        GuiSetFont(m_UiFont);
+        Init2D();
+        Init3DWorld();
+    }
+    void NodeEditor::Save() {
+        UnloadFont(m_UiFont);
+        UnloadTexture(m_Icons);
+        for(auto& texture:m_OutputIcons){
+            UnloadTexture(texture);
+        }
+        UnloadModel(m_Bug);
+        UnloadModel(m_Playground);
+    }
+    void NodeEditor::Update() {
         width = GetScreenWidth();
         height = GetScreenHeight();
-
-        m_NeuralTexture = LoadTexture("data/neural.png");
-        m_Camera.offset = {};
-        m_Camera.zoom  = 1.0;
-        m_Camera.target = {};
-        m_Camera.rotation = 0.0;
-
-        m_Camera3d.position = { 0.0f, 25.0f, 50.0f };
-        m_Camera3d.target = {0.0f, 0.0f, 0.0f};
-        m_Camera3d.up = {0.0f, 1.0f, 0.0f};
-        m_Camera3d.fovy = 45.0f;
-        m_Camera3d.projection = CAMERA_PERSPECTIVE;
-        SetCameraMode(m_Camera3d,CAMERA_FREE);
-
-        m_Playground = LoadModelFromMesh(GenMeshPlane(200,200,10,10));
-        m_Bug = LoadModel("data/Model/GLTF/Frog.glb");
-        static int animCount=0;
-        ModelAnimation * anim = LoadModelAnimations("data/Model/GLTF/Frog.glb",&animCount);
-        TraceLog(LOG_INFO,TextFormat("animation count %d",animCount));
-        for (int i = 0; i < animCount; ++i) {
-            m_BugAnimation.push_back(Animation{anim[0],0});
-        }
-
-        m_BugActionIcons[0] = LoadTexture("data/stop.png");
-        m_BugActionIcons[1] = LoadTexture("data/move.png");
-        m_BugActionIcons[2] = LoadTexture("data/jump.png");
-        m_BugActionIcons[3] = LoadTexture("data/left-turn.png");
-        m_BugActionIcons[4] = LoadTexture("data/right-turn.png");
-
-        m_Icons = LoadTexture("data/icons.png");
-
-        m_UiFont = font;
-
-//        m_LightingShader = LoadShader(0,"data/shader/lighting.frag");
-//        m_LightingTexture = LoadTextureFromImage(GenImageColor(width,height,BLACK));
-
-        m_BaseShader = LoadShader(0,"data/shader/base.frag");
-        m_TargetSize.x = width/2;
-        m_TargetSize.y = height/2;
-        m_RenderTarget = LoadRenderTexture(m_TargetSize.x,m_TargetSize.y);
-
-        GuiSetFont(m_UiFont);
-    }
-    void NodeEditor::Save() {}
-
-    void NodeEditor::Update() {
         if(IsKeyPressed(KEY_X)){
             TraceLog(LOG_INFO,"NodeEditor::DelNode");
             DelNode();
@@ -190,7 +158,32 @@ namespace GamePlay{
             m_Dragging = false;
         }
     }
+    void NodeEditor::Init2D() {
+        width = GetScreenWidth();
+        height = GetScreenHeight();
 
+        m_NeuralTexture = LoadTexture("data/neural.png");
+        m_Camera.offset = {};
+        m_Camera.zoom  = 1.0;
+        m_Camera.target = {};
+        m_Camera.rotation = 0.0;
+
+        m_Icons = LoadTexture("data/icons.png");
+
+        m_OutputIcons[0] = LoadTexture("data/stop.png");
+        m_OutputIcons[1] = LoadTexture("data/move.png");
+        m_OutputIcons[2] = LoadTexture("data/jump.png");
+        m_OutputIcons[3] = LoadTexture("data/left-turn.png");
+        m_OutputIcons[4] = LoadTexture("data/right-turn.png");
+
+//        m_LightingShader = LoadShader(0,"data/shader/lighting.frag");
+//        m_LightingTexture = LoadTextureFromImage(GenImageColor(width,height,BLACK));
+
+        m_BaseShader = LoadShader(0,"data/shader/base.frag");
+        m_TargetSize.x = width/2;
+        m_TargetSize.y = height/2;
+        m_RenderTarget = LoadRenderTexture(m_TargetSize.x,m_TargetSize.y);
+    }
     void NodeEditor::Render2D() {
         BeginMode2D(m_Camera);
 
@@ -706,7 +699,7 @@ namespace GamePlay{
             DrawTextureEx(m_NeuralTexture,Vector2SubtractValue(uiNode.position,uiNode.radius),0,scale,DARKYELLOW);
             Vector2 iconPos = Vector2SubtractValue(uiNode.position,8);
             Color color = node->isActive?YELLOW:BLACK;
-            DrawTextureEx(m_BugActionIcons[node->outputAction],iconPos,0,scale,color);
+            DrawTextureEx(m_OutputIcons[node->outputAction], iconPos, 0, scale, color);
         }
         if(uiNode.type==UiNodeType::pin){
 //            DrawCircleGradient(uiNode.position.x,uiNode.position.y,uiNode.radius,BLUE,RAYWHITE);
