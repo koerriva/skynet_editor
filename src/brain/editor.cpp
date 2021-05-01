@@ -6,9 +6,6 @@
 
 namespace GamePlay{
     void NodeEditor::Init2D() {
-        width = GetScreenWidth();
-        height = GetScreenHeight();
-
         m_NeuralTexture = LoadTexture("data/neural.png");
         m_Camera.offset = {};
         m_Camera.zoom  = 1.0;

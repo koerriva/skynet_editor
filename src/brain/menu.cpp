@@ -206,8 +206,8 @@ namespace GamePlay{
         }
     }
     void NodeEditor::ShowStatusBar() {
-        float h = height;
-        float w = width;
+        auto w = static_cast<float>(width);
+        auto h = static_cast<float>(height);
         Rectangle rec1 = {0,h-16,w*0.5f,16};
         Rectangle rec2 = {w*0.5f,h-16,w*0.125f,16};
         Rectangle rec3 = {w*0.625f,h-16,w*0.125f,16};

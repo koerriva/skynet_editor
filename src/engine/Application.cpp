@@ -11,8 +11,8 @@ namespace Engine{
         if(s_Instance){
             TraceLog(LOG_ERROR,"程序实例已存在");
         }
-        int w=1280,h=720;
-        SetConfigFlags(FLAG_VSYNC_HINT | FLAG_MSAA_4X_HINT | FLAG_WINDOW_RESIZABLE);
+        int w=1440,h=900;
+        SetConfigFlags(FLAG_VSYNC_HINT | FLAG_MSAA_4X_HINT);
         InitWindow(w,h,"Frog Brain");
         Image icon = LoadImage("data/neural.png");
         Image icon2 = GenImageCellular(64,64,32);
@@ -21,7 +21,7 @@ namespace Engine{
         int screenWidth = GetMonitorWidth(monitor);
         int screenHeight = GetMonitorHeight(monitor);
 
-        SetWindowPosition((screenWidth-w)/2,(screenHeight-h)/2);
+        SetWindowPosition(screenHeight/4,screenHeight/4);
         SetTargetFPS(60);
 
         s_Instance = this;

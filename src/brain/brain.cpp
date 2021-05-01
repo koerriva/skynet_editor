@@ -79,15 +79,16 @@ namespace GamePlay{
             }
         }
 
-        m_BugStop = false;
         auto iter = m_BugSignal.begin();
         while (iter!=m_BugSignal.end()){
             ActionSignal signal = ActionSignal{iter->type,iter->value};
             StopBug(signal);
             MoveBug(signal);
+            JumpBug(signal);
             TurnBug(signal);
             iter = m_BugSignal.erase(iter);
         }
+        UpdateBug();
         std::this_thread::sleep_for(std::chrono::milliseconds(static_cast<long>((1.0f/60.0f)*1000)));
     }
 }

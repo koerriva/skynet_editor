@@ -23,8 +23,6 @@ namespace GamePlay{
         UnloadModel(m_Playground);
     }
     void NodeEditor::Update() {
-        width = GetScreenWidth();
-        height = GetScreenHeight();
         if(IsKeyPressed(KEY_F10)){
             TraceLog(LOG_INFO,"NodeEditor::Change Viewport");
             editorMode = !editorMode;

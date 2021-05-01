@@ -78,48 +78,19 @@ namespace GamePlay{
         void Render2D(Viewport& viewport);
         void Render3D(Viewport& viewport);
     private:
-        void MoveBug(ActionSignal actionSignal){
-            if(actionSignal.type==1&&!m_BugStop){
-                float speed = 0.02f;
-                m_BugPosition  = Vector3Add(m_BugPosition,Vector3Multiply(m_BugDirection,{speed,0,speed}));
-            }
-        }
-        void TurnBug(ActionSignal actionSignal){
-            float angle = 0;
-            float unitDeg = 0;
-            if(actionSignal.type==3&&!m_BugStop){
-                //左转
-                unitDeg = 1.0f/10.0f;
-                angle = -unitDeg*PI/180.f;
-            }
-            if(actionSignal.type==4&&!m_BugStop){
-                //右转
-                unitDeg = 1.0f/10.0f;
-                angle = unitDeg*PI/180.f;
-            }
-            m_BugRotation += unitDeg;
-            m_BugDirection = Vector3Transform(m_BugDirection,MatrixRotateY(angle));
-        }
-        void StopBug(ActionSignal actionSignal){
-            if(actionSignal.type==0){
-                m_BugStop = true;
-            }
-        }
-
-        void PlayBugAnimation(Animation& animation){
-            animation.frameCounter++;
-            UpdateModelAnimation(m_Bug,animation.data,animation.frameCounter);
-            if (animation.frameCounter >= animation.data.frameCount) {
-                animation.frameCounter = 0;
-            }
-        }
+        void UpdateBug();
+        void StopBug(ActionSignal actionSignal);
+        void MoveBug(ActionSignal actionSignal);
+        void JumpBug(ActionSignal actionSignal);
+        void TurnBug(ActionSignal actionSignal);
+        void PlayBugAnimation(Animation& animation);
     private:
         int selected=0;
         Vector2 selected_point;
         Vector2 drag_point;
         int m_Hovering=0;
 
-        int width=800,height=600;
+        int width=1440,height=900;
 
         IdMap<UiNode> m_UiNodes;
         IdMap<Node> m_Nodes;
@@ -164,8 +135,14 @@ namespace GamePlay{
         Model m_Bug;
         Vector3 m_BugPosition;
         Vector3 m_BugDirection = {0,0,1};
+        Vector3 m_BugVelocity = {0,0,0};
         float m_BugRotation=0.0f;
         bool m_BugStop = false;
+        //jump
+        bool m_BugJumping = false;
+        bool m_BugJumpingUp = false;
+        bool m_BugJumpingDown = false;
+
         std::vector<Animation> m_BugAnimation;
         std::vector<ActionSignal> m_BugSignal;
     };
