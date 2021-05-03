@@ -15,19 +15,14 @@
 #include "node.h"
 #include "raymath.h"
 
+#define MAX_LIGHTS 4
+#include "graphics/lighting.h"
+
 #define DARKRED ColorFromHSV(0,1.0,0.5)
 #define DARKYELLOW ColorFromHSV(58,0.8,0.5)
 #define SHENHAILV Color{26, 59, 50, 255}
 
 namespace GamePlay{
-    struct Light{
-        int enabled;
-        int type;
-        Vector3 position;
-        Vector3 target;
-        Color color;
-    };
-
     class NodeEditor {
     public:
         void Load(Font font);
@@ -69,7 +64,10 @@ namespace GamePlay{
             }
         }
 
+        static Light CreateLight(int type, Vector3 position, Vector3 target, Color color, Shader shader);
+        static void UpdateLightValues(Shader shader, Light light);
         static Material LoadMaterialPBR(Color albedo, float metalness, float roughness);
+        static Material LoadMaterialPhong(Color ambient,Color diffuse,Color specular);
     private:
         void Init2D();
         void Init3D();
@@ -131,6 +129,10 @@ namespace GamePlay{
         Texture2D m_OutputIcons[5];
         Shader m_LightingShader;
         Texture2D m_LightingTexture;
+        Shader m_BaseLightingShader;
+        Light m_SunLight;
+        Vector3 m_SunLightDir;
+
         Model m_Playground;
         Model m_Bug;
         Vector3 m_BugPosition;

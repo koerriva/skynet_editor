@@ -12,8 +12,22 @@ namespace GamePlay{
         m_Camera3d.fovy = 45.0f;
         m_Camera3d.projection = CAMERA_PERSPECTIVE;
 
+        m_BaseLightingShader = LoadShader("data/shader/base_lighting.vert","data/shader/base_lighting.frag");
+        m_BaseLightingShader.locs[SHADER_LOC_MATRIX_MODEL]=GetShaderLocation(m_BaseLightingShader,"ambient");
+        m_BaseLightingShader.locs[SHADER_LOC_VECTOR_VIEW]=GetShaderLocation(m_BaseLightingShader,"viewPos");
+
+        int ambientLoc = GetShaderLocation(m_BaseLightingShader,"ambient");
+        auto* ambientColor = new float [4]{102/255.0f,192/255.0f,1.0f,1.0f};
+        SetShaderValue(m_BaseLightingShader,ambientLoc,ambientColor,SHADER_UNIFORM_VEC4);
+
         m_Playground = LoadModelFromMesh(GenMeshPlane(200,200,10,10));
+        m_Playground.materials[0].shader = m_BaseLightingShader;
         m_Bug = LoadModel("data/Model/GLTF/Frog.glb");
+        m_Bug.materials[0].shader = m_BaseLightingShader;
+
+        m_SunLightDir = Vector3Normalize({-1,-1,-1});
+        m_SunLight = CreateLight(LIGHT_POINT, {0,5,0},{0,0,0},WHITE,m_BaseLightingShader);
+
         static int animCount=0;
         ModelAnimation * anim = LoadModelAnimations("data/Model/GLTF/Frog.glb",&animCount);
         TraceLog(LOG_INFO,TextFormat("animation count %d",animCount));
@@ -22,15 +36,17 @@ namespace GamePlay{
         }
     }
     void NodeEditor::Update3D() {
-
-    }
-    void NodeEditor::Render3D(Viewport& viewport) {
         float cameraPos[3] = { m_Camera3d.position.x, m_Camera3d.position.y, m_Camera3d.position.z };
         Shader shader = m_Playground.materials[0].shader;
         SetShaderValue(shader, shader.locs[SHADER_LOC_VECTOR_VIEW], cameraPos, SHADER_UNIFORM_VEC3);
         shader = m_Bug.materials[0].shader;
         SetShaderValue(shader, shader.locs[SHADER_LOC_VECTOR_VIEW], cameraPos, SHADER_UNIFORM_VEC3);
 
+//        Shader shader = m_BaseLightingShader;
+//        SetShaderValue(shader,shader.locs[SHADER_LOC_VECTOR_VIEW],cameraPos,SHADER_UNIFORM_VEC3);
+        UpdateLightValues(shader,m_SunLight);
+    }
+    void NodeEditor::Render3D(Viewport& viewport) {
 //        BeginTextureMode(frameBuffer);
         ClearBackground(SKYBLUE);
 
@@ -42,6 +58,8 @@ namespace GamePlay{
 
         DrawRay(Ray{m_BugPosition,m_BugDirection},RED);
 
+        DrawSphere({5,5,5},0.5,WHITE);
+        DrawRay(Ray{{5,5,5},m_SunLightDir},WHITE);
         EndMode3D();
 //        EndTextureMode();
     }
@@ -50,5 +68,69 @@ namespace GamePlay{
     {
         Material mat = LoadMaterialDefault();   // Initialize material to default
         return mat;
+    }
+
+    Material  NodeEditor::LoadMaterialPhong(Color ambient, Color diffuse, Color specular) {
+        Material mat = LoadMaterialDefault();
+
+        return mat;
+    }
+
+    Light NodeEditor::CreateLight(int type, Vector3 position, Vector3 target, Color color, Shader shader) {
+        Light light = { 0 };
+        int lightsCount = 1;
+        if (lightsCount < MAX_LIGHTS)
+        {
+            light.enabled = true;
+            light.type = type;
+            light.position = position;
+            light.target = target;
+            light.color = color;
+
+            // TODO: Below code doesn't look good to me,
+            // it assumes a specific shader naming and structure
+            // Probably this implementation could be improved
+            char enabledName[32] = "lights[x].enabled\0";
+            char typeName[32] = "lights[x].type\0";
+            char posName[32] = "lights[x].position\0";
+            char targetName[32] = "lights[x].target\0";
+            char colorName[32] = "lights[x].color\0";
+
+            // Set location name [x] depending on lights count
+            enabledName[7] = '0' + lightsCount;
+            typeName[7] = '0' + lightsCount;
+            posName[7] = '0' + lightsCount;
+            targetName[7] = '0' + lightsCount;
+            colorName[7] = '0' + lightsCount;
+
+            light.enabledLoc = GetShaderLocation(shader, enabledName);
+            light.typeLoc = GetShaderLocation(shader, typeName);
+            light.posLoc = GetShaderLocation(shader, posName);
+            light.targetLoc = GetShaderLocation(shader, targetName);
+            light.colorLoc = GetShaderLocation(shader, colorName);
+
+            UpdateLightValues(shader, light);
+        }
+
+        return light;
+    }
+
+    void NodeEditor::UpdateLightValues(Shader shader, Light light) {
+        // Send to shader light enabled state and type
+        SetShaderValue(shader, light.enabledLoc, &light.enabled, SHADER_UNIFORM_INT);
+        SetShaderValue(shader, light.typeLoc, &light.type, SHADER_UNIFORM_INT);
+
+        // Send to shader light position values
+        float position[3] = { light.position.x, light.position.y, light.position.z };
+        SetShaderValue(shader, light.posLoc, position, SHADER_UNIFORM_VEC3);
+
+        // Send to shader light target position values
+        float target[3] = { light.target.x, light.target.y, light.target.z };
+        SetShaderValue(shader, light.targetLoc, target, SHADER_UNIFORM_VEC3);
+
+        // Send to shader light color values
+        float color[4] = { (float)light.color.r/(float)255, (float)light.color.g/(float)255,
+                           (float)light.color.b/(float)255, (float)light.color.a/(float)255 };
+        SetShaderValue(shader, light.colorLoc, color, SHADER_UNIFORM_VEC4);
     }
 }
