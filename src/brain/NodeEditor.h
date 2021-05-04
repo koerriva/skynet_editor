@@ -48,7 +48,7 @@ namespace GamePlay{
         void DrawBgGrid();
         void DrawNode(const UiNode& uiNode);
         void DrawLink(const UiLink& uiLink);
-        void DrawLight();
+        void RayMarching();
         void DrawViewport(Viewport& viewport);
 
         int debugTextLine = 0;

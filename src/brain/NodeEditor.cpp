@@ -27,41 +27,44 @@ namespace GamePlay{
             TraceLog(LOG_INFO,"NodeEditor::Change Viewport");
             editorMode = !editorMode;
         }
-        if(editorMode){
-            Update2D();
-        }else{
-            ClearMenu();
-            m_Editing = false;
-            Update3D();
-        }
+        m_Editing = false;
+        Update3D();
+//        if(editorMode){
+//            Update2D();
+//        }else{
+//            ClearMenu();
+//            m_Editing = false;
+//            Update3D();
+//        }
     }
     void NodeEditor::Render(){
-        Viewport viewport;
-        if(editorMode){
-            Render2D(m_MainCanvas);
-            BeginTextureMode(m_3dCanvas.framebuffer);
-            SetCameraMode(m_Camera3d,CAMERA_FREE);
-            Render3D(m_MainCanvas);
-            EndTextureMode();
-
-            viewport = m_3dCanvas;
-            viewport.source = {0,0,400,-300};
-            viewport.rec = {0,0,400,300};
-        }else{
-            SetCameraMode(m_Camera3d,CAMERA_FREE);
-            UpdateCamera(&m_Camera3d);
-            Render3D(m_MainCanvas);
-            BeginTextureMode(m_2dCanvas.framebuffer);
-            Render2D(m_MainCanvas);
-            EndTextureMode();
-
-            viewport = m_2dCanvas;
-            viewport.source = {0,0,400,-300};
-            viewport.rec = {0,0,400,300};
-        }
-//        BeginShaderMode(m_BaseShader);
-        DrawViewport(viewport);
-//        EndShaderMode();
+        SetCameraMode(m_Camera3d,CAMERA_FREE);
+        UpdateCamera(&m_Camera3d);
+        RayMarching();
+//        Viewport viewport;
+//        if(editorMode){
+//            Render2D(m_MainCanvas);
+//            BeginTextureMode(m_3dCanvas.framebuffer);
+//            SetCameraMode(m_Camera3d,CAMERA_FREE);
+//            Render3D(m_MainCanvas);
+//            EndTextureMode();
+//
+//            viewport = m_3dCanvas;
+//            viewport.source = {0,0,400,-300};
+//            viewport.rec = {0,0,400,300};
+//        }else{
+//            SetCameraMode(m_Camera3d,CAMERA_FREE);
+//            UpdateCamera(&m_Camera3d);
+//            Render3D(m_MainCanvas);
+//            BeginTextureMode(m_2dCanvas.framebuffer);
+//            Render2D(m_MainCanvas);
+//            EndTextureMode();
+//
+//            viewport = m_2dCanvas;
+//            viewport.source = {0,0,400,-300};
+//            viewport.rec = {0,0,400,300};
+//        }
+//        DrawViewport(viewport);
     }
 
     void NodeEditor::RenderGUI() {
@@ -361,12 +364,6 @@ namespace GamePlay{
         Color color = {gray,gray,gray,255};
 
         DrawMyBezierLine(from->position,from->pinPosition,to->position,to->pinPosition,thick,color);
-    }
-
-    void NodeEditor::DrawLight() {
-        BeginShaderMode(m_LightingShader);
-            DrawTextureRec(m_LightingTexture,{0,0,static_cast<float>(width),static_cast<float>(-height)},{-400,-300},BLACK);
-        EndShaderMode();
     }
 
     void NodeEditor::DrawViewport(Viewport& viewport){

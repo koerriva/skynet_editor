@@ -12,6 +12,8 @@ namespace GamePlay{
         m_Camera3d.fovy = 45.0f;
         m_Camera3d.projection = CAMERA_PERSPECTIVE;
 
+        m_LightingShader = LoadShader("data/shader/base_lighting.vert","data/shader/ray.frag");
+
         m_BaseLightingShader = LoadShader("data/shader/base_lighting.vert","data/shader/base_lighting.frag");
         m_BaseLightingShader.locs[SHADER_LOC_MATRIX_MODEL]=GetShaderLocation(m_BaseLightingShader,"ambient");
         m_BaseLightingShader.locs[SHADER_LOC_VECTOR_VIEW]=GetShaderLocation(m_BaseLightingShader,"viewPos");
@@ -35,16 +37,29 @@ namespace GamePlay{
             m_BugAnimation.push_back(Animation{anim[0],0});
         }
     }
+
+    static float runTime = 0;
     void NodeEditor::Update3D() {
         float cameraPos[3] = { m_Camera3d.position.x, m_Camera3d.position.y, m_Camera3d.position.z };
-        Shader shader = m_Playground.materials[0].shader;
+        float cameraTarget[3] = { m_Camera3d.target.x, m_Camera3d.target.y, m_Camera3d.target.z };
+        Shader shader = m_LightingShader;
         SetShaderValue(shader, shader.locs[SHADER_LOC_VECTOR_VIEW], cameraPos, SHADER_UNIFORM_VEC3);
-        shader = m_Bug.materials[0].shader;
-        SetShaderValue(shader, shader.locs[SHADER_LOC_VECTOR_VIEW], cameraPos, SHADER_UNIFORM_VEC3);
+
+        SetShaderValue(shader, GetShaderLocation(shader,"viewEye"),cameraPos,SHADER_UNIFORM_VEC3);
+        SetShaderValue(shader,GetShaderLocation(shader,"viewCenter"),cameraTarget,SHADER_UNIFORM_VEC3);
+        float deltaTime = GetFrameTime();
+        runTime += deltaTime;
+        SetShaderValue(shader,GetShaderLocation(shader,"runTime"),&runTime,SHADER_UNIFORM_FLOAT);
+        float resolution[2] = { (float)width, (float)height };
+        SetShaderValue(shader,GetShaderLocation(shader,"resolution"),resolution,SHADER_UNIFORM_VEC2);
+//        Shader shader = m_Playground.materials[0].shader;
+//        SetShaderValue(shader, shader.locs[SHADER_LOC_VECTOR_VIEW], cameraPos, SHADER_UNIFORM_VEC3);
+//        shader = m_Bug.materials[0].shader;
+//        SetShaderValue(shader, shader.locs[SHADER_LOC_VECTOR_VIEW], cameraPos, SHADER_UNIFORM_VEC3);
 
 //        Shader shader = m_BaseLightingShader;
 //        SetShaderValue(shader,shader.locs[SHADER_LOC_VECTOR_VIEW],cameraPos,SHADER_UNIFORM_VEC3);
-        UpdateLightValues(shader,m_SunLight);
+//        UpdateLightValues(shader,m_SunLight);
     }
     void NodeEditor::Render3D(Viewport& viewport) {
 //        BeginTextureMode(frameBuffer);
@@ -62,6 +77,13 @@ namespace GamePlay{
         DrawRay(Ray{{5,5,5},m_SunLightDir},WHITE);
         EndMode3D();
 //        EndTextureMode();
+    }
+
+    void NodeEditor::RayMarching() {
+        ClearBackground(SKYBLUE);
+        BeginShaderMode(m_LightingShader);
+        DrawRectangle(0,0,width,height,WHITE);
+        EndShaderMode();
     }
 
     Material NodeEditor::LoadMaterialPBR(Color albedo, float metalness, float roughness)
