@@ -27,8 +27,6 @@ namespace GamePlay{
             TraceLog(LOG_INFO,"NodeEditor::Change Viewport");
             editorMode = !editorMode;
         }
-//        m_Editing = false;
-//        Update3D();
         if(editorMode){
             Update2D();
         }else{
@@ -38,13 +36,6 @@ namespace GamePlay{
         }
     }
     void NodeEditor::Render(){
-//        //Ray march
-//        {
-//            SetCameraMode(m_Camera3d,CAMERA_FREE);
-//            UpdateCamera(&m_Camera3d);
-//            RayMarching();
-//        }
-
         Viewport viewport;
         if(editorMode){
             Render2D(m_MainCanvas);
@@ -58,7 +49,6 @@ namespace GamePlay{
             viewport.rec = {0,0,400,300};
         }else{
             SetCameraMode(m_Camera3d,CAMERA_FREE);
-            UpdateCamera(&m_Camera3d);
             Render3D(m_MainCanvas);
             BeginTextureMode(m_2dCanvas.framebuffer);
             Render2D(m_MainCanvas);

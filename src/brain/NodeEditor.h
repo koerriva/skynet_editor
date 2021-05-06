@@ -102,6 +102,8 @@ namespace GamePlay{
         int m_WorldHeight = 4000;
         Camera2D m_Camera;
         Camera m_Camera3d;
+        Camera m_Camera3dShadowMap;
+        RenderTexture m_ShadowMapRenderTexture;
         Vector2  m_MousePosition;
         Font m_UiFont;
         bool editorMode = true;
@@ -127,9 +129,9 @@ namespace GamePlay{
 
         Texture2D m_Icons;
         Texture2D m_OutputIcons[5];
-        Shader m_LightingShader;
-        Texture2D m_LightingTexture;
+        Shader m_BlankShader;
         Shader m_BaseLightingShader;
+        Shader m_RayMarchShader;
         Light m_SunLight;
         Vector3 m_SunLightDir;
 

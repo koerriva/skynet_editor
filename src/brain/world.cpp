@@ -12,23 +12,34 @@ namespace GamePlay{
         m_Camera3d.fovy = 45.0f;
         m_Camera3d.projection = CAMERA_PERSPECTIVE;
 
-        m_LightingShader = LoadShader("data/shader/base_lighting.vert","data/shader/ray.frag");
+        m_Camera3dShadowMap.position = (Vector3){0.0f, 10.0f, 0.0f};
+        m_Camera3dShadowMap.target = (Vector3){.0f, .0f, .0f};
+        m_Camera3dShadowMap.up = (Vector3){0.0f, 0.0f,1.0f};
+        m_Camera3dShadowMap.fovy = 45.0f;
+        m_Camera3dShadowMap.projection = CAMERA_PERSPECTIVE;
+        m_ShadowMapRenderTexture = LoadRenderTexture(1024,1024);
 
         m_BaseLightingShader = LoadShader("data/shader/base_lighting.vert","data/shader/base_lighting.frag");
-        m_BaseLightingShader.locs[SHADER_LOC_MATRIX_MODEL]=GetShaderLocation(m_BaseLightingShader,"ambient");
-        m_BaseLightingShader.locs[SHADER_LOC_VECTOR_VIEW]=GetShaderLocation(m_BaseLightingShader,"viewPos");
+        m_BaseLightingShader.locs[SHADER_LOC_MATRIX_MODEL] = GetShaderLocation(m_BaseLightingShader, "matModel");
+        m_BaseLightingShader.locs[SHADER_LOC_VECTOR_VIEW] = GetShaderLocation(m_BaseLightingShader,"viewPos");
+        m_BaseLightingShader.locs[SHADER_LOC_COLOR_AMBIENT] = GetShaderLocation(m_BaseLightingShader,"ambient");
 
-        int ambientLoc = GetShaderLocation(m_BaseLightingShader,"ambient");
+        int ambientLoc = m_BaseLightingShader.locs[SHADER_LOC_COLOR_AMBIENT];
         auto* ambientColor = new float [4]{102/255.0f,192/255.0f,1.0f,1.0f};
         SetShaderValue(m_BaseLightingShader,ambientLoc,ambientColor,SHADER_UNIFORM_VEC4);
 
         m_Playground = LoadModelFromMesh(GenMeshPlane(200,200,10,10));
-        m_Playground.materials[0].shader = m_BaseLightingShader;
+        m_BlankShader = m_Playground.materials[0].shader;
+//        m_Playground.materials[0].shader = m_BaseLightingShader;
+        m_Playground.materials[0].maps[MAP_DIFFUSE].texture = m_ShadowMapRenderTexture.texture;
+
         m_Bug = LoadModel("data/Model/GLTF/Frog.glb");
         m_Bug.materials[0].shader = m_BaseLightingShader;
 
-        m_SunLightDir = Vector3Normalize({-1,-1,-1});
-        m_SunLight = CreateLight(LIGHT_POINT, {0,5,0},{0,0,0},WHITE,m_BaseLightingShader);
+        Vector3 pos = {0,5,0};
+        Vector3 target = {0,0,0};
+        m_SunLightDir = Vector3Normalize(Vector3Subtract(target,pos));
+        m_SunLight = CreateLight(LIGHT_POINT, pos,target,WHITE,m_BaseLightingShader);
 
         static int animCount=0;
         ModelAnimation * anim = LoadModelAnimations("data/Model/GLTF/Frog.glb",&animCount);
@@ -40,48 +51,57 @@ namespace GamePlay{
 
     static float runTime = 0;
     void NodeEditor::Update3D() {
+        UpdateCamera(&m_Camera3d);
         float cameraPos[3] = { m_Camera3d.position.x, m_Camera3d.position.y, m_Camera3d.position.z };
         float cameraTarget[3] = { m_Camera3d.target.x, m_Camera3d.target.y, m_Camera3d.target.z };
-        Shader shader = m_LightingShader;
+        Shader shader = m_BaseLightingShader;
         SetShaderValue(shader, shader.locs[SHADER_LOC_VECTOR_VIEW], cameraPos, SHADER_UNIFORM_VEC3);
 
-        SetShaderValue(shader, GetShaderLocation(shader,"viewEye"),cameraPos,SHADER_UNIFORM_VEC3);
-        SetShaderValue(shader,GetShaderLocation(shader,"viewCenter"),cameraTarget,SHADER_UNIFORM_VEC3);
+//        SetShaderValue(shader, GetShaderLocation(shader,"viewEye"),cameraPos,SHADER_UNIFORM_VEC3);
+//        SetShaderValue(shader,GetShaderLocation(shader,"viewCenter"),cameraTarget,SHADER_UNIFORM_VEC3);
         float deltaTime = GetFrameTime();
         runTime += deltaTime;
-        SetShaderValue(shader,GetShaderLocation(shader,"runTime"),&runTime,SHADER_UNIFORM_FLOAT);
-        float resolution[2] = { (float)width, (float)height };
-        SetShaderValue(shader,GetShaderLocation(shader,"resolution"),resolution,SHADER_UNIFORM_VEC2);
-//        Shader shader = m_Playground.materials[0].shader;
-//        SetShaderValue(shader, shader.locs[SHADER_LOC_VECTOR_VIEW], cameraPos, SHADER_UNIFORM_VEC3);
-//        shader = m_Bug.materials[0].shader;
-//        SetShaderValue(shader, shader.locs[SHADER_LOC_VECTOR_VIEW], cameraPos, SHADER_UNIFORM_VEC3);
+//        SetShaderValue(shader,GetShaderLocation(shader,"runTime"),&runTime,SHADER_UNIFORM_FLOAT);
+//        float resolution[2] = { (float)width, (float)height };
+//        SetShaderValue(shader,GetShaderLocation(shader,"resolution"),resolution,SHADER_UNIFORM_VEC2);
 
-//        Shader shader = m_BaseLightingShader;
-//        SetShaderValue(shader,shader.locs[SHADER_LOC_VECTOR_VIEW],cameraPos,SHADER_UNIFORM_VEC3);
-//        UpdateLightValues(shader,m_SunLight);
+        m_SunLight.position.x = sin(runTime)*5;
+        m_SunLight.position.z = cos(runTime)*5;
+        UpdateLightValues(shader,m_SunLight);
+
+        m_Camera3dShadowMap.position = m_SunLight.position;
+        m_Camera3dShadowMap.target = m_SunLight.target;
+
+        UpdateCamera(&m_Camera3dShadowMap);
     }
     void NodeEditor::Render3D(Viewport& viewport) {
-//        BeginTextureMode(frameBuffer);
+        m_Bug.materials[0].shader = m_BlankShader;
+        BeginTextureMode(m_ShadowMapRenderTexture);
+            ClearBackground(GRAY);
+            BeginMode3D(m_Camera3dShadowMap);
+                DrawModelEx(m_Bug,m_BugPosition,Vector3{0,1,0},m_BugRotation,{1.0f,1.0f,1.0f},GRAY);
+            EndMode3D();
+        EndTextureMode();
+        DrawTexture(m_ShadowMapRenderTexture.texture,0,0,WHITE);
+
+        m_Playground.materials[0].shader = m_BaseLightingShader;
+        m_Bug.materials[0].shader = m_BaseLightingShader;
         ClearBackground(SKYBLUE);
-
         BeginMode3D(m_Camera3d);
-
         DrawModel(m_Playground,{0,0,0},1.0,DARKGREEN);
         DrawModelEx(m_Bug,m_BugPosition,Vector3{0,1,0},m_BugRotation,{1.0f,1.0f,1.0f},WHITE);
         PlayBugAnimation(m_BugAnimation[0]);
 
         DrawRay(Ray{m_BugPosition,m_BugDirection},RED);
 
-        DrawSphere({5,5,5},0.5,WHITE);
-        DrawRay(Ray{{5,5,5},m_SunLightDir},WHITE);
+        DrawSphere(m_SunLight.position,0.5,WHITE);
+        DrawRay(Ray{m_SunLight.position,m_SunLightDir},WHITE);
         EndMode3D();
-//        EndTextureMode();
     }
 
     void NodeEditor::RayMarching() {
         ClearBackground(SKYBLUE);
-        BeginShaderMode(m_LightingShader);
+        BeginShaderMode(m_RayMarchShader);
         DrawRectangle(0,0,width,height,WHITE);
         EndShaderMode();
     }
