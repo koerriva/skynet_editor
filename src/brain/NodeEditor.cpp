@@ -27,44 +27,48 @@ namespace GamePlay{
             TraceLog(LOG_INFO,"NodeEditor::Change Viewport");
             editorMode = !editorMode;
         }
-        m_Editing = false;
-        Update3D();
-//        if(editorMode){
-//            Update2D();
-//        }else{
-//            ClearMenu();
-//            m_Editing = false;
-//            Update3D();
-//        }
+//        m_Editing = false;
+//        Update3D();
+        if(editorMode){
+            Update2D();
+        }else{
+            ClearMenu();
+            m_Editing = false;
+            Update3D();
+        }
     }
     void NodeEditor::Render(){
-        SetCameraMode(m_Camera3d,CAMERA_FREE);
-        UpdateCamera(&m_Camera3d);
-        RayMarching();
-//        Viewport viewport;
-//        if(editorMode){
-//            Render2D(m_MainCanvas);
-//            BeginTextureMode(m_3dCanvas.framebuffer);
-//            SetCameraMode(m_Camera3d,CAMERA_FREE);
-//            Render3D(m_MainCanvas);
-//            EndTextureMode();
-//
-//            viewport = m_3dCanvas;
-//            viewport.source = {0,0,400,-300};
-//            viewport.rec = {0,0,400,300};
-//        }else{
+//        //Ray march
+//        {
 //            SetCameraMode(m_Camera3d,CAMERA_FREE);
 //            UpdateCamera(&m_Camera3d);
-//            Render3D(m_MainCanvas);
-//            BeginTextureMode(m_2dCanvas.framebuffer);
-//            Render2D(m_MainCanvas);
-//            EndTextureMode();
-//
-//            viewport = m_2dCanvas;
-//            viewport.source = {0,0,400,-300};
-//            viewport.rec = {0,0,400,300};
+//            RayMarching();
 //        }
-//        DrawViewport(viewport);
+
+        Viewport viewport;
+        if(editorMode){
+            Render2D(m_MainCanvas);
+            BeginTextureMode(m_3dCanvas.framebuffer);
+            SetCameraMode(m_Camera3d,CAMERA_FREE);
+            Render3D(m_MainCanvas);
+            EndTextureMode();
+
+            viewport = m_3dCanvas;
+            viewport.source = {0,0,400,-300};
+            viewport.rec = {0,0,400,300};
+        }else{
+            SetCameraMode(m_Camera3d,CAMERA_FREE);
+            UpdateCamera(&m_Camera3d);
+            Render3D(m_MainCanvas);
+            BeginTextureMode(m_2dCanvas.framebuffer);
+            Render2D(m_MainCanvas);
+            EndTextureMode();
+
+            viewport = m_2dCanvas;
+            viewport.source = {0,0,400,-300};
+            viewport.rec = {0,0,400,300};
+        }
+        DrawViewport(viewport);
     }
 
     void NodeEditor::RenderGUI() {
