@@ -25,6 +25,7 @@ include_directories(lib/raylib/src/raygui/src)
 include_directories(lib/lua/include)
 include_directories(lib/entt/src)
 include_directories(lib/glm)
+include_directories(lib/SDL2/include)
 
 file(COPY data DESTINATION .)
 
