@@ -17,9 +17,6 @@ aux_source_directory(src/brain DIR_SRCS)
 add_subdirectory(lib)
 
 include_directories(src)
-include_directories(src/engine)
-include_directories(src/core)
-include_directories(src/brain)
 include_directories(lib/raylib/src)
 include_directories(lib/raylib/src/raygui/src)
 include_directories(lib/lua/include)
@@ -29,7 +26,7 @@ include_directories(lib/SDL2/include)
 
 file(COPY data DESTINATION .)
 
-add_executable(skynet_editor src/main.cpp ${DIR_SRCS} src/brain/world.cpp src/brain/editor.cpp src/brain/menu.cpp src/brain/bug.cpp src/brain/graphics/lighting.h)
+add_executable(skynet_editor src/main.cpp ${DIR_SRCS} src/brain/world.cpp src/brain/editor.cpp src/brain/menu.cpp src/brain/bug.cpp src/brain/graphics/lighting.h src/graphic/renderer2d.h)
 
 #find_package(spdlog REQUIRED)
 
