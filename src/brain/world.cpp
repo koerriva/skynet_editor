@@ -12,13 +12,6 @@ namespace GamePlay{
         m_Camera3d.fovy = 45.0f;
         m_Camera3d.projection = CAMERA_PERSPECTIVE;
 
-        m_Camera3dShadowMap.position = (Vector3){0.0f, 10.0f, 0.0f};
-        m_Camera3dShadowMap.target = (Vector3){.0f, .0f, .0f};
-        m_Camera3dShadowMap.up = (Vector3){0.0f, 0.0f,1.0f};
-        m_Camera3dShadowMap.fovy = 45.0f;
-        m_Camera3dShadowMap.projection = CAMERA_PERSPECTIVE;
-        m_ShadowMapRenderTexture = LoadRenderTexture(1024,1024);
-
         m_BaseLightingShader = LoadShader("data/shader/base_lighting.vert","data/shader/base_lighting.frag");
         m_BaseLightingShader.locs[SHADER_LOC_MATRIX_MODEL] = GetShaderLocation(m_BaseLightingShader, "matModel");
         m_BaseLightingShader.locs[SHADER_LOC_VECTOR_VIEW] = GetShaderLocation(m_BaseLightingShader,"viewPos");
@@ -29,9 +22,7 @@ namespace GamePlay{
         SetShaderValue(m_BaseLightingShader,ambientLoc,ambientColor,SHADER_UNIFORM_VEC4);
 
         m_Playground = LoadModelFromMesh(GenMeshPlane(200,200,10,10));
-        m_BlankShader = m_Playground.materials[0].shader;
-//        m_Playground.materials[0].shader = m_BaseLightingShader;
-        m_Playground.materials[0].maps[MAP_DIFFUSE].texture = m_ShadowMapRenderTexture.texture;
+        m_Playground.materials[0].shader = m_BaseLightingShader;
 
         m_Bug = LoadModel("data/Model/GLTF/Frog.glb");
         m_Bug.materials[0].shader = m_BaseLightingShader;
@@ -75,15 +66,6 @@ namespace GamePlay{
         UpdateCamera(&m_Camera3dShadowMap);
     }
     void NodeEditor::Render3D(Viewport& viewport) {
-        m_Bug.materials[0].shader = m_BlankShader;
-        BeginTextureMode(m_ShadowMapRenderTexture);
-            ClearBackground(GRAY);
-            BeginMode3D(m_Camera3dShadowMap);
-                DrawModelEx(m_Bug,m_BugPosition,Vector3{0,1,0},m_BugRotation,{1.0f,1.0f,1.0f},GRAY);
-            EndMode3D();
-        EndTextureMode();
-        DrawTexture(m_ShadowMapRenderTexture.texture,0,0,WHITE);
-
         m_Playground.materials[0].shader = m_BaseLightingShader;
         m_Bug.materials[0].shader = m_BaseLightingShader;
         ClearBackground(SKYBLUE);

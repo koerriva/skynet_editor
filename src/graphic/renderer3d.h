@@ -5,9 +5,14 @@
 #ifndef SKYNET_EDITOR_RENDERER2D_H
 #define SKYNET_EDITOR_RENDERER2D_H
 
+#include "SDL.h"
+
 namespace Graphic{
     class Renderer3d{
+    public:
+        void Init(){
 
+        }
     };
 }
 
