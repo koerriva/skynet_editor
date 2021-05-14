@@ -13,8 +13,12 @@ namespace GamePlay{
 
     };
 
+    struct GraphNodeSlot{
+
+    };
+
     struct GraphNode{
-        int id;
+        unsigned long id;
         Vector2 position{};
         float radius=16;
 
@@ -34,7 +38,7 @@ namespace GamePlay{
         int linkId=0;
 
         GraphNode(){}
-        GraphNode(int id):id(id){}
+        GraphNode(unsigned long id):id(id){}
 
         void CursorIn(){ cursorIn = true;cursorOut= false;}
         void CursorOut() {cursorIn = false;cursorOut = true;}
