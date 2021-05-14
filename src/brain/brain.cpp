@@ -43,7 +43,7 @@ namespace GamePlay{
                         iter++;
                     }
                 }
-                if(in->value>=in->threshold&&!in->isActive){
+                if(in->value>=in->threshold){
                     in->isActive = true;
                     in->value = 100;
                     for (int toNode:m_LinkMap[node]) {
