@@ -12,7 +12,7 @@ namespace Engine{
             TraceLog(LOG_ERROR,"程序实例已存在");
         }
         int w=1440,h=900;
-        SetConfigFlags(FLAG_VSYNC_HINT | FLAG_MSAA_4X_HINT | FLAG_WINDOW_HIGHDPI);
+        SetConfigFlags(FLAG_VSYNC_HINT | FLAG_MSAA_4X_HINT);
         InitWindow(w,h,"Frog Brain");
         Image icon = LoadImage("data/neural.png");
         Image icon2 = GenImageCellular(64,64,32);

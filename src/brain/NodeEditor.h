@@ -98,8 +98,8 @@ namespace GamePlay{
         int m_UiNodeUniqueId=1;
 
         Texture2D m_NeuralTexture;
-        int m_WorldWidth = 4000;
-        int m_WorldHeight = 4000;
+        int m_WorldWidth = 5000;
+        int m_WorldHeight = 5000;
         Camera2D m_Camera;
         Camera m_Camera3d;
         Camera m_Camera3dShadowMap;
