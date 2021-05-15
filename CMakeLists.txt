@@ -26,7 +26,7 @@ include_directories(lib/SDL2/include)
 
 file(COPY data DESTINATION .)
 
-add_executable(skynet_editor src/main.cpp ${DIR_SRCS} src/brain/world.cpp src/brain/editor.cpp src/brain/menu.cpp src/brain/bug.cpp src/brain/graphics/lighting.h src/core/GraphEditor.cpp src/core/GraphEditor.h)
+add_executable(skynet_editor src/main.cpp ${DIR_SRCS} src/brain/world.cpp src/brain/editor.cpp src/brain/menu.cpp src/brain/bug.cpp src/brain/graphics/lighting.h src/core/GraphEditor.cpp src/core/GraphEditor.h src/brain/heartchart.h)
 
 #find_package(spdlog REQUIRED)
 

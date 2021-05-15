@@ -56,6 +56,9 @@ namespace GamePlay{
     struct Animation{
         ModelAnimation data;
         int frameCounter=0;
+
+        bool isOver(){return frameCounter>=data.frameCount;}
+        void reset() {frameCounter=0;}
     };
 
     //ui

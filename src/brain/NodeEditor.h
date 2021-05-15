@@ -12,15 +12,16 @@
 #include "graph.h"
 #define BEZIER_LINE_DIVISIONS 32
 #include "raylib.h"
-#include "node.h"
 #include "raymath.h"
-
 #define MAX_LIGHTS 4
 #include "graphics/lighting.h"
 
 #define DARKRED ColorFromHSV(0,1.0,0.5)
 #define DARKYELLOW ColorFromHSV(58,0.8,0.5)
 #define SHENHAILV Color{26, 59, 50, 255}
+
+#include "node.h"
+#include "heartchart.h"
 
 namespace GamePlay{
     class NodeEditor {
@@ -81,7 +82,7 @@ namespace GamePlay{
         void MoveBug(ActionSignal actionSignal);
         void JumpBug(ActionSignal actionSignal);
         void TurnBug(ActionSignal actionSignal);
-        void PlayBugAnimation(Animation& animation);
+        void PlayBugAnimation(Animation& animation,bool isLoop);
     private:
         int selected=0;
         Vector2 selected_point;
@@ -129,7 +130,6 @@ namespace GamePlay{
 
         Texture2D m_Icons;
         Texture2D m_OutputIcons[5];
-        Shader m_BlankShader;
         Shader m_BaseLightingShader;
         Shader m_RayMarchShader;
         Light m_SunLight;
@@ -144,8 +144,8 @@ namespace GamePlay{
         bool m_BugStop = false;
         //jump
         bool m_BugJumping = false;
-        bool m_BugJumpingUp = false;
-        bool m_BugJumpingDown = false;
+
+        HeartChart* m_HeartChart;
 
         std::vector<Animation> m_BugAnimation;
         std::vector<ActionSignal> m_BugSignal;

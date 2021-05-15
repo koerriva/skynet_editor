@@ -36,8 +36,10 @@ namespace GamePlay{
         ModelAnimation * anim = LoadModelAnimations("data/Model/GLTF/Frog.glb",&animCount);
         TraceLog(LOG_INFO,TextFormat("animation count %d",animCount));
         for (int i = 0; i < animCount; ++i) {
-            m_BugAnimation.push_back(Animation{anim[0],0});
+            m_BugAnimation.push_back(Animation{anim[i],0});
         }
+
+        m_HeartChart = new HeartChart();
     }
 
     static float runTime = 0;
@@ -64,6 +66,8 @@ namespace GamePlay{
         m_Camera3dShadowMap.target = m_SunLight.target;
 
         UpdateCamera(&m_Camera3dShadowMap);
+
+        m_HeartChart->Update();
     }
     void NodeEditor::Render3D(Viewport& viewport) {
         m_Playground.materials[0].shader = m_BaseLightingShader;
@@ -72,7 +76,21 @@ namespace GamePlay{
         BeginMode3D(m_Camera3d);
         DrawModel(m_Playground,{0,0,0},1.0,DARKGREEN);
         DrawModelEx(m_Bug,m_BugPosition,Vector3{0,1,0},m_BugRotation,{1.0f,1.0f,1.0f},WHITE);
-        PlayBugAnimation(m_BugAnimation[0]);
+
+        if(m_BugJumping){
+            if(m_BugAnimation[1].isOver()){
+                m_BugJumping = false;
+                m_BugAnimation[1].reset();
+            }else{
+                PlayBugAnimation(m_BugAnimation[1], false);
+            }
+        }else{
+            PlayBugAnimation(m_BugAnimation[0],true);
+        }
+
+        Vector3 pos = m_BugPosition;
+        pos.y += 3.0;
+        m_HeartChart->Render(m_Camera3d,pos);
 
         DrawRay(Ray{m_BugPosition,m_BugDirection},RED);
 

@@ -62,10 +62,11 @@ namespace GamePlay{
             auto in = m_Nodes.find(node);
             in->value = 0;
             in->isActive = false;
-            in->t = m_SignalTick.load();
+            in->t = t;
+
             auto iter = m_Signals[node].begin();
             while (iter!=m_Signals[node].end()){
-                if(iter->t==m_SignalTick){
+                if(iter->t==t){
                     in->value += iter->value;
                     iter=m_Signals[node].erase(iter);
                 }else{
@@ -77,11 +78,12 @@ namespace GamePlay{
                 in->value = 100;
                 m_BugSignal.push_back(ActionSignal{in->outputAction,in->value});
             }
+            m_HeartChart->OnReceiveData(0);
         }
 
         auto iter = m_BugSignal.begin();
         while (iter!=m_BugSignal.end()){
-            ActionSignal signal = ActionSignal{iter->type,iter->value};
+            auto signal = ActionSignal{iter->type,iter->value};
             StopBug(signal);
             MoveBug(signal);
             JumpBug(signal);
