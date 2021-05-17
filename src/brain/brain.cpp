@@ -77,8 +77,10 @@ namespace GamePlay{
                 in->isActive = true;
                 in->value = 100;
                 m_BugSignal.push_back(ActionSignal{in->outputAction,in->value});
+            }else{
+                in->value = 0;
             }
-            m_HeartChart->OnReceiveData(0);
+            m_HeartChart->OnReceiveData(in->value);
         }
 
         auto iter = m_BugSignal.begin();
