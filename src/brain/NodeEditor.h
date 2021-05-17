@@ -99,13 +99,14 @@ namespace GamePlay{
         int m_UiNodeUniqueId=1;
 
         Texture2D m_NeuralTexture;
-        int m_WorldWidth = 5000;
-        int m_WorldHeight = 5000;
+        int m_WorldWidth = 1000;
+        int m_WorldHeight = 1000;
         Camera2D m_Camera;
         Camera m_Camera3d;
         Camera m_Camera3dShadowMap;
         RenderTexture m_ShadowMapRenderTexture;
         Vector2  m_MousePosition;
+        Vector2 m_MouseLastPosition;
         Font m_UiFont;
         bool editorMode = true;
         bool fullMode = false;

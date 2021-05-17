@@ -7,9 +7,9 @@
 namespace GamePlay{
     void NodeEditor::Init2D() {
         m_NeuralTexture = LoadTexture("data/neural.png");
-        m_Camera.offset = {};
+        m_Camera.offset = {0,0};
         m_Camera.zoom  = 1.0;
-        m_Camera.target = {};
+        m_Camera.target = {0,0};
         m_Camera.rotation = 0.0;
 
         m_Icons = LoadTexture("data/icons.png");
@@ -103,6 +103,7 @@ namespace GamePlay{
         }
         //deselect
         if(IsMouseButtonPressed(MOUSE_LEFT_BUTTON)){
+            m_MouseLastPosition = m_MousePosition;
             if(IsInRect(m_3dCanvas.rec,GetMousePosition())){
                 TraceLog(LOG_INFO,"Click 3dCanvas");
                 drag_point = GetMousePosition();
@@ -147,6 +148,13 @@ namespace GamePlay{
                     UnLinkNode(from->linkFrom,from->id);
                 }
             }
+            if(selected==0){
+                Vector2 offset = Vector2Subtract(m_MousePosition,m_MouseLastPosition);
+                m_Camera.offset = Vector2Add(m_Camera.offset,offset);
+                m_Camera.offset.x = Clamp(m_Camera.offset.x,-m_WorldWidth/2,m_WorldWidth/2);
+                m_Camera.offset.y = Clamp(m_Camera.offset.y,-m_WorldHeight/2,m_WorldHeight/2);
+                TraceLog(LOG_INFO,TextFormat("x%f,y%f",m_Camera.offset.x,m_Camera.offset.y));
+            }
         }
 
         //link
@@ -160,6 +168,16 @@ namespace GamePlay{
 
         if(IsMouseButtonUp(MOUSE_LEFT_BUTTON)){
             m_Dragging = false;
+        }
+
+        //zoom camera
+        float delta = GetMouseWheelMove();
+        m_Camera.zoom = Clamp(m_Camera.zoom+delta*GetFrameTime(),0.6,2.0);
+
+        //reset camera
+        if(IsKeyPressed(KEY_Z)){
+            m_Camera.offset = {0,0};
+            m_Camera.zoom = 1.0;
         }
     }
     void NodeEditor::Render2D(Viewport& viewport) {
