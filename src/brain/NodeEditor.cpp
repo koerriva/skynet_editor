@@ -175,7 +175,7 @@ namespace GamePlay{
             linkType = 45;
         }
         if(linkType>0){
-            if(to->cursorIn&&from->parent!=to->parent){
+            if(to->cursorIn){
                 UiLink uiLink = {(fromId<<16)+toId,fromId,toId};
 
                 NodeLink nodeLink = {(from->parent<<16)+to->parent,from->parent,to->parent,100,linkType};
