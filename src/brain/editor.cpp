@@ -7,9 +7,9 @@
 namespace GamePlay{
     void NodeEditor::Init2D() {
         m_NeuralTexture = LoadTexture("data/neural.png");
-        m_Camera.offset = {0,0};
+        m_Camera.offset = {width/2.0f,height/2.0f};
         m_Camera.zoom  = 1.0;
-        m_Camera.target = {0,0};
+        m_Camera.target = {};
         m_Camera.rotation = 0.0;
 
         m_Icons = LoadTexture("data/icons.png");
@@ -151,8 +151,8 @@ namespace GamePlay{
             if(selected==0){
                 Vector2 offset = Vector2Subtract(m_MousePosition,m_MouseLastPosition);
                 m_Camera.offset = Vector2Add(m_Camera.offset,offset);
-                m_Camera.offset.x = Clamp(m_Camera.offset.x,-m_WorldWidth/2,m_WorldWidth/2);
-                m_Camera.offset.y = Clamp(m_Camera.offset.y,-m_WorldHeight/2,m_WorldHeight/2);
+                m_Camera.offset.x = Clamp(m_Camera.offset.x,width-m_WorldWidth/2,m_WorldWidth/2);
+                m_Camera.offset.y = Clamp(m_Camera.offset.y,height-m_WorldHeight/2,m_WorldHeight/2);
                 TraceLog(LOG_INFO,TextFormat("x%f,y%f",m_Camera.offset.x,m_Camera.offset.y));
             }
         }
@@ -176,7 +176,7 @@ namespace GamePlay{
 
         //reset camera
         if(IsKeyPressed(KEY_Z)){
-            m_Camera.offset = {0,0};
+            m_Camera.offset = {width/2.0f,height/2.0f};
             m_Camera.zoom = 1.0;
         }
     }

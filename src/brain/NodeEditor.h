@@ -89,7 +89,7 @@ namespace GamePlay{
         Vector2 drag_point;
         int m_Hovering=0;
 
-        int width=1440,height=900;
+        int width=800,height=600;
 
         IdMap<UiNode> m_UiNodes;
         IdMap<Node> m_Nodes;
@@ -99,8 +99,8 @@ namespace GamePlay{
         int m_UiNodeUniqueId=1;
 
         Texture2D m_NeuralTexture;
-        int m_WorldWidth = 1000;
-        int m_WorldHeight = 1000;
+        int m_WorldWidth = 1800;
+        int m_WorldHeight = 1400;
         Camera2D m_Camera;
         Camera m_Camera3d;
         Camera m_Camera3dShadowMap;

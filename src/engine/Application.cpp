@@ -11,7 +11,7 @@ namespace Engine{
         if(s_Instance){
             TraceLog(LOG_ERROR,"程序实例已存在");
         }
-        int w=1440,h=900;
+        int w=800,h=600;
         SetConfigFlags(FLAG_VSYNC_HINT | FLAG_MSAA_4X_HINT);
         InitWindow(w,h,"Frog Brain");
         Image icon = LoadImage("data/neural.png");

@@ -6,6 +6,9 @@
 
 namespace GamePlay{
     void NodeEditor::Load(Font font) {
+        width = GetScreenWidth();
+        height = GetScreenHeight();
+
         m_UiFont = font;
         m_MainCanvas = Viewport(width,height);
         m_2dCanvas = Viewport(width,height);
@@ -23,6 +26,8 @@ namespace GamePlay{
         UnloadModel(m_Playground);
     }
     void NodeEditor::Update() {
+        width = GetScreenWidth();
+        height = GetScreenHeight();
         if(IsKeyPressed(KEY_F10)){
             TraceLog(LOG_INFO,"NodeEditor::Change Viewport");
             editorMode = !editorMode;
@@ -69,6 +74,9 @@ namespace GamePlay{
             ShowSynapseMenu(menu);
         }
         ShowStatusBar();
+
+        SetWindowTitle(TextFormat("Frog Brain(x:%f,y:%f)",m_MousePosition.x,m_MousePosition.y));
+//        DrawDebugText(TextFormat("鼠标{x:%f,y:%f}",m_MousePosition.x,m_MousePosition.y));
         debugTextLine=0;
     }
 
@@ -276,6 +284,7 @@ namespace GamePlay{
     }
 
     void NodeEditor::DrawBgGrid() {
+//        DrawRectangle(0,0,width/2,height/2,RED);
         int start_x = -m_WorldWidth/2;
         int start_y = -m_WorldHeight/2;
 
@@ -303,6 +312,9 @@ namespace GamePlay{
                     ,end_x,i*seg*5+start_y
                     ,BLACK);
         }
+
+        DrawLine(start_x,0,end_x,0,RED);
+        DrawLine(0,start_y,0,end_y,GREEN);
     }
 
     void NodeEditor::DrawNode(const UiNode &uiNode) {
