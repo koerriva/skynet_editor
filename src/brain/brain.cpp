@@ -4,6 +4,8 @@
 #include "NodeEditor.h"
 
 namespace GamePlay{
+    unsigned circlesPerUpdate = 1;
+    unsigned long updateInterval = 1000;//毫秒
     void NodeEditor::Run(){
         m_SignalTick++;
         int t = m_SignalTick.load();
@@ -92,7 +94,8 @@ namespace GamePlay{
             TurnBug(signal);
             iter = m_BugSignal.erase(iter);
         }
+
         UpdateBug();
-        std::this_thread::sleep_for(std::chrono::milliseconds(static_cast<long>((1.0f/60.0f)*1000)));
+        std::this_thread::sleep_for(std::chrono::milliseconds(updateInterval));
     }
 }

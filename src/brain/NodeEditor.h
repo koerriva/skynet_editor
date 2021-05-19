@@ -104,7 +104,7 @@ namespace GamePlay{
         Camera2D m_Camera;
         Camera m_Camera3d;
         Camera m_Camera3dShadowMap;
-        RenderTexture m_ShadowMapRenderTexture;
+
         Vector2  m_MousePosition;
         Vector2 m_MouseLastPosition;
         Font m_UiFont;

@@ -8,6 +8,11 @@
 #include "raylib.h"
 #include "LayerStack.h"
 
+#define NK_INCLUDE_FIXED_TYPES
+#define NK_INCLUDE_VERTEX_BUFFER_OUTPUT
+#define NK_INCLUDE_STANDARD_VARARGS
+#include "raylib-nuklear.h"
+
 namespace Engine{
     class Application{
     public:
@@ -22,10 +27,16 @@ namespace Engine{
         static Application* Instance() {return s_Instance;}
 
     private:
+        void LoadFont();
+
+    private:
         LayerStack m_LayerStack;
         bool m_Running = true;
+        struct nk_context *nkContext;
 
         static Application* s_Instance;
+    protected:
+        Font m_Font;
     };
 
     Application* Create();
