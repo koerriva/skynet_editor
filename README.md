@@ -32,3 +32,9 @@ vscode
 Lua 5.4.2
 -----------
 - [Step By Step(Lua调用C函数)](https://www.cnblogs.com/orangeform/archive/2012/07/23/2469902.html)
+
+
+Git 设置代理
+-----------
+git config --global http.proxy http://127.0.0.1:10809
+git config --global https.proxy http://127.0.0.1:10809
