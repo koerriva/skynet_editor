@@ -1,0 +1,25 @@
+[submodule "vendor/globjects"]
+	path = vendor/globjects
+	url = https://github.com/cginternals/globjects.git
+[submodule "vendor/glfw"]
+	path = vendor/glfw
+	url = https://github.com/glfw/glfw.git
+[submodule "vendor/glm"]
+	path = vendor/glm
+	url = https://github.com/g-truc/glm.git
+[submodule "vendor/imgui"]
+	path = vendor/imgui
+	url = https://github.com/ocornut/imgui.git
+	branch = docking
+[submodule "vendor/bgfx"]
+	path = vendor/bgfx
+	url = https://github.com/bkaradzic/bgfx.git
+[submodule "vendor/sqlite_orm"]
+	path = vendor/sqlite_orm
+	url = https://github.com/fnc12/sqlite_orm.git
+[submodule "vendor/sdl2"]
+	path = vendor/sdl2
+	url = https://github.com/libsdl-org/SDL.git
+[submodule "vendor/glbinding"]
+	path = vendor/glbinding
+	url = https://github.com/cginternals/glbinding.git

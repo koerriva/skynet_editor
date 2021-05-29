@@ -30,7 +30,11 @@ include_directories(lib/SDL2/include)
 
 file(COPY data DESTINATION .)
 
-add_executable(skynet_editor src/main.cpp ${DIR_SRCS} src/brain/world.cpp src/brain/editor.cpp src/brain/menu.cpp src/brain/bug.cpp src/brain/graphics/lighting.h src/core/GraphEditor.cpp src/core/GraphEditor.h src/brain/heartchart.h)
+add_custom_target(CopyData
+        COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/data ${CMAKE_CURRENT_SOURCE_DIR}/data
+        )
+
+add_executable(skynet_editor src/main.cpp ${DIR_SRCS} src/brain/world.cpp src/brain/editor.cpp src/brain/menu.cpp src/brain/bug.cpp src/brain/graphics/lighting.h src/core/GraphEditor.cpp src/core/GraphEditor.h src/brain/heartchart.h src/engine/Log.h src/engine/Log.cpp)
 
 #find_package(spdlog REQUIRED)
 

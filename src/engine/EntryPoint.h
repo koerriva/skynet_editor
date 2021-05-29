@@ -8,20 +8,17 @@
 #include "Application.h"
 #include "thread"
 
-//#ifdef _WIN32
-//// N卡使用独显运行
-//extern "C" __declspec(dllexport) unsigned long NvOptimusEnablement = 0x00000001;
-//#endif
-//
-//#ifndef __APPLE__
-//// A显卡使用独显运行
-//extern "C" __declspec(dllexport) int AmdPowerXpressRequestHighPerformance = 0x00000001;
-//#endif
+extern "C" {
+    __declspec(dllexport) unsigned long NvOptimusEnablement = 1;
+    __declspec(dllexport) int AmdPowerXpressRequestHighPerformance = 1;
+}
 
 int main(int argc,char** argv){
 #ifdef _WIN32
     system("chcp 65001");
 #endif
+    Engine::Log::Init();
+
     auto app = Engine::Create();
     std::thread async_worker(Engine::AsyncRun,app);
     app->Run();
