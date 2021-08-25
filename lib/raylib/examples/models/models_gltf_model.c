@@ -21,7 +21,7 @@
 
 #include <stdlib.h>
 
-#define MAX_MODELS  6
+#define MAX_MODELS  8
 
 int main(void)
 {
@@ -30,7 +30,7 @@ int main(void)
     const int screenWidth = 800;
     const int screenHeight = 450;
 
-    InitWindow(screenWidth, screenHeight, "raylib [models] example - model animation");
+    InitWindow(screenWidth, screenHeight, "raylib [models] example - model");
 
     // Define the camera to look into our 3d world
     Camera camera = { 0 };
@@ -48,6 +48,8 @@ int main(void)
     model[3] = LoadModel("resources/gltf/BoxAnimated.glb");
     model[4] = LoadModel("resources/gltf/AnimatedTriangle.gltf");
     model[5] = LoadModel("resources/gltf/AnimatedMorphCube.glb");
+    model[6] = LoadModel("resources/gltf/vertex_colored_object.glb");
+    model[7] = LoadModel("resources/gltf/girl.glb");
 
     int currentModel = 0;
 
@@ -97,7 +99,7 @@ int main(void)
 
     // De-Initialization
     //--------------------------------------------------------------------------------------
-    for(int i = 0; i < MAX_MODELS; i++) UnloadModel(model[i]);  // Unload models
+    for (int i = 0; i < MAX_MODELS; i++) UnloadModel(model[i]);  // Unload models
 
     CloseWindow();              // Close window and OpenGL context
     //--------------------------------------------------------------------------------------

@@ -43,8 +43,8 @@
 .PHONY: all clean install uninstall
 
 # Define required raylib variables
-RAYLIB_VERSION        = 3.7.0
-RAYLIB_API_VERSION    = 370
+RAYLIB_VERSION        = 3.8.1
+RAYLIB_API_VERSION    = 381
 
 # Define raylib source code path
 RAYLIB_SRC_PATH      ?= ../src
@@ -77,7 +77,7 @@ RAYLIB_MODULE_RAYGUI ?= FALSE
 RAYLIB_MODULE_PHYSAC ?= FALSE
 
 RAYLIB_MODULE_RAYGUI_PATH ?= $(RAYLIB_SRC_PATH)/../../raygui/src
-RAYLIB_MODULE_PHYSAC_PATH ?= $(RAYLIB_SRC_PATH)
+RAYLIB_MODULE_PHYSAC_PATH ?= $(RAYLIB_SRC_PATH)/extras
 
 # Use external GLFW library instead of rglfw module
 # TODO: Review usage of examples on Linux.
@@ -297,10 +297,8 @@ endif
 
 ifeq ($(RAYLIB_BUILD_MODE),DEBUG)
     CFLAGS += -g
-    ifeq ($(PLATFORM),PLATFORM_WEB)
-        CFLAGS += -s ASSERTIONS=1 --profiling
-    endif
 endif
+
 ifeq ($(RAYLIB_BUILD_MODE),RELEASE)
     ifeq ($(PLATFORM),PLATFORM_WEB)
         CFLAGS += -Os
@@ -334,6 +332,9 @@ ifeq ($(PLATFORM),PLATFORM_WEB)
     # --memory-init-file 0       # to avoid an external memory initialization code file (.mem)
     # --preload-file resources   # specify a resources folder for data compilation
     CFLAGS += -s USE_GLFW=3
+    ifeq ($(RAYLIB_BUILD_MODE),DEBUG)
+        CFLAGS += -s ASSERTIONS=1 --profiling
+    endif
 endif
 ifeq ($(PLATFORM),PLATFORM_ANDROID)
     # Compiler flags for arquitecture
@@ -650,7 +651,7 @@ ifeq ($(ROOT),root)
 		cp --update raylib.h $(RAYLIB_H_INSTALL_PATH)/raylib.h
 		cp --update raymath.h $(RAYLIB_H_INSTALL_PATH)/raymath.h
 		cp --update rlgl.h $(RAYLIB_H_INSTALL_PATH)/rlgl.h
-		cp --update physac.h $(RAYLIB_H_INSTALL_PATH)/physac.h
+		cp --update extras/physac.h $(RAYLIB_H_INSTALL_PATH)/physac.h
 		@echo "raylib development files installed/updated!"
     else
 		@echo "This function currently works on GNU/Linux systems. Add yours today (^;"

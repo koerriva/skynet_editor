@@ -5,6 +5,7 @@
 #ifndef SKYNET_EDITOR_ENTRYPOINT_H
 #define SKYNET_EDITOR_ENTRYPOINT_H
 
+#include "Log.h"
 #include "Application.h"
 #include "thread"
 

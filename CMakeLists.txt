@@ -22,11 +22,11 @@ add_subdirectory(lib)
 include_directories(src)
 include_directories(src/nuklear)
 include_directories(lib/raylib/src)
-include_directories(lib/raylib/src/raygui/src)
+include_directories(lib/raylib/src/extras)
 include_directories(lib/lua/include)
 include_directories(lib/entt/src)
 include_directories(lib/glm)
-include_directories(lib/SDL2/include)
+include_directories(lib/spdlog-1.x/include)
 
 file(COPY data DESTINATION .)
 

@@ -94,10 +94,6 @@
     } CameraProjection;
 #endif
 
-#ifdef __cplusplus
-extern "C" {            // Prevents name mangling of functions
-#endif
-
 //----------------------------------------------------------------------------------
 // Global Variables Definition
 //----------------------------------------------------------------------------------
@@ -106,6 +102,11 @@ extern "C" {            // Prevents name mangling of functions
 //----------------------------------------------------------------------------------
 // Module Functions Declaration
 //----------------------------------------------------------------------------------
+
+#ifdef __cplusplus
+extern "C" {            // Prevents name mangling of functions
+#endif
+
 #if defined(CAMERA_STANDALONE)
 void SetCameraMode(Camera camera, int mode);                // Set camera mode (multiple camera modes available)
 void UpdateCamera(Camera *camera);                          // Update camera position for selected mode
@@ -222,7 +223,7 @@ static CameraData CAMERA = {        // Global CAMERA state context
     .moveControl = { 'W', 'S', 'D', 'A', 'E', 'Q' },
     .smoothZoomControl = 341,       // raylib: KEY_LEFT_CONTROL
     .altControl = 342,              // raylib: KEY_LEFT_ALT
-    .panControl = 2                 // raylib: MOUSE_MIDDLE_BUTTON
+    .panControl = 2                 // raylib: MOUSE_BUTTON_MIDDLE
 };
 
 //----------------------------------------------------------------------------------

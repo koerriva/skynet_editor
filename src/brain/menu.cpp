@@ -4,7 +4,7 @@
 
 #include "NodeEditor.h"
 #define RAYGUI_IMPLEMENTATION
-#include <raygui/raygui.h>
+#include <raygui.h>
 
 namespace GamePlay{
     static int nodeTypeActive=0;

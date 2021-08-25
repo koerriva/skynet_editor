@@ -6,7 +6,7 @@
 #define SKYNET_EDITOR_LOG_H
 
 #include "spdlog/spdlog.h"
-#include "spdlog/fmt/ostr.h"
+//#include "spdlog/fmt/ostr.h"
 
 namespace Engine {
     class Log {
