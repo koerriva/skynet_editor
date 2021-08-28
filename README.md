@@ -38,3 +38,9 @@ Git 设置代理
 -----------
 git config --global http.proxy http://127.0.0.1:10809
 git config --global https.proxy http://127.0.0.1:10809
+
+
+Depencies
+------------
+
+- spdlog `pacman -S mingw-w64-x86_64-spdlog`
