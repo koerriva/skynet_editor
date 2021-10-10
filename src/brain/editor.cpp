@@ -153,7 +153,6 @@ namespace GamePlay{
                 m_Camera.offset = Vector2Add(m_Camera.offset,offset);
                 m_Camera.offset.x = Clamp(m_Camera.offset.x,width-m_WorldWidth/2,m_WorldWidth/2);
                 m_Camera.offset.y = Clamp(m_Camera.offset.y,height-m_WorldHeight/2,m_WorldHeight/2);
-                TraceLog(LOG_INFO,TextFormat("x%f,y%f",m_Camera.offset.x,m_Camera.offset.y));
             }
         }
 

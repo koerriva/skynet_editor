@@ -45,6 +45,7 @@ namespace GamePlay{
         void ShowNeuralMenu(Menu& menu);
         void ShowSynapseMenu(Menu& menu);
         void ShowStatusBar();
+        void DrawGUI();
 
         void DrawBgGrid();
         void DrawNode(const UiNode& uiNode);
@@ -70,8 +71,10 @@ namespace GamePlay{
         static Material LoadMaterialPBR(Color albedo, float metalness, float roughness);
         static Material LoadMaterialPhong(Color ambient,Color diffuse,Color specular);
     private:
+        void InitGUI();
         void Init2D();
         void Init3D();
+        void UpdateGUI();
         void Update2D();
         void Update3D();
         void Render2D(Viewport& viewport);

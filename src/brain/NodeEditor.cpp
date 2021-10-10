@@ -13,6 +13,7 @@ namespace GamePlay{
         m_MainCanvas = Viewport(width,height);
         m_2dCanvas = Viewport(width,height);
         m_3dCanvas = Viewport{width/2,height/2};
+        InitGUI();
         Init2D();
         Init3D();
     }
@@ -39,6 +40,7 @@ namespace GamePlay{
             m_Editing = false;
             Update3D();
         }
+        UpdateGUI();
     }
     void NodeEditor::Render(){
         Viewport viewport;
@@ -75,9 +77,9 @@ namespace GamePlay{
         }
         ShowStatusBar();
 
-        SetWindowTitle(TextFormat("Frog Brain(x:%f,y:%f)",m_MousePosition.x,m_MousePosition.y));
-//        DrawDebugText(TextFormat("鼠标{x:%f,y:%f}",m_MousePosition.x,m_MousePosition.y));
         debugTextLine=0;
+
+        DrawGUI();
     }
 
     void NodeEditor::AddNode(UiNodeType uiNodeType,int category) {

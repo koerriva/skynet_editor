@@ -32,7 +32,6 @@ namespace Engine{
     private:
         LayerStack m_LayerStack;
         bool m_Running = true;
-        struct nk_context *nkContext;
 
         static Application* s_Instance;
     protected:

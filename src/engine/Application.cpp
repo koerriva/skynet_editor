@@ -4,17 +4,6 @@
 
 #include "Application.h"
 
-#define NK_INCLUDE_FIXED_TYPES
-//#define NK_INCLUDE_STANDARD_IO
-//#define NK_INCLUDE_DEFAULT_ALLOCATOR
-#define NK_INCLUDE_VERTEX_BUFFER_OUTPUT
-//#define NK_INCLUDE_DEFAULT_FONT
-//#define NK_BUTTON_TRIGGER_ON_RELEASE
-#define NK_INCLUDE_STANDARD_VARARGS
-
-#define RAYLIB_NUKLEAR_IMPLEMENTATION
-#include "raylib-nuklear.h"
-
 namespace Engine{
     Application* Application::s_Instance = nullptr;
 
@@ -24,7 +13,7 @@ namespace Engine{
         }
         s_Instance = this;
 
-        int w=1440,h=900;
+        int w=800,h=600;
         SetConfigFlags(FLAG_VSYNC_HINT | FLAG_MSAA_4X_HINT);
         InitWindow(w,h,"Frog Brain");
         Image icon = LoadImage("data/neural.png");
@@ -38,48 +27,10 @@ namespace Engine{
         SetTargetFPS(60);
 
         LoadFont();
-
-        //nuklear
-        // Create the Nuklear Context
-        nkContext = InitNuklear();
     }
 
     void Application::Run() {
         while (m_Running){
-            UpdateNuklear(nkContext);
-
-            {
-                // init gui state
-                enum {EASY, HARD};
-                static int op = EASY;
-                static float value = 0.6f;
-                static int i =  20;
-//                struct nk_context ctx;
-//                nk_init_fixed(&ctx, calloc(1, MAX_MEMORY), MAX_MEMORY, &font);
-                if (nk_begin(nkContext, "Show", nk_rect(50, 50, 220, 220),
-                             NK_WINDOW_BORDER|NK_WINDOW_MOVABLE|NK_WINDOW_CLOSABLE)) {
-                    // fixed widget pixel width
-                    nk_layout_row_static(nkContext, 30, 80, 1);
-                    if (nk_button_label(nkContext, "button")) {
-                        // event handling
-                    }
-                    // fixed widget window ratio width
-                    nk_layout_row_dynamic(nkContext, 30, 2);
-                    if (nk_option_label(nkContext, "easy", op == EASY)) op = EASY;
-                    if (nk_option_label(nkContext, "hard", op == HARD)) op = HARD;
-                    // custom widget pixel width
-                    nk_layout_row_begin(nkContext, NK_STATIC, 30, 2);
-                    {
-                        nk_layout_row_push(nkContext, 50);
-                        nk_label(nkContext, "Volume:", NK_TEXT_LEFT);
-                        nk_layout_row_push(nkContext, 110);
-                        nk_slider_float(nkContext, 0, &value, 1.0f, 0.1f);
-                    }
-                    nk_layout_row_end(nkContext);
-                }
-                nk_end(nkContext);
-            }
-
             if(IsKeyPressed(KEY_F11)){
                 ToggleFullscreen();
             }
@@ -96,7 +47,6 @@ namespace Engine{
                     layer->OnGUIRender();
                 }
 
-                DrawNuklear(nkContext);
                 DrawFPS(5,5);
             EndDrawing();
             m_Running = !WindowShouldClose();
