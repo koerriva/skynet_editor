@@ -8,7 +8,7 @@ set (PROJECT_SOURCE_DIR src)
 
 #set(CMAKE_CXX_FLAGS "-Wno-c++11-narrowing")
 set(CMAKE_CXX_FLAGS "-Wno-narrowing")
-set(CMAKE_CXX_FLAGS "-fpermissive -std=c++0x")
+set(CMAKE_CXX_FLAGS "-fpermissive -std=c++0x -fms-extensions")
 add_compile_options(-Wno-narrowing)
 # 查找当前目录下的所有源文件
 # 并将名称保存到 DIR_SRCS 变量

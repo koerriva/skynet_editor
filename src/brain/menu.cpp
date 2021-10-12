@@ -233,9 +233,9 @@ namespace GamePlay{
     void NodeEditor::ShowStatusBar() {
         auto w = static_cast<float>(width);
         auto h = static_cast<float>(height);
-        float stride = 28;
+        float stride = 32;
 
-        if (nk_begin(nkContext, "Show", nk_rect(0, h-stride, w, stride),
+        if (nk_begin(nkContext, "", nk_rect(0, h-stride, w, stride),
                      NK_WINDOW_BORDER|NK_WINDOW_NO_INPUT|NK_WINDOW_NO_SCROLLBAR|NK_WINDOW_BACKGROUND)) {
             nk_layout_row_dynamic(nkContext,stride,5);
             const char* opStatusText = "";
@@ -256,11 +256,11 @@ namespace GamePlay{
                     opStatusText = TextFormat("N:%d, T:%d", uiNode->id, uiNode->type);
                 }
             }
-            nk_label_colored(nkContext,opStatusText,NK_TEXT_ALIGN_CENTERED,nk_color({255,255,255,255}));
-            nk_label_colored(nkContext,TextFormat("输入数\t%d",m_InputNum),NK_TEXT_ALIGN_CENTERED,nk_color({255,123,123,255}));
-            nk_label_colored(nkContext,TextFormat("神经元数\t%d",m_NeuralNum),NK_TEXT_ALIGN_CENTERED,nk_color({123,255,123,255}));
-            nk_label_colored(nkContext,TextFormat("输出数\t%d",m_OutputNum),NK_TEXT_ALIGN_CENTERED,nk_color({123,123,255,255}));
-            nk_label_colored(nkContext,TextFormat("连接数\t%d",m_UiLinks.size()),NK_TEXT_ALIGN_CENTERED,nk_color({123,123,123,255}));
+            nk_label_colored(nkContext,opStatusText,NK_TEXT_CENTERED,nk_color({255,255,255,255}));
+            nk_label_colored(nkContext,TextFormat("输入数\t%d",m_InputNum),NK_TEXT_CENTERED,nk_color({255,123,123,255}));
+            nk_label_colored(nkContext,TextFormat("神经元数\t%d",m_NeuralNum),NK_TEXT_CENTERED,nk_color({123,255,123,255}));
+            nk_label_colored(nkContext,TextFormat("输出数\t%d",m_OutputNum),NK_TEXT_CENTERED,nk_color({123,123,255,255}));
+            nk_label_colored(nkContext,TextFormat("连接数\t%d",m_UiLinks.size()),NK_TEXT_CENTERED,nk_color({123,123,123,255}));
         }
         nk_end(nkContext);
     }

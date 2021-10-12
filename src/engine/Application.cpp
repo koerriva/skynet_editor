@@ -14,9 +14,9 @@ namespace Engine{
         s_Instance = this;
 
         int w=800,h=600;
-        SetConfigFlags(FLAG_VSYNC_HINT | FLAG_MSAA_4X_HINT);
+        SetConfigFlags(FLAG_VSYNC_HINT | FLAG_WINDOW_RESIZABLE);
         InitWindow(w,h,"Frog Brain");
-        Image icon = LoadImage("data/neural.png");
+//        Image icon = LoadImage("data/neural.png");
         Image icon2 = GenImageCellular(64,64,32);
         SetWindowIcon(icon2);
         int monitor = GetCurrentMonitor();
@@ -94,8 +94,8 @@ namespace Engine{
         }
 
         TraceLog(LOG_INFO,"Load SC Font");
-//        m_Font = LoadFontEx("data/font/NotoSansSC-Regular.otf",16,fontChars.data(),fontChars.size());
-        m_Font = LoadFontEx("data/font/LiHeiPro.ttf",16,fontChars.data(),fontChars.size());
+        m_Font = LoadFontEx("data/font/NotoSansSC-Regular.otf",16,fontChars.data(),fontChars.size());
+//        m_Font = LoadFontEx("data/font/LiHeiPro.ttf",16,fontChars.data(),fontChars.size());
         TraceLog(LOG_INFO,"SC Font Load");
         fontChars.clear();
     }
