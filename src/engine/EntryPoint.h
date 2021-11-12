@@ -8,6 +8,7 @@
 #include "Log.h"
 #include "Application.h"
 #include "thread"
+#include "network/NetworkManager.h"
 
 extern "C" {
     __declspec(dllexport) unsigned long NvOptimusEnablement = 1;
@@ -19,6 +20,7 @@ int main(int argc,char** argv){
     system("chcp 65001");
 #endif
     Engine::Log::Init();
+    Engine::NetworkManager::Init();
 
     auto app = Engine::Create();
     std::thread async_worker(Engine::AsyncRun,app);

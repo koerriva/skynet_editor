@@ -1,11 +1,14 @@
 ﻿#include <brain/NodeEditor.h>
 #include "engine/Engine.h"
+#include "network/NetworkManager.h"
 
 class EditorLayer: public Engine::Layer{
 public:
     EditorLayer(Font font){
         m_NodeEditor = new GamePlay::NodeEditor();
         m_Font = font;
+
+        TraceLog(LOG_INFO,"EditorLayer Startup!");
     }
 
     void OnAttach() override{
@@ -38,18 +41,53 @@ private:
     Font m_Font;
 };
 
+class NetLayer: public Engine::Layer{
+public:
+    NetLayer(){
+        TraceLog(LOG_INFO,"NetLayer Startup!");
+    }
+
+    void OnAttach() override {
+
+    }
+
+    void OnUpdate() override {
+
+    }
+
+    void OnAsyncUpdate() override {
+
+    }
+
+    void OnRender() override {
+
+    }
+
+    void OnGUIRender() override {
+
+    }
+
+    void OnDeAttach() override {
+        TraceLog(LOG_INFO,"NetLayer Exit!");
+    }
+};
+
 class Game: public Engine::Application{
 public:
     Game(){
         m_EditorLayer = new EditorLayer(m_Font);
         PushLayer(m_EditorLayer);
+        m_NetLayer = new NetLayer();
+        PushLayer(m_NetLayer);
     }
     ~Game() override {
+        PopLayer(m_NetLayer);
         PopLayer(m_EditorLayer);
     }
 
 private:
     EditorLayer* m_EditorLayer;
+    NetLayer* m_NetLayer;
 };
 
 Engine::Application* Engine::Create(){
