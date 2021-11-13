@@ -26,7 +26,6 @@ include_directories(lib/raylib/src/extras)
 include_directories(lib/lua/include)
 include_directories(lib/entt/src)
 include_directories(lib/glm)
-include_directories(lib/enet/include)
 
 file(COPY data DESTINATION .)
 
@@ -34,8 +33,8 @@ add_custom_target(CopyData
         COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/data ${CMAKE_CURRENT_SOURCE_DIR}/data
         )
 
-add_executable(skynet_editor src/main.cpp ${DIR_SRCS} src/brain/world.cpp src/brain/editor.cpp src/brain/menu.cpp src/brain/bug.cpp src/brain/graphics/lighting.h src/core/GraphEditor.cpp src/core/GraphEditor.h src/brain/heartchart.h src/engine/Log.h src/engine/Log.cpp src/network/NetworkManager.cpp src/network/NetworkManager.h)
+add_executable(skynet_editor src/main.cpp ${DIR_SRCS} src/brain/world.cpp src/brain/editor.cpp src/brain/menu.cpp src/brain/bug.cpp src/brain/graphics/lighting.h src/core/GraphEditor.cpp src/core/GraphEditor.h src/brain/heartchart.h src/engine/Log.h src/engine/Log.cpp)
 
 find_package(spdlog REQUIRED)
 
-target_link_libraries(skynet_editor PRIVATE spdlog::spdlog raylib lua_static enet)
+target_link_libraries(skynet_editor PRIVATE spdlog::spdlog raylib lua_static)

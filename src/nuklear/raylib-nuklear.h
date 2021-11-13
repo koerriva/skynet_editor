@@ -6,7 +6,7 @@
 *       - Use the nuklear immediate-mode graphical user interface in raylib.
 *
 *   DEPENDENCIES:
-*       - raylib 3.7 https://www.raylib.com/
+*       - raylib 4.0 https://www.raylib.com/
 *       - nuklear https://github.com/Immediate-Mode-UI/Nuklear
 *
 *   LICENSE: zlib/libpng
@@ -245,9 +245,9 @@ InitNuklearEx(Font font, float fontSize)
     // Copy the font to a new raylib font pointer.
     struct Font* newFont = (struct Font*)MemAlloc(sizeof(struct Font));
     newFont->baseSize = font.baseSize;
-    newFont->chars = font.chars;
-    newFont->charsCount = font.charsCount;
-    newFont->charsPadding = font.charsPadding;
+    newFont->glyphCount = font.glyphCount;
+    newFont->glyphPadding = font.glyphPadding;
+    newFont->glyphs = font.glyphs;
     newFont->recs = font.recs;
     newFont->texture = font.texture;
 
@@ -441,7 +441,7 @@ DrawNuklear(struct nk_context * ctx)
             case NK_COMMAND_POLYGON: {
                 const struct nk_command_polygon *p = (const struct nk_command_polygon*)cmd;
                 Color color = ColorFromNuklear(p->color);
-                Vector2* points = (Vector2*)MemAlloc(p->point_count * (unsigned short)sizeof(Vector2));
+                Vector2* points = MemAlloc(p->point_count * (unsigned short)sizeof(Vector2));
                 for (unsigned short i = 0; i < p->point_count; i++) {
                     points[i] = (Vector2){(float)p->points[i].x, (float)p->points[i].y};
                 }
@@ -452,7 +452,7 @@ DrawNuklear(struct nk_context * ctx)
             case NK_COMMAND_POLYGON_FILLED: {
                 const struct nk_command_polygon_filled *p = (const struct nk_command_polygon_filled*)cmd;
                 Color color = ColorFromNuklear(p->color);
-                Vector2* points = (Vector2*)MemAlloc(p->point_count * (unsigned short)sizeof(Vector2));
+                Vector2* points = MemAlloc(p->point_count * (unsigned short)sizeof(Vector2));
                 for (unsigned short i = 0; i < p->point_count; i++) {
                     points[i] = (Vector2){(float)p->points[i].x, (float)p->points[i].y};
                 }
@@ -463,7 +463,7 @@ DrawNuklear(struct nk_context * ctx)
             case NK_COMMAND_POLYLINE: {
                 const struct nk_command_polyline *p = (const struct nk_command_polyline *)cmd;
                 Color color = ColorFromNuklear(p->color);
-                Vector2* points = (Vector2*)MemAlloc(p->point_count * (unsigned short)sizeof(Vector2));
+                Vector2* points = MemAlloc(p->point_count * (unsigned short)sizeof(Vector2));
                 for (unsigned short i = 0; i < p->point_count; i++) {
                     points[i] = (Vector2){(float)p->points[i].x, (float)p->points[i].y};
                 }

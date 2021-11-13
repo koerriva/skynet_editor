@@ -1,6 +1,5 @@
 ﻿#include <brain/NodeEditor.h>
 #include "engine/Engine.h"
-#include "network/NetworkManager.h"
 
 class EditorLayer: public Engine::Layer{
 public:
