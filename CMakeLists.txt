@@ -37,4 +37,4 @@ add_executable(skynet_editor src/main.cpp ${DIR_SRCS} src/brain/world.cpp src/br
 
 find_package(spdlog REQUIRED)
 
-target_link_libraries(skynet_editor PRIVATE spdlog::spdlog raylib lua_static)
+target_link_libraries(skynet_editor PRIVATE spdlog::spdlog raylib lua_static zmq)

@@ -32,7 +32,7 @@ namespace GamePlay{
         m_SunLightDir = Vector3Normalize(Vector3Subtract(target,pos));
         m_SunLight = CreateLight(LIGHT_POINT, pos,target,WHITE,m_BaseLightingShader);
 
-        static int animCount=0;
+        unsigned int animCount=0;
         ModelAnimation * anim = LoadModelAnimations("data/Model/GLTF/Frog.glb",&animCount);
         TraceLog(LOG_INFO,TextFormat("animation count %d",animCount));
         for (int i = 0; i < animCount; ++i) {
@@ -77,15 +77,17 @@ namespace GamePlay{
         DrawModel(m_Playground,{0,0,0},1.0,DARKGREEN);
         DrawModelEx(m_Bug,m_BugPosition,Vector3{0,1,0},m_BugRotation,{1.0f,1.0f,1.0f},WHITE);
 
-        if(m_BugJumping){
-            if(m_BugAnimation[1].isOver()){
-                m_BugJumping = false;
-                m_BugAnimation[1].reset();
+        if(!m_BugAnimation.empty()){
+            if(m_BugJumping){
+                if(m_BugAnimation[1].isOver()){
+                    m_BugJumping = false;
+                    m_BugAnimation[1].reset();
+                }else{
+                    PlayBugAnimation(m_BugAnimation[1], false);
+                }
             }else{
-                PlayBugAnimation(m_BugAnimation[1], false);
+                PlayBugAnimation(m_BugAnimation[0],true);
             }
-        }else{
-            PlayBugAnimation(m_BugAnimation[0],true);
         }
 
         Vector3 pos = m_BugPosition;
