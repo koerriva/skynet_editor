@@ -9,12 +9,31 @@
 #include "Log.h"
 #include "Application.h"
 #include "thread"
-
 #include "zmq.h"
+#include "signal.h"
 
 extern "C" {
     __declspec(dllexport) unsigned long NvOptimusEnablement = 1;
     __declspec(dllexport) int AmdPowerXpressRequestHighPerformance = 1;
+}
+
+//  ---------------------------------------------------------------------
+//  消息处理
+//
+//  程序开始运行时调用s_catch_signals()函数；
+//  在循环中判断s_interrupted是否为1，是则跳出循环；
+//  很适用于zmq_poll()。
+
+static int s_interrupted = 0;
+static void s_signal_handler (int signal_value)
+{
+    s_interrupted = 1;
+}
+
+static void s_catch_signals ()
+{
+    signal(SIGINT,s_signal_handler);
+    signal(SIGTERM,s_signal_handler);
 }
 
 int main(int argc,char** argv){
@@ -23,94 +42,76 @@ int main(int argc,char** argv){
 #endif
     printf("%d %s\n",argc,argv[1]);
 
-    const char* data_topic = "/node/";
-    if(strcmp(argv[1],"server") == 0){
-        //  Socket to talk to clients
-        void *context = zmq_ctx_new ();
-        void *responder = zmq_socket (context, ZMQ_PUB);
-        int rc = zmq_bind (responder, "tcp://*:5555");
-        assert (rc == 0);
+    if(strcmp(argv[1],"broker") == 0){
+        //准备上下文和套接字
+        printf("准备上下文和套接字\n");
+        void *context = zmq_init(5);
+        void *frontend = zmq_socket(context, ZMQ_ROUTER);
+        void *backend  = zmq_socket(context, ZMQ_DEALER);
+        zmq_bind(frontend, "tcp://*:5555");
+        zmq_bind(backend,  "tcp://*:5556");
 
-        while (true) {
-            zmq_send(responder, "/node/1", 7, ZMQ_SNDMORE);
-            zmq_send(responder, "{'id':1,'s':98}",15,0);
-            printf("Send Signal...\n");
-            sleep (1);          //  Do some 'work'
-        }
+        //在套接字间转发消息
+        printf("监听中 ...\n");
+        zmq_device(ZMQ_QUEUE,frontend,backend);
+        //程序不会运行到这里，不过还是做好清理工作
+        zmq_close (frontend);
+        zmq_close (backend);
+        zmq_term (context);
         return 0;
     }else if(strcmp(argv[1],"client") == 0){
-        printf ("Connecting to server…\n");
-        void *context = zmq_ctx_new ();
-        void *requester = zmq_socket (context, ZMQ_REQ);
-        zmq_connect(requester, "tcp://localhost:5555");
         const char* id = argv[2];
+        const char* other = argv[3];
 
-        char* other;
-        if(strcmp(id,"yyy")==0){
-            other = "xjb";
-        }else{
-            other = "yyy";
+        printf("连接到代理服务器 5555...\n");
+        void *context = zmq_ctx_new();
+        void *req = zmq_socket(context, ZMQ_REQ);
+
+        printf("客户节点 %s, 业务节点 %s\n",id,other);
+
+//        zmq_setsockopt(req,ZMQ_IDENTITY,id,strlen(id));
+        int rc = zmq_connect(req, "tcp://localhost:5555");
+        printf("connecting... %d\n",rc);
+        assert(rc==0);
+
+        while (s_interrupted==0){
+//            zmq_send(req,other,strlen(other),ZMQ_SNDMORE);
+            char buffer[64] = {0};
+            sprintf(buffer,"%d",rand()%100);
+            printf("send %s\n",buffer);
+            zmq_send(req,buffer, strlen(buffer),1);
+
+            memset(buffer,0,64);
+            zmq_recv(req,buffer,512,0);
+            printf("recv %s\n",buffer);
+
+//            sleep(2);
         }
 
-        printf("Register peer %s\n",id);
-
-        char cmd_buffer[512] = {0};
-        sprintf(cmd_buffer,"{'type':'C1001','data':{'id':'%s'}}",id);
-        zmq_send(requester,cmd_buffer, strlen(cmd_buffer),0);
-        memset(cmd_buffer,0,512);
-        zmq_recv(requester,cmd_buffer,511,0);
-
-        if(strcmp(cmd_buffer,"OK")==0){
-            printf("Register OK!\n");
-            memset(cmd_buffer,0,512);
-
-            int request_nbr;
-            for (request_nbr = 0; request_nbr != 10; request_nbr++) {
-                int p = GetRandomValue(1,100);
-                if(p>60){
-                    sprintf(cmd_buffer,"{'type':'C1002','data':{'from':'%s','to':'%s','s':%d}}",id,other,p);
-                    zmq_send(requester,cmd_buffer,strlen(cmd_buffer),0);
-                    printf("Sending %s\n", cmd_buffer);
-                    memset(cmd_buffer,0,512);
-                    zmq_recv(requester,cmd_buffer,511,0);
-                    printf("Receiving %s\n", cmd_buffer);
-                }else{
-                    zmq_recv(requester,cmd_buffer,511,0);
-                    printf("Listening ... %s\n",cmd_buffer);
-                }
-
-                sleep(1);
-
-                memset(cmd_buffer,0,512);
-            }
-        }else{
-            printf("Register FAIL!\n");
-        }
-        zmq_close (requester);
-        zmq_ctx_destroy (context);
+        zmq_close(req);
+        zmq_ctx_destroy(context);
         return 0;
-    }else{
-        printf("Connecting to server…\n");
-        void *context = zmq_ctx_new ();
-        void *requester = zmq_socket (context, ZMQ_SUB);
-        zmq_connect(requester, "tcp://localhost:5555");
-
+    }else if(strcmp(argv[1],"service") == 0){
         const char* id = argv[2];
-        char channel[512] = {0};
-        sprintf(channel,"/node/%s",id);
-        printf("channel len %d\n", strlen(channel));
-        zmq_setsockopt(requester,ZMQ_SUBSCRIBE,channel, strlen(channel));
+//        printf ("连接到代理服务器 5556...\n");
+        void *context = zmq_ctx_new ();
+        void *rep = zmq_socket(context, ZMQ_REP);
 
-        int request_nbr;
-        for (request_nbr = 0; request_nbr != 10; request_nbr++) {
-            char buffer [512] = {0};
-//            printf ("Sending Hello %d…\n", request_nbr);
-//            zmq_send (requester, "Hello", 5, 0);
-            zmq_recv (requester, buffer, 511, 0);
-            printf("Received World %s %d\n", buffer, request_nbr);
+        printf("服务节点 %s\n",id);
+
+//        zmq_setsockopt(rep,ZMQ_IDENTITY,id,strlen(id));
+        int rc = zmq_connect(rep, "tcp://localhost:5556");
+        printf("connecting... %d\n",rc);
+        assert(rc==0);
+        while(s_interrupted==0){
+            char buffer [10];
+            zmq_recv(rep, buffer, 10, 0);
+            printf ("recv %s\n",buffer);
+//            sleep (1);          //  Do some 'work'
+            zmq_send(rep, "", 0, 0);
         }
-        zmq_close (requester);
-        zmq_ctx_destroy (context);
+        zmq_close(rep);
+        zmq_ctx_destroy(context);
         return 0;
     }
 
