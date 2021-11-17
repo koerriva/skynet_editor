@@ -69,23 +69,24 @@ int main(int argc,char** argv){
 
         printf("客户节点 %s, 业务节点 %s\n",id,other);
 
-//        zmq_setsockopt(req,ZMQ_IDENTITY,id,strlen(id));
-        int rc = zmq_connect(req, "tcp://localhost:5555");
-        printf("connecting... %d\n",rc);
+        zmq_setsockopt(req,ZMQ_IDENTITY,id,strlen(id));
+        const char* addr = "tcp://localhost:5555";
+        int rc = zmq_connect(req, addr);
+        int color = rc==0?102:101;
+        printf("连接到代理服务器 %s \033[%dm %d\033[m\n",addr,color,rc);
         assert(rc==0);
 
-        while (s_interrupted==0){
-//            zmq_send(req,other,strlen(other),ZMQ_SNDMORE);
+        while(s_interrupted==0){
             char buffer[64] = {0};
             sprintf(buffer,"%d",rand()%100);
             printf("send %s\n",buffer);
-            zmq_send(req,buffer, strlen(buffer),1);
+            zmq_send(req,buffer,strlen(buffer),0);
 
             memset(buffer,0,64);
-            zmq_recv(req,buffer,512,0);
+            zmq_recv(req,buffer,63,0);
             printf("recv %s\n",buffer);
 
-//            sleep(2);
+            sleep(1);
         }
 
         zmq_close(req);
@@ -93,29 +94,28 @@ int main(int argc,char** argv){
         return 0;
     }else if(strcmp(argv[1],"service") == 0){
         const char* id = argv[2];
-//        printf ("连接到代理服务器 5556...\n");
-        void *context = zmq_ctx_new ();
+        void *context = zmq_ctx_new();
         void *rep = zmq_socket(context, ZMQ_REP);
 
         printf("服务节点 %s\n",id);
 
 //        zmq_setsockopt(rep,ZMQ_IDENTITY,id,strlen(id));
-        int rc = zmq_connect(rep, "tcp://localhost:5556");
-        printf("connecting... %d\n",rc);
+        const char* addr = "tcp://localhost:5556";
+        int rc = zmq_connect(rep, addr);
+        int color = rc==0?102:101;
+        printf("连接到代理服务器 %s \033[%dm %d\033[m\n",addr,color,rc);
         assert(rc==0);
         while(s_interrupted==0){
-            char buffer [10];
-            zmq_recv(rep, buffer, 10, 0);
-            printf ("recv %s\n",buffer);
+            char buffer[64] = {0};
+            zmq_recv(rep, buffer, 63, 0);
+            printf("recv %s\n",buffer);
 //            sleep (1);          //  Do some 'work'
-            zmq_send(rep, "", 0, 0);
+            zmq_send(rep, "1", 1, 0);
         }
         zmq_close(rep);
         zmq_ctx_destroy(context);
         return 0;
     }
-
-
 
     Engine::Log::Init();
 
