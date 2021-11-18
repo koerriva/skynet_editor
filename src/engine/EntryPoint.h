@@ -6,6 +6,7 @@
 #define SKYNET_EDITOR_ENTRYPOINT_H
 
 #include <unistd.h>
+#include <random>
 #include "Log.h"
 #include "Application.h"
 #include "thread"
@@ -40,7 +41,11 @@ int main(int argc,char** argv){
 #ifdef _WIN32
     system("chcp 65001");
 #endif
-    printf("%d %s\n",argc,argv[1]);
+    const char* peer_type = argv[1];
+    printf("节点类型 %s\n",peer_type);
+
+    std::default_random_engine generator;
+    std::uniform_int_distribution<int> distribution(1,100);
 
     if(strcmp(argv[1],"broker") == 0){
         //准备上下文和套接字
@@ -53,12 +58,28 @@ int main(int argc,char** argv){
 
         //在套接字间转发消息
         printf("监听中 ...\n");
-        zmq_device(ZMQ_QUEUE,frontend,backend);
+        zmq_proxy(frontend,backend, nullptr);
         //程序不会运行到这里，不过还是做好清理工作
         zmq_close (frontend);
         zmq_close (backend);
         zmq_term (context);
         return 0;
+    }else if(strcmp(argv[1],"proxy") == 0){
+        //准备上下文和套接字
+        void *context = zmq_init(5);
+        void *frontend = zmq_socket(context, ZMQ_XSUB);
+        void *backend  = zmq_socket(context, ZMQ_XPUB);
+        zmq_bind(frontend, "tcp://*:5555");
+        zmq_bind(backend,  "tcp://*:5556");
+
+        //在套接字间转发消息
+        printf("监听中 ...\n");
+        zmq_proxy(frontend,backend, nullptr);
+
+        //程序不会运行到这里，不过还是做好清理工作
+        zmq_close(frontend);
+        zmq_close(backend);
+        zmq_term(context);
     }else if(strcmp(argv[1],"client") == 0){
         const char* id = argv[2];
         const char* other = argv[3];
@@ -78,7 +99,7 @@ int main(int argc,char** argv){
 
         while(s_interrupted==0){
             char buffer[64] = {0};
-            sprintf(buffer,"%d",rand()%100);
+            sprintf(buffer,"%d",distribution(generator));
             printf("send %s\n",buffer);
             zmq_send(req,buffer,strlen(buffer),0);
 
@@ -113,6 +134,95 @@ int main(int argc,char** argv){
             zmq_send(rep, "1", 1, 0);
         }
         zmq_close(rep);
+        zmq_ctx_destroy(context);
+        return 0;
+    }else if(strcmp(argv[1],"pub") == 0){
+        const char* id = argv[2];
+        void *context = zmq_ctx_new();
+        void *publisher = zmq_socket(context, ZMQ_PUB);
+
+        printf("发布者 %s\n",id);
+
+        const char* addr = "tcp://localhost:5555";
+        int rc = zmq_connect(publisher,addr);
+        int color = rc==0?102:101;
+        printf("连接到代理服务器 %s \033[%dm %d\033[m\n",addr,color,rc);
+        assert(rc==0);
+
+        while (s_interrupted==0){
+            char buffer[10] = {0};
+            zmq_send(publisher,id,strlen(id),ZMQ_SNDMORE);
+            sprintf(buffer,"%d",distribution(generator));
+            zmq_send(publisher,buffer,strlen(buffer),0);
+            printf("Publish %s\n",buffer);
+            sleep(1);
+        }
+        zmq_close(publisher);
+        zmq_ctx_destroy(context);
+        return 0;
+    }else if(strcmp(argv[1],"sub") == 0){
+        const char* id = argv[2];
+        const char* other = argv[3];
+
+        printf("连接到代理服务器 5556...\n");
+        void *context = zmq_ctx_new();
+        void *subscriber = zmq_socket(context, ZMQ_SUB);
+
+        printf("订阅节点 %s, 发布节点 %s\n",id,other);
+
+        zmq_setsockopt(subscriber,ZMQ_SUBSCRIBE,other,strlen(other));
+        const char* addr = "tcp://localhost:5556";
+        int rc = zmq_connect(subscriber, addr);
+        int color = rc==0?102:101;
+        printf("连接到代理服务器 %s \033[%dm %d\033[m\n",addr,color,rc);
+        assert(rc==0);
+
+        while(s_interrupted==0){
+            char addr[10] = {0};
+            char buffer[10] = {0};
+            zmq_recv(subscriber,addr,9,0);
+            zmq_recv(subscriber,buffer,9,0);
+            printf("Recv %s\n",buffer);
+        }
+        zmq_close(subscriber);
+        zmq_ctx_destroy(context);
+        return 0;
+    }else if(strcmp(argv[1],"pub-sub") == 0){
+        const char* id = argv[2];
+        const char* other = argv[3];
+
+        printf("发布节点 %s, 订阅节点 %s\n",id,other);
+
+        void *context = zmq_ctx_new();
+
+        void *publisher = zmq_socket(context, ZMQ_PUB);
+        zmq_connect(publisher,"tcp://localhost:5555");
+
+        void *subscriber = zmq_socket(context, ZMQ_SUB);
+        zmq_setsockopt(subscriber,ZMQ_SUBSCRIBE,other,strlen(other));
+        zmq_connect(subscriber,"tcp://localhost:5556");
+
+        while(s_interrupted==0){
+            {
+                char buffer[10] = {0};
+                zmq_send(publisher,id,strlen(id),ZMQ_SNDMORE);
+                sprintf(buffer,"%d",distribution(generator));
+                zmq_send(publisher,buffer,strlen(buffer),0);
+                printf("Publish %s\n",buffer);
+            }
+
+            {
+                char addr[10] = {0};
+                char buffer[10] = {0};
+                zmq_recv(subscriber,addr,9,1);
+                zmq_recv(subscriber,buffer,9,1);
+                printf("Recv %s\n",buffer);
+            }
+
+            sleep(1);
+        }
+
+        zmq_close(subscriber);
         zmq_ctx_destroy(context);
         return 0;
     }
