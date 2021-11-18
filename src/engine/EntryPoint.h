@@ -13,6 +13,8 @@
 #include "zmq.h"
 #include "signal.h"
 
+#include "machineid/machineid.h"
+
 extern "C" {
     __declspec(dllexport) unsigned long NvOptimusEnablement = 1;
     __declspec(dllexport) int AmdPowerXpressRequestHighPerformance = 1;
@@ -41,6 +43,8 @@ int main(int argc,char** argv){
 #ifdef _WIN32
     system("chcp 65001");
 #endif
+    std::string machine_hash = machineid::machineHash();
+    printf("MachineId [%s]\n",machine_hash.data());
     const char* peer_type = argv[1];
     printf("节点类型 %s\n",peer_type);
 

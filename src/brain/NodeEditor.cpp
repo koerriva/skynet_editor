@@ -109,6 +109,11 @@ namespace GamePlay{
                 node.type=NodeType::Input;
                 node.inputFrequency = GetRandomValue(11,41);
                 node.inputAction = category;
+
+                if(category==2){
+                    node.action_agent = new Peer();
+                }
+
                 Vector3 c = ColorToHSV(RED);
                 uiNode.colors[0] = ColorFromHSV(c.x,c.y,0.1);
                 uiNode.colors[1] = ColorFromHSV(c.x,c.y,1.0);

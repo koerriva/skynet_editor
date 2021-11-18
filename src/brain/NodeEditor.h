@@ -22,6 +22,7 @@
 
 #include "node.h"
 #include "heartchart.h"
+#include "network.h"
 
 namespace GamePlay{
     class NodeEditor {
@@ -130,6 +131,7 @@ namespace GamePlay{
         std::vector<int> outputs;
         std::unordered_map<int,std::vector<int>> m_LinkMap;
         std::unordered_map<int,std::vector<NodeSignal>> m_Signals;
+        std::unordered_map<int,Peer*> m_Peers;
         std::atomic_int m_SignalTick;
 
         Texture2D m_Icons;

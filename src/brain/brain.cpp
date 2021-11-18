@@ -5,15 +5,25 @@
 
 namespace GamePlay{
     unsigned circlesPerUpdate = 1;
-    unsigned long updateInterval = 1000;//毫秒
+    unsigned long updateInterval = 33;//毫秒
     void NodeEditor::Run(){
         m_SignalTick++;
         int t = m_SignalTick.load();
         for(int node:inputs){
             auto in = m_Nodes.find(node);
-            if(m_SignalTick%in->inputFrequency==0){
-                in->isActive = !in->isActive;
+            if(in->inputAction==2){
+                if(in->action_agent){
+                    Peer* peer = static_cast<Peer *>(in->action_agent);
+                    std::string signal = peer->Sub("node03");
+                    long ret = strtol(signal.data(), nullptr,10);
+                    in->isActive = ret > 50;
+                }
+            }else{
+                if(m_SignalTick%in->inputFrequency==0){
+                    in->isActive = !in->isActive;
+                }
             }
+
             if(in->isActive){
                 in->value = 100;
             }else{

@@ -7,6 +7,7 @@
 
 #include <easings.h>
 #include <glm/glm.hpp>
+
 using namespace glm;
 namespace GamePlay{
     enum class NodeType{
@@ -22,7 +23,8 @@ namespace GamePlay{
 
         //input
         int inputFrequency=11;
-        int inputAction=0;//1视觉遮挡,0视觉正常
+        int inputAction=0;//1视觉遮挡,0视觉正常,2网络节点
+        void* action_agent = nullptr;
         //output
         int outputAction=0;
         //synapse
@@ -57,7 +59,7 @@ namespace GamePlay{
         ModelAnimation data;
         int frameCounter=0;
 
-        bool isOver(){return frameCounter>=data.frameCount;}
+        bool isOver() const{return frameCounter>=data.frameCount;}
         void reset() {frameCounter=0;}
     };
 
@@ -92,7 +94,7 @@ namespace GamePlay{
         int linkFrom=0;
         int linkId=0;
 
-        UiNode(){}
+        UiNode() = default;
         UiNode(UiNodeType t,int id):type(t),id(id){}
 
         void CursorIn(){ cursorIn = true;cursorOut= false;}
