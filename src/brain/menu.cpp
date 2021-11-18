@@ -127,6 +127,41 @@ namespace GamePlay{
         }
     }
 
+    static bool inputEditMode = false;
+    static int inputPeerIndex = 0;
+    void NodeEditor::ShowInputMenu(Menu &menu) {
+        if(menu.type!=MenuType::Input)return;
+        auto uiNode = m_UiNodes.find(menu.uiNode);
+        if(uiNode->type!=UiNodeType::input)return;
+        auto input = m_Nodes.find(menu.uiNode);
+        if(input->inputAction!=2)return;
+
+        Vector2 screen_pos = menu.position;
+        float start_x = screen_pos.x;
+        float start_y = screen_pos.y;
+        float w = menu.rec.width;
+        float h = menu.rec.height+10;
+
+        bool windows = GuiWindowBox({ start_x, start_y, w, h },TextFormat("输入 0x%X",uiNode));
+        uiNode->editType = GuiToggleGroup({ start_x+5, start_y+20+7, 62, 20 }, "行为", uiNode->editType);
+        if(uiNode->editType==0){
+            start_x +=5;start_y+=20+43;
+            GuiLabel(Rectangle{ start_x, start_y, 53, 25 }, "在线节点");\
+
+            char* list[3] = {"node01","node02","node03"};
+            if(GuiDropdownBox({start_x+89,start_y,104,25},"node01;node02;node03;",&inputPeerIndex, inputEditMode)){
+                TraceLog(LOG_INFO,list[inputPeerIndex]);
+                inputEditMode = !inputEditMode;
+            }
+        }
+
+        if(windows){
+            m_Menus.pop();
+            m_Editing = false;
+        }
+        nk_end(nkContext);
+    }
+
     static bool neuralEditMode = false;
     void NodeEditor::ShowNeuralMenu(Menu& menu){
         if(menu.type!=MenuType::Neural)return;

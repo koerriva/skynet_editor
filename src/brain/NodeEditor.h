@@ -43,6 +43,7 @@ namespace GamePlay{
         void UnLinkNode(int from,int to);
 
         void ShowAddMenu(Menu& menu);
+        void ShowInputMenu(Menu& menu);
         void ShowNeuralMenu(Menu& menu);
         void ShowSynapseMenu(Menu& menu);
         void ShowStatusBar();

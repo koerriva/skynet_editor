@@ -7,7 +7,7 @@
 
 #include <easings.h>
 #include <glm/glm.hpp>
-
+#define PEER_TOPIC_MAX_LEN 45
 using namespace glm;
 namespace GamePlay{
     enum class NodeType{
@@ -24,7 +24,8 @@ namespace GamePlay{
         //input
         int inputFrequency=11;
         int inputAction=0;//1视觉遮挡,0视觉正常,2网络节点
-        void* action_agent = nullptr;
+        void* inputPeer = nullptr;
+        char inputPeerTopic[PEER_TOPIC_MAX_LEN] = {0};
         //output
         int outputAction=0;
         //synapse
@@ -87,6 +88,7 @@ namespace GamePlay{
         int editColorType = 0;
         bool editColorMode = false;
         Color colors[2] = {DARKGREEN,GREEN};
+        char inputPeerTopic[PEER_TOPIC_MAX_LEN] = {0};
 
         int parent;
         Vector2 pinPosition={};

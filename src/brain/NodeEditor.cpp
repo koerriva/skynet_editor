@@ -2,6 +2,7 @@
 // Created by 50409 on 2021/4/24.
 //
 
+#include <cstring>
 #include "NodeEditor.h"
 
 namespace GamePlay{
@@ -72,6 +73,7 @@ namespace GamePlay{
         if(!m_Menus.empty()){
             auto& menu = m_Menus.top();
             ShowAddMenu(menu);
+            ShowInputMenu(menu);
             ShowNeuralMenu(menu);
             ShowSynapseMenu(menu);
         }
@@ -96,27 +98,29 @@ namespace GamePlay{
         switch (uiNodeType) {
             case UiNodeType::neural:{
                 m_NeuralNum++;
-                neurals.push_back(uiNode.id);
                 node.type=NodeType::Neural;
                 Vector3 c = ColorToHSV(GREEN);
                 uiNode.colors[0] = ColorFromHSV(c.x,c.y,0.1);
                 uiNode.colors[1] = ColorFromHSV(c.x,c.y,1.0);
+
+                neurals.push_back(uiNode.id);
                 break;
             }
             case UiNodeType::input:{
                 m_InputNum++;
-                inputs.push_back(uiNode.id);
                 node.type=NodeType::Input;
                 node.inputFrequency = GetRandomValue(11,41);
                 node.inputAction = category;
 
                 if(category==2){
-                    node.action_agent = new Peer();
+                    node.inputPeer = new Peer();
                 }
 
                 Vector3 c = ColorToHSV(RED);
                 uiNode.colors[0] = ColorFromHSV(c.x,c.y,0.1);
                 uiNode.colors[1] = ColorFromHSV(c.x,c.y,1.0);
+
+                inputs.push_back(uiNode.id);
                 break;
             }
             case UiNodeType::output:{

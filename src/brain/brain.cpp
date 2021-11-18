@@ -1,6 +1,7 @@
 ﻿//
 // Created by 50409 on 2021/4/27.
 //
+#include <cstring>
 #include "NodeEditor.h"
 
 namespace GamePlay{
@@ -10,11 +11,12 @@ namespace GamePlay{
         m_SignalTick++;
         int t = m_SignalTick.load();
         for(int node:inputs){
+//            auto in = std::adjacent_find(m_Nodes.begin(), m_Nodes.end());
             auto in = m_Nodes.find(node);
             if(in->inputAction==2){
-                if(in->action_agent){
-                    Peer* peer = static_cast<Peer *>(in->action_agent);
-                    std::string signal = peer->Sub("node03");
+                if(in->inputPeer&&strlen(in->inputPeerTopic)>0){
+                    Peer* peer = static_cast<Peer *>(in->inputPeer);
+                    std::string signal = peer->Sub(in->inputPeerTopic);
                     long ret = strtol(signal.data(), nullptr,10);
                     in->isActive = ret > 50;
                 }
