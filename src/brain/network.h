@@ -19,8 +19,9 @@ namespace GamePlay {
         Peer(Peer&& other) noexcept;
 
         bool Pub(const char *msg);
+        bool Sub(const char *topic);
 
-        std::string Sub(const char *topic);
+        std::string Recipes();
 
         ~Peer(){
             printf("\033[101m Peer[%s] Destroy \033[m\n",uuid.data());
@@ -39,6 +40,9 @@ namespace GamePlay {
         void *context = nullptr;
         void *publisher = nullptr;
         void *subscriber = nullptr;
+
+        const char* pub_addr = "tcp://localhost:5555";
+        const char* sub_addr = "tcp://localhost:5556";
     };
 }
 

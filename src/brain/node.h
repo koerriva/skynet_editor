@@ -13,6 +13,14 @@ namespace GamePlay{
     enum class NodeType{
         Input,Pin,Synapse,Neural,Output,Node
     };
+    struct NodePeer{
+        void* peer = nullptr;//Peer
+        char sub_topic[PEER_TOPIC_MAX_LEN] = {0};
+        int status = 0;//0未就绪,1已就绪
+    };
+    struct NodeFile{
+        void* handle;
+    };
     struct Node{
         NodeType type;
         int value = 0;
@@ -22,10 +30,9 @@ namespace GamePlay{
         bool isActive = false;
 
         //input
-        int inputFrequency=11;
-        int inputAction=0;//1视觉遮挡,0视觉正常,2网络节点
-        void* inputPeer = nullptr;
-        char inputPeerTopic[PEER_TOPIC_MAX_LEN] = {0};
+        int inputFrequency = 11;
+        int inputAction = 0;//1视觉遮挡,0视觉正常,2网络节点
+        NodePeer inputPeer{};
         //output
         int outputAction=0;
         //synapse
@@ -88,7 +95,6 @@ namespace GamePlay{
         int editColorType = 0;
         bool editColorMode = false;
         Color colors[2] = {DARKGREEN,GREEN};
-        char inputPeerTopic[PEER_TOPIC_MAX_LEN] = {0};
 
         int parent;
         Vector2 pinPosition={};

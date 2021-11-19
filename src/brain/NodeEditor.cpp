@@ -113,7 +113,7 @@ namespace GamePlay{
                 node.inputAction = category;
 
                 if(category==2){
-                    node.inputPeer = new Peer();
+                    node.inputPeer.peer = new Peer();
                 }
 
                 Vector3 c = ColorToHSV(RED);

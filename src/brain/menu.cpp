@@ -146,12 +146,20 @@ namespace GamePlay{
         uiNode->editType = GuiToggleGroup({ start_x+5, start_y+20+7, 62, 20 }, "行为", uiNode->editType);
         if(uiNode->editType==0){
             start_x +=5;start_y+=20+43;
-            GuiLabel(Rectangle{ start_x, start_y, 53, 25 }, "在线节点");\
+            GuiLabel(Rectangle{ start_x, start_y, 53, 25 }, "在线节点");
 
             char* list[3] = {"node01","node02","node03"};
             if(GuiDropdownBox({start_x+89,start_y,104,25},"node01;node02;node03;",&inputPeerIndex, inputEditMode)){
-                TraceLog(LOG_INFO,list[inputPeerIndex]);
                 inputEditMode = !inputEditMode;
+                if(!inputEditMode){
+                    TraceLog(LOG_INFO,list[inputPeerIndex]);
+                    input->inputPeer.status=0;
+                    strcpy(input->inputPeer.sub_topic,list[inputPeerIndex]);
+                    printf("change topic : %s\n",input->inputPeer.sub_topic);
+                    Peer* peer = static_cast<Peer *>(input->inputPeer.peer);
+                    peer->Sub(input->inputPeer.sub_topic);
+                    input->inputPeer.status=1;
+                }
             }
         }
 
@@ -159,7 +167,6 @@ namespace GamePlay{
             m_Menus.pop();
             m_Editing = false;
         }
-        nk_end(nkContext);
     }
 
     static bool neuralEditMode = false;
@@ -191,6 +198,9 @@ namespace GamePlay{
             if(GuiDropdownBox({start_x+89,start_y,104,25},"步进;线性;误差;S函数;",&neural->activeType, neuralEditMode)){
                 TraceLog(LOG_INFO,"Dropdown Select");
                 neuralEditMode = !neuralEditMode;
+                if(!neuralEditMode){
+                    //TODO
+                }
             }
         }
 

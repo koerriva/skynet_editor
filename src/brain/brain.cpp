@@ -11,14 +11,13 @@ namespace GamePlay{
         m_SignalTick++;
         int t = m_SignalTick.load();
         for(int node:inputs){
-//            auto in = std::adjacent_find(m_Nodes.begin(), m_Nodes.end());
             auto in = m_Nodes.find(node);
             if(in->inputAction==2){
-                if(in->inputPeer&&strlen(in->inputPeerTopic)>0){
-                    Peer* peer = static_cast<Peer *>(in->inputPeer);
-                    std::string signal = peer->Sub(in->inputPeerTopic);
+                if(in->inputPeer.status==1){
+                    Peer* peer = static_cast<Peer *>(in->inputPeer.peer);
+                    std::string signal = peer->Recipes();
                     long ret = strtol(signal.data(), nullptr,10);
-                    in->isActive = ret > 50;
+                    in->isActive = ret > 49;
                 }
             }else{
                 if(m_SignalTick%in->inputFrequency==0){

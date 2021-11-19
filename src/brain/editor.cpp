@@ -46,6 +46,11 @@ namespace GamePlay{
             }
             TraceLog(LOG_INFO,"NodeEditor::NodeMenu");
             Vector2 pos = GetWorldToScreen2D(m_MousePosition,m_Camera);
+            if(uiNode->type==UiNodeType::input){
+                Menu menu{MenuType::Input,pos,{pos.x,pos.y,200,260},selected};
+                m_Menus.push(menu);
+                m_Editing = true;
+            }
             if(uiNode->type==UiNodeType::neural){
                 Menu menu{MenuType::Neural,pos,{pos.x,pos.y,200,260},selected};
                 m_Menus.push(menu);
