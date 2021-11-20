@@ -109,10 +109,6 @@ namespace GamePlay{
         //deselect
         if(IsMouseButtonPressed(MOUSE_LEFT_BUTTON)){
             m_MouseLastPosition = m_MousePosition;
-            if(IsInRect(m_3dCanvas.rec,GetMousePosition())){
-                TraceLog(LOG_INFO,"Click 3dCanvas");
-                drag_point = GetMousePosition();
-            }
             if(selected>0){
                 auto uiNode = m_UiNodes.find(selected);
                 if(uiNode->cursorOut){
@@ -124,14 +120,6 @@ namespace GamePlay{
 
         //drag
         if(IsMouseButtonDown(MOUSE_LEFT_BUTTON)){
-            if(IsInRect(m_3dCanvas.rec,GetMousePosition())){
-                TraceLog(LOG_INFO,"Drag 3dCanvas");
-                Vector2 now_point = GetMousePosition();
-                Vector2 offset = Vector2Subtract(drag_point,now_point);
-                drag_point = now_point;
-                m_3dCanvas.rec.x += offset.x;
-                m_3dCanvas.rec.y += offset.y;
-            }
             if(selected>0){
                 auto from = m_UiNodes.find(selected);
                 if(from->cursorIn&&(from->type==UiNodeType::neural||from->type==UiNodeType::input||from->type==UiNodeType::output)){
@@ -184,9 +172,7 @@ namespace GamePlay{
             m_Camera.zoom = 1.0;
         }
     }
-    void NodeEditor::Render2D(Viewport& viewport) {
-//        BeginTextureMode(framebuffer);
-
+    void NodeEditor::Render2D() {
         ClearBackground(SHENHAILV);
         BeginMode2D(m_Camera);
 
@@ -213,7 +199,5 @@ namespace GamePlay{
             }
         }
         EndMode2D();
-
-//        EndTextureMode();
     }
 }

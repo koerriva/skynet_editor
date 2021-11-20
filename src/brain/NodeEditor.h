@@ -35,7 +35,7 @@ namespace GamePlay{
 
         void Run();
 
-        int GetNodeCount() { return m_UiNodes.size();}
+        size_t GetNodeCount() { return m_UiNodes.size();}
     private:
         void AddNode(UiNodeType type,int category);
         void LinkNode(int from,int to);
@@ -53,7 +53,6 @@ namespace GamePlay{
         void DrawNode(const UiNode& uiNode);
         void DrawLink(const UiLink& uiLink);
         void RayMarching();
-        void DrawViewport(Viewport& viewport);
 
         int debugTextLine = 0;
         void DrawDebugText(const char* text){
@@ -79,8 +78,8 @@ namespace GamePlay{
         void UpdateGUI();
         void Update2D();
         void Update3D();
-        void Render2D(Viewport& viewport);
-        void Render3D(Viewport& viewport);
+        void Render2D();
+        void Render3D();
     private:
         void UpdateBug();
         void StopBug(ActionSignal actionSignal);
@@ -104,8 +103,8 @@ namespace GamePlay{
         int m_UiNodeUniqueId=1;
 
         Texture2D m_NeuralTexture;
-        int m_WorldWidth = 1800;
-        int m_WorldHeight = 1400;
+        int m_WorldWidth = 5000;
+        int m_WorldHeight = 5000;
         Camera2D m_Camera;
         Camera m_Camera3d;
         Camera m_Camera3dShadowMap;
@@ -115,7 +114,6 @@ namespace GamePlay{
         Font m_UiFont;
         bool editorMode = true;
         bool fullMode = false;
-        Viewport m_MainCanvas;
         Viewport m_2dCanvas;
         Viewport m_3dCanvas;
 

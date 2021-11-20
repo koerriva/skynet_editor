@@ -69,7 +69,7 @@ namespace GamePlay{
 
         m_HeartChart->Update();
     }
-    void NodeEditor::Render3D(Viewport& viewport) {
+    void NodeEditor::Render3D() {
         m_Playground.materials[0].shader = m_BaseLightingShader;
         m_Bug.materials[0].shader = m_BaseLightingShader;
         ClearBackground(SKYBLUE);

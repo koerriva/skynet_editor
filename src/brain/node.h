@@ -123,17 +123,29 @@ namespace GamePlay{
         int uiNode;
     };
     struct Viewport{
-        int id;
-        Rectangle rec{};
-        Rectangle source{};
+        int id=0;
+        int width=0;
+        int height=0;
         RenderTexture2D framebuffer{};
-        Viewport(){};
+        Viewport()= default;;
         Viewport(int width,int height){
             id = 0;
-            source = {0,0,static_cast<float>(width),static_cast<float>(-height)};
-            rec = {0,0,static_cast<float>(width),static_cast<float>(height)};
+            this->width = width;
+            this->height = height;
             framebuffer = LoadRenderTexture(width,height);
+            SetTextureFilter(framebuffer.texture,TEXTURE_FILTER_ANISOTROPIC_8X);
             SetTextureWrap(framebuffer.texture,TEXTURE_WRAP_CLAMP);
+        }
+
+        void Resize(int width,int height){
+            if(this->width!=width||this->height!=height){
+                UnloadRenderTexture(framebuffer);
+                this->width = width;
+                this->height = height;
+                framebuffer = LoadRenderTexture(width,height);
+                SetTextureFilter(framebuffer.texture,TEXTURE_FILTER_ANISOTROPIC_8X);
+                SetTextureWrap(framebuffer.texture,TEXTURE_WRAP_CLAMP);
+            }
         }
     };
 

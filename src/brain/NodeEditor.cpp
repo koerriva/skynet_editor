@@ -11,7 +11,6 @@ namespace GamePlay{
         height = GetScreenHeight();
 
         m_UiFont = font;
-        m_MainCanvas = Viewport(width,height);
         m_2dCanvas = Viewport(width,height);
         m_3dCanvas = Viewport{width/2,height/2};
         InitGUI();
@@ -44,29 +43,33 @@ namespace GamePlay{
         UpdateGUI();
     }
     void NodeEditor::Render(){
-        Viewport viewport;
+        m_2dCanvas.Resize(width,height);
+        m_3dCanvas.Resize(width,height);
+
+        BeginTextureMode(m_2dCanvas.framebuffer);
+        Render2D();
+        EndTextureMode();
+
+        BeginTextureMode(m_3dCanvas.framebuffer);
+        SetCameraMode(m_Camera3d,CAMERA_FREE);
+        Render3D();
+        EndTextureMode();
+
         if(editorMode){
-            Render2D(m_MainCanvas);
-            BeginTextureMode(m_3dCanvas.framebuffer);
-            SetCameraMode(m_Camera3d,CAMERA_FREE);
-            Render3D(m_MainCanvas);
-            EndTextureMode();
+            Rectangle _2d_source = {0,0,width,-height};
+            Rectangle _3d_source = {0,0,200,-200};
 
-            viewport = m_3dCanvas;
-            viewport.source = {0,0,400,-300};
-            viewport.rec = {0,0,400,300};
+            ClearBackground(BLACK);
+            DrawTextureRec(m_2dCanvas.framebuffer.texture, _2d_source, (Vector2){ 0,0 }, WHITE);
+            DrawTextureRec(m_3dCanvas.framebuffer.texture, _3d_source, (Vector2){ 0,0 }, WHITE);
         }else{
-            SetCameraMode(m_Camera3d,CAMERA_FREE);
-            Render3D(m_MainCanvas);
-            BeginTextureMode(m_2dCanvas.framebuffer);
-            Render2D(m_MainCanvas);
-            EndTextureMode();
+            Rectangle _3d_source = {0,0,width,-height};
+            Rectangle _2d_source = {0,0,200,-200};
 
-            viewport = m_2dCanvas;
-            viewport.source = {0,0,400,-300};
-            viewport.rec = {0,0,400,300};
+            ClearBackground(BLACK);
+            DrawTextureRec(m_3dCanvas.framebuffer.texture, _3d_source, (Vector2){ 0,0}, WHITE);
+            DrawTextureRec(m_2dCanvas.framebuffer.texture, _2d_source, (Vector2){ 0,0}, WHITE);
         }
-        DrawViewport(viewport);
     }
 
     void NodeEditor::RenderGUI() {
@@ -381,9 +384,5 @@ namespace GamePlay{
         Color color = {gray,gray,gray,255};
 
         DrawMyBezierLine(from->position,from->pinPosition,to->position,to->pinPosition,thick,color);
-    }
-
-    void NodeEditor::DrawViewport(Viewport& viewport){
-        DrawTextureRec(viewport.framebuffer.texture,viewport.source,{viewport.rec.x,viewport.rec.y},WHITE);
     }
 }
