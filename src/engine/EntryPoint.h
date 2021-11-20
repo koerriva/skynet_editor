@@ -229,6 +229,52 @@ int main(int argc,char** argv){
         zmq_close(subscriber);
         zmq_ctx_destroy(context);
         return 0;
+    }else if(strcmp(argv[1],"register") == 0){
+        const char* id = argv[2];
+
+        printf("注册节点 %s\n",id);
+
+        void *context = zmq_ctx_new();
+
+        void *publisher = zmq_socket(context, ZMQ_PUB);
+        int r = zmq_bind(publisher,"pgm://192.168.100.142;238.1.1.1:5000");
+        assert(r==0);
+
+        const char* addr = "localhost:5555";
+        while(s_interrupted==0){
+            zmq_send(publisher,"broad",5,ZMQ_SNDMORE);
+            zmq_send(publisher,addr,strlen(addr),0);
+            printf("Broadcast %s\n",addr);
+            sleep(1);
+        }
+
+        zmq_close(publisher);
+        zmq_ctx_destroy(context);
+        return 0;
+    }else if(strcmp(argv[1],"node") == 0){
+        const char* id = argv[2];
+
+        printf("测试节点 %s\n",id);
+
+        void *context = zmq_ctx_new();
+
+        void *req = zmq_socket(context, ZMQ_SUB);
+        zmq_setsockopt(req,ZMQ_SUBSCRIBE,"broad",5);
+        int r = zmq_connect(req,"pgm://192.168.100.142;238.1.1.1:5557");
+        assert(r==0);
+
+        while(s_interrupted==0){
+//            zmq_send(req,id, strlen(id),0);
+            char buffer[255] = {0};
+            zmq_recv(req,buffer,254,0);
+            printf("Register %s\n",buffer);
+
+//            sleep(1);
+        }
+
+        zmq_close(req);
+        zmq_ctx_destroy(context);
+        return 0;
     }
 
     Engine::Log::Init();
