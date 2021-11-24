@@ -33,7 +33,7 @@ namespace GamePlay{
             TraceLog(LOG_INFO,"NodeEditor::PopMenu");
             ClearMenu();
             Vector2 pos = GetWorldToScreen2D(m_MousePosition,m_Camera);
-            Menu menu{MenuType::AddNode,pos,{pos.x,pos.y,200,160},0};
+            Menu menu{MenuType::AddNode,pos,{pos.x,pos.y,200,250},0};
             m_Menus.push(menu);
             m_Editing = true;
         }

@@ -14,7 +14,7 @@ namespace Engine{
         s_Instance = this;
 
         int w=800,h=600;
-        SetConfigFlags(FLAG_VSYNC_HINT | FLAG_WINDOW_RESIZABLE);
+        SetConfigFlags(FLAG_VSYNC_HINT | FLAG_WINDOW_RESIZABLE | FLAG_MSAA_4X_HINT);
         InitWindow(w,h,"Frog Brain");
 //        Image icon = LoadImage("data/neural.png");
         Image icon2 = GenImageCellular(64,64,32);

@@ -21,6 +21,7 @@ namespace GamePlay{
     struct NodeFile{
         void* handle;
     };
+    enum NodeEditMode {BEHAVIOR,APPEARANCE};
     struct Node{
         NodeType type;
         int value = 0;
