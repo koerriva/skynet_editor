@@ -279,6 +279,7 @@ int main(int argc,char** argv){
 
     Engine::Log::Init();
 
+    CORE_INFO("--------------------Skynet Editor------------------------");
     auto app = Engine::Create();
     std::thread async_worker(Engine::AsyncRun,app);
     app->Run();

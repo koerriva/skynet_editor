@@ -6,7 +6,7 @@ raylib is highly inspired by Borland BGI graphics lib and by XNA framework and i
 
 *NOTE for ADVENTURERS: raylib is a programming library to enjoy videogames programming; no fancy interface, no visual helpers, no debug button... just coding in the most pure spartan-programmers way.*
 
-Ready to learn? Jump to [code examples!](http://www.raylib.com/examples.html)
+Ready to learn? Jump to [code examples!](https://www.raylib.com/examples.html)
 
 ---
 
@@ -14,7 +14,7 @@ Ready to learn? Jump to [code examples!](http://www.raylib.com/examples.html)
 
 [![GitHub contributors](https://img.shields.io/github/contributors/raysan5/raylib)](https://github.com/raysan5/raylib/graphs/contributors)
 [![GitHub All Releases](https://img.shields.io/github/downloads/raysan5/raylib/total)](https://github.com/raysan5/raylib/releases)
-[![GitHub commits since tagged version](https://img.shields.io/github/commits-since/raysan5/raylib/3.7.0)](https://github.com/raysan5/raylib/commits/master)
+[![GitHub commits since tagged version](https://img.shields.io/github/commits-since/raysan5/raylib/4.0.0)](https://github.com/raysan5/raylib/commits/master)
 [![License](https://img.shields.io/badge/license-zlib%2Flibpng-blue.svg)](LICENSE)
 
 [![Chat on Discord](https://img.shields.io/discord/426912293134270465.svg?logo=discord)](https://discord.gg/raylib)
@@ -90,6 +90,7 @@ raylib is also available via multiple [package managers](https://github.com/rays
  - [Working on Windows](https://github.com/raysan5/raylib/wiki/Working-on-Windows)
  - [Working on macOS](https://github.com/raysan5/raylib/wiki/Working-on-macOS)
  - [Working on GNU Linux](https://github.com/raysan5/raylib/wiki/Working-on-GNU-Linux)
+ - [Working on Chrome OS](https://github.com/raysan5/raylib/wiki/Working-on-Chrome-OS)
  - [Working on FreeBSD](https://github.com/raysan5/raylib/wiki/Working-on-FreeBSD)
  - [Working on Raspberry Pi](https://github.com/raysan5/raylib/wiki/Working-on-Raspberry-Pi)
  - [Working for Android](https://github.com/raysan5/raylib/wiki/Working-for-Android)
@@ -100,7 +101,7 @@ raylib is also available via multiple [package managers](https://github.com/rays
 
 #### Setup raylib with multiple IDEs
 
-raylib has been developed on Windows platform using [Notepad++](https://notepad-plus-plus.org/) and [MinGW GCC](http://mingw-w64.org/doku.php) compiler but it can be used with other IDEs on multiple platforms.
+raylib has been developed on Windows platform using [Notepad++](https://notepad-plus-plus.org/) and [MinGW GCC](https://www.mingw-w64.org/) compiler but it can be used with other IDEs on multiple platforms.
 
 [Projects directory](https://github.com/raysan5/raylib/tree/master/projects) contains several ready-to-use **project templates** to build raylib and code examples with multiple IDEs.
 
@@ -125,10 +126,10 @@ contact and networks
 
 raylib is present in several networks and raylib community is growing everyday. If you are using raylib and enjoying it, feel free to join us in any of these networks. The most active network is our [Discord server](https://discord.gg/raylib)! :)
 
- - Webpage: [http://www.raylib.com](http://www.raylib.com)
+ - Webpage: [https://www.raylib.com](https://www.raylib.com)
  - Discord: [https://discord.gg/raylib](https://discord.gg/raylib)
- - Twitter: [http://www.twitter.com/raysan5](http://www.twitter.com/raysan5)
- - Twitch:  [http://www.twitch.tv/raysan5](http://www.twitch.tv/raysan5)
+ - Twitter: [https://www.twitter.com/raysan5](https://www.twitter.com/raysan5)
+ - Twitch:  [https://www.twitch.tv/raysan5](https://www.twitch.tv/raysan5)
  - Reddit:  [https://www.reddit.com/r/raylib](https://www.reddit.com/r/raylib)
  - Patreon: [https://www.patreon.com/raylib](https://www.patreon.com/raylib)
  - YouTube: [https://www.youtube.com/channel/raylib](https://www.youtube.com/c/raylib)

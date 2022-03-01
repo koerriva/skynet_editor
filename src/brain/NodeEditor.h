@@ -37,7 +37,7 @@ namespace GamePlay{
 
         size_t GetNodeCount() { return m_UiNodes.size();}
     private:
-        void AddNode(UiNodeType type,int category);
+        void AddNode(UiNodeType type,int category,Vector2 position);
         void LinkNode(int from,int to);
         void DelNode();
         void UnLinkNode(int from,int to);

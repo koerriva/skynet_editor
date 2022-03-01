@@ -72,7 +72,8 @@ namespace GamePlay {
                     nk_group_end(nkContext);
 
                     if (category != -1) {
-                        AddNode(UiNodeType::input, category);
+                        Vector2 pos = GetScreenToWorld2D(menu.position,m_Camera);
+                        AddNode(UiNodeType::input, category, pos);
                         m_Editing = false;
                         m_Menus.pop();
                     }
@@ -95,7 +96,8 @@ namespace GamePlay {
                     nk_group_end(nkContext);
 
                     if (category != -1) {
-                        AddNode(UiNodeType::neural, category);
+                        Vector2 pos = GetScreenToWorld2D(menu.position,m_Camera);
+                        AddNode(UiNodeType::neural, category, pos);
                         m_Editing = false;
                         m_Menus.pop();
                     }
@@ -124,7 +126,8 @@ namespace GamePlay {
                     nk_group_end(nkContext);
 
                     if (category != -1) {
-                        AddNode(UiNodeType::output, category);
+                        Vector2 pos = GetScreenToWorld2D(menu.position,m_Camera);
+                        AddNode(UiNodeType::output, category, pos);
                         m_Editing = false;
                         m_Menus.pop();
                     }

@@ -125,7 +125,11 @@ namespace GamePlay{
                 if(from->cursorIn&&(from->type==UiNodeType::neural||from->type==UiNodeType::input||from->type==UiNodeType::output)){
                     Vector2 offset = Vector2Subtract(selected_point,m_MousePosition);
                     selected_point = m_MousePosition;
-                    from->position = Vector2Subtract(from->position,offset);
+
+                    Vector2 start = from->position;
+                    Vector2 end = Vector2Subtract(from->position,offset);
+
+                    from->position = Vector2Lerp(start,end,1.0);
 
                     for (int i : from->children) {
                         if(i==0)continue;

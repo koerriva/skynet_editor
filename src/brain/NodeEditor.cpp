@@ -87,9 +87,7 @@ namespace GamePlay{
         DrawGUI();
     }
 
-    void NodeEditor::AddNode(UiNodeType uiNodeType,int category) {
-        Vector2 position = m_MousePosition;
-
+    void NodeEditor::AddNode(UiNodeType uiNodeType,int category, Vector2 position) {
         UiNode uiNode(uiNodeType,m_UiNodeUniqueId++);
         uiNode.radius = 32;
         uiNode.position = position;
