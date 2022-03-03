@@ -3,15 +3,16 @@
 
 class EditorLayer: public Engine::Layer{
 public:
-    EditorLayer(Font font){
+    EditorLayer(Font font,int fontSize){
         m_NodeEditor = new GamePlay::NodeEditor();
         m_Font = font;
+        m_FontSize = fontSize;
 
         TraceLog(LOG_INFO,"EditorLayer Startup!");
     }
 
     void OnAttach() override{
-        m_NodeEditor->Load(m_Font);
+        m_NodeEditor->Load(m_Font,m_FontSize);
     }
 
     void OnDeAttach() override{
@@ -38,6 +39,7 @@ public:
 private:
     GamePlay::NodeEditor* m_NodeEditor;
     Font m_Font;
+    int m_FontSize;
 };
 
 class NetLayer: public Engine::Layer{
@@ -74,7 +76,7 @@ public:
 class Game: public Engine::Application{
 public:
     Game(){
-        m_EditorLayer = new EditorLayer(m_Font);
+        m_EditorLayer = new EditorLayer(m_Font,m_FontSize);
         PushLayer(m_EditorLayer);
         m_NetLayer = new NetLayer();
         PushLayer(m_NetLayer);

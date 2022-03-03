@@ -36,6 +36,7 @@ namespace Engine{
         static Application* s_Instance;
     protected:
         Font m_Font;
+        int m_FontSize = 16;
     };
 
     Application* Create();

@@ -94,7 +94,7 @@ namespace Engine{
         }
 
         TraceLog(LOG_INFO,"Load SC Font");
-        m_Font = LoadFontEx("data/font/NotoSansSC-Regular.otf",16,fontChars.data(),fontChars.size());
+        m_Font = LoadFontEx("data/font/NotoSansSC-Regular.otf",m_FontSize,fontChars.data(),fontChars.size());
 //        m_Font = LoadFontEx("data/font/LiHeiPro.ttf",16,fontChars.data(),fontChars.size());
         TraceLog(LOG_INFO,"SC Font Load");
         fontChars.clear();

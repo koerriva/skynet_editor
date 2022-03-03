@@ -6,11 +6,12 @@
 #include "NodeEditor.h"
 
 namespace GamePlay{
-    void NodeEditor::Load(Font font) {
+    void NodeEditor::Load(Font font,float fontSize) {
         width = GetScreenWidth();
         height = GetScreenHeight();
 
         m_UiFont = font;
+        m_UiFontSize = fontSize;
         m_2dCanvas = Viewport(width,height);
         m_3dCanvas = Viewport{width/2,height/2};
         InitGUI();
@@ -75,10 +76,18 @@ namespace GamePlay{
     void NodeEditor::RenderGUI() {
         if(!m_Menus.empty()){
             auto& menu = m_Menus.top();
-            ShowAddMenu(menu);
-            ShowInputMenu(menu);
-            ShowNeuralMenu(menu);
-            ShowSynapseMenu(menu);
+            if(menu.type==MenuType::AddNode){
+                ShowAddMenu(menu);
+            }
+            if(menu.type==MenuType::Input){
+                ShowInputMenu(menu);
+            }
+            if(menu.type==MenuType::Neural){
+                ShowNeuralMenu(menu);
+            }
+            if(menu.type==MenuType::Synapse){
+                ShowSynapseMenu(menu);
+            }
         }
         ShowStatusBar();
 

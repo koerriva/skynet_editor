@@ -24,7 +24,7 @@ namespace GamePlay {
     static struct nk_context *nkContext;
 
     void NodeEditor::InitGUI() {
-        nkContext = InitNuklearEx(m_UiFont, 16.0f);
+        nkContext = InitNuklearEx(m_UiFont, m_UiFontSize);
     }
 
     void NodeEditor::UpdateGUI() {

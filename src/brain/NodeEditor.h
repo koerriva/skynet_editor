@@ -27,7 +27,7 @@
 namespace GamePlay{
     class NodeEditor {
     public:
-        void Load(Font font);
+        void Load(Font font,float fontSize);
         void Render();
         void RenderGUI();
         void Update();
@@ -112,6 +112,7 @@ namespace GamePlay{
         Vector2  m_MousePosition;
         Vector2 m_MouseLastPosition;
         Font m_UiFont;
+        float m_UiFontSize;
         bool editorMode = true;
         bool fullMode = false;
         Viewport m_2dCanvas;
