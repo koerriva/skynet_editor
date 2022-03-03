@@ -38,7 +38,6 @@ namespace GamePlay{
             Update2D();
         }else{
             ClearMenu();
-            m_Editing = false;
             Update3D();
         }
         UpdateGUI();

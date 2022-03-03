@@ -35,7 +35,6 @@ namespace GamePlay{
             Vector2 pos = GetWorldToScreen2D(m_MousePosition,m_Camera);
             Menu menu{MenuType::AddNode,pos,{pos.x,pos.y,200,250},0};
             m_Menus.push(menu);
-            m_Editing = true;
         }
         if(selected>0&&IsMouseButtonPressed(MOUSE_RIGHT_BUTTON)){
             auto uiNode = m_UiNodes.find(selected);
@@ -49,17 +48,14 @@ namespace GamePlay{
             if(uiNode->type==UiNodeType::input){
                 Menu menu{MenuType::Input,pos,{pos.x,pos.y,200,260},selected};
                 m_Menus.push(menu);
-                m_Editing = true;
             }
             if(uiNode->type==UiNodeType::neural){
                 Menu menu{MenuType::Neural,pos,{pos.x,pos.y,200,260},selected};
                 m_Menus.push(menu);
-                m_Editing = true;
             }
             if(uiNode->type==UiNodeType::synapse){
                 Menu menu{MenuType::Synapse,pos,{pos.x,pos.y,200,260},selected};
                 m_Menus.push(menu);
-                m_Editing = true;
             }
         }
 

@@ -74,7 +74,6 @@ namespace GamePlay {
                     if (category != -1) {
                         Vector2 pos = GetScreenToWorld2D(menu.position,m_Camera);
                         AddNode(UiNodeType::input, category, pos);
-                        m_Editing = false;
                         m_Menus.pop();
                     }
                 }
@@ -98,7 +97,6 @@ namespace GamePlay {
                     if (category != -1) {
                         Vector2 pos = GetScreenToWorld2D(menu.position,m_Camera);
                         AddNode(UiNodeType::neural, category, pos);
-                        m_Editing = false;
                         m_Menus.pop();
                     }
                 }
@@ -128,14 +126,12 @@ namespace GamePlay {
                     if (category != -1) {
                         Vector2 pos = GetScreenToWorld2D(menu.position,m_Camera);
                         AddNode(UiNodeType::output, category, pos);
-                        m_Editing = false;
                         m_Menus.pop();
                     }
                 }
             }
         } else {
             m_Menus.pop();
-            m_Editing = false;
         }
         nk_end(nkContext);
     }
@@ -205,7 +201,6 @@ namespace GamePlay {
             }
         } else {
             m_Menus.pop();
-            m_Editing = false;
         }
         nk_end(nkContext);
     }
@@ -294,7 +289,6 @@ namespace GamePlay {
             }
         } else {
             m_Menus.pop();
-            m_Editing = false;
         }
         nk_end(nkContext);
     }
@@ -311,7 +305,6 @@ namespace GamePlay {
         float start_y = screen_pos.y;
         float w = menu.rec.width;
         float h = menu.rec.height;
-        bool thresholdEditMode = true;
 
         bool windows = GuiWindowBox({start_x, start_y, w, h}, TextFormat("突触 0x%X", uiNode));
         uiNode->editType = GuiToggleGroup({start_x + 5, start_y + 20 + 7, 62, 20}, "行为;外观", uiNode->editType);
@@ -319,9 +312,6 @@ namespace GamePlay {
             start_x += 5;
             start_y += 20 + 43;
             GuiLabel({start_x, start_y, 53, 25}, "权重");
-//            if (GuiSpinner(Rectangle{ start_x+89, start_y+20+43, 104, 25 }, nullptr, &nodeLink->weight, -100, 100, thresholdEditMode)){
-//                thresholdEditMode = !thresholdEditMode;
-//            }
             nodeLink->weight = GuiSlider({start_x + 89, start_y, 104, 25}, TextFormat("%d", nodeLink->weight), "",
                                          nodeLink->weight, -100, 100);
             start_y += 35;
@@ -348,7 +338,6 @@ namespace GamePlay {
         }
         if (windows) {
             m_Menus.pop();
-            m_Editing = false;
         }
     }
 

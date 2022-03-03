@@ -120,7 +120,6 @@ namespace GamePlay{
 
         bool m_Linking = false;
         bool m_Dragging = false;
-        bool m_Editing = false;
 
         int m_InputNum = 0;
         int m_NeuralNum = 0;
