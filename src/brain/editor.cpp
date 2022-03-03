@@ -62,15 +62,7 @@ namespace GamePlay{
                 m_Editing = true;
             }
         }
-        if(m_Editing){
-            auto& menu = m_Menus.top();
-            Vector2 pos = GetWorldToScreen2D(m_MousePosition,m_Camera);
-            if(!IsInRect(menu.rec,pos)&&IsMouseButtonPressed(MOUSE_LEFT_BUTTON)){
-                ClearMenu();
-                m_Editing = false;
-            }
-        }
-        if(m_Editing)return;
+
         for(const auto& uiNode:m_UiNodes){
             if(IsInside(uiNode.radius,uiNode.position,m_MousePosition)){
                 if(uiNode.type==UiNodeType::pin){
