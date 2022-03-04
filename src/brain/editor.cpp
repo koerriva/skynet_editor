@@ -36,6 +36,11 @@ namespace GamePlay{
             Menu menu{MenuType::AddNode,pos,{pos.x,pos.y,200,250},0};
             m_Menus.push(menu);
         }
+
+        if(IsMouseButtonPressed(MOUSE_LEFT_BUTTON)){
+            m_MouseLastPosition = m_MousePosition;
+        }
+
         if(selected>0&&IsMouseButtonPressed(MOUSE_RIGHT_BUTTON)){
             auto uiNode = m_UiNodes.find(selected);
             if(uiNode->cursorOut){
@@ -59,6 +64,16 @@ namespace GamePlay{
             }
         }
 
+        //deselect
+        if(selected>0&&IsMouseButtonPressed(MOUSE_LEFT_BUTTON)){
+            auto uiNode = m_UiNodes.find(selected);
+            if(uiNode->cursorOut){
+                selected = 0;
+                selected_point = {0};
+            }
+        }
+
+        //select
         for(const auto& uiNode:m_UiNodes){
             if(IsInside(uiNode.radius,uiNode.position,m_MousePosition)){
                 if(uiNode.type==UiNodeType::pin){
@@ -94,23 +109,13 @@ namespace GamePlay{
                 m_UiNodes.find(uiNode.id)->CursorOut();
             }
         }
-        //deselect
-        if(IsMouseButtonPressed(MOUSE_LEFT_BUTTON)){
-            m_MouseLastPosition = m_MousePosition;
-            if(selected>0){
-                auto uiNode = m_UiNodes.find(selected);
-                if(uiNode->cursorOut){
-                    selected = 0;
-                    selected_point = {0};
-                }
-            }
-        }
 
         //drag
         if(IsMouseButtonDown(MOUSE_LEFT_BUTTON)){
+            //如果选中节点，拖拽节点
             if(selected>0){
                 auto from = m_UiNodes.find(selected);
-                if(from->cursorIn&&(from->type==UiNodeType::neural||from->type==UiNodeType::input||from->type==UiNodeType::output)){
+                if(from->type==UiNodeType::neural||from->type==UiNodeType::input||from->type==UiNodeType::output){
                     Vector2 offset = Vector2Subtract(selected_point,m_MousePosition);
                     selected_point = m_MousePosition;
 
@@ -133,6 +138,7 @@ namespace GamePlay{
                     UnLinkNode(from->linkFrom,from->id);
                 }
             }
+            //如果选中背景，拖拽镜头
             if(selected==0){
                 Vector2 offset = Vector2Subtract(m_MousePosition,m_MouseLastPosition);
                 m_Camera.offset = Vector2Add(m_Camera.offset,offset);
