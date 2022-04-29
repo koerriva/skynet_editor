@@ -25,6 +25,7 @@ namespace GamePlay {
 
     void NodeEditor::InitGUI() {
         nkContext = InitNuklearEx(m_UiFont, m_UiFontSize);
+        GuiSetFont(m_UiFont);
     }
 
     void NodeEditor::UpdateGUI() {
@@ -354,16 +355,16 @@ namespace GamePlay {
                 auto uiNode = m_UiNodes.find(selected);
                 auto node = m_Nodes.find(selected);
                 if (node->type == NodeType::Input) {
-                    opStatusText = TextFormat("I:%d, S:%d", uiNode->id, node->value);
+                    opStatusText = TextFormat("S:%d", node->value);
                 } else if (node->type == NodeType::Neural) {
-                    opStatusText = TextFormat("N:%d, S:%d, T:%d", uiNode->id, node->value, node->threshold);
+                    opStatusText = TextFormat("S:%d, T:%d", node->value, node->threshold);
                 } else if (node->type == NodeType::Output) {
-                    opStatusText = TextFormat("O:%d, S:%d", uiNode->id, node->value);
+                    opStatusText = TextFormat("S:%d", node->value);
                 } else if (node->type == NodeType::Synapse) {
                     auto nodeLink = m_NodeLinks.find(uiNode->linkId);
-                    opStatusText = TextFormat("SY:%d, W:%d", uiNode->id, nodeLink->weight);
+                    opStatusText = TextFormat("W:%d", nodeLink->weight);
                 } else {
-                    opStatusText = TextFormat("N:%d, T:%d", uiNode->id, uiNode->type);
+                    opStatusText = TextFormat("T:%d", uiNode->type);
                 }
             }else{
                 opStatusText = TextFormat("--");

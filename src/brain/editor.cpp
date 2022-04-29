@@ -64,6 +64,10 @@ namespace GamePlay{
             }
         }
 
+        if(m_Menus.size()>0){
+            return;
+        }
+
         //deselect
         if(selected>0&&IsMouseButtonPressed(MOUSE_LEFT_BUTTON)){
             auto uiNode = m_UiNodes.find(selected);
