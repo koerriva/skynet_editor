@@ -448,7 +448,7 @@ DrawNuklear(struct nk_context * ctx)
                 // TODO: Confirm Polygon
                 const struct nk_command_polygon *p = (const struct nk_command_polygon*)cmd;
                 Color color = ColorFromNuklear(p->color);
-                Vector2* points = MemAlloc(p->point_count * (unsigned short)sizeof(Vector2));
+                Vector2* points = (Vector2 *)MemAlloc(p->point_count * (unsigned short)sizeof(Vector2));
                 unsigned short i;
                 for (i = 0; i < p->point_count; i++) {
                     points[i].x = p->points[i].x;
@@ -462,7 +462,7 @@ DrawNuklear(struct nk_context * ctx)
                 // TODO: Polygon filled expects counter clockwise order
                 const struct nk_command_polygon_filled *p = (const struct nk_command_polygon_filled*)cmd;
                 Color color = ColorFromNuklear(p->color);
-                Vector2* points = MemAlloc(p->point_count * (unsigned short)sizeof(Vector2));
+                Vector2* points = (Vector2 *)MemAlloc(p->point_count * (unsigned short)sizeof(Vector2));
                 unsigned short i;
                 for (i = 0; i < p->point_count; i++) {
                     points[i].x = p->points[i].x;
@@ -476,7 +476,7 @@ DrawNuklear(struct nk_context * ctx)
                 // TODO: Polygon expects counter clockwise order
                 const struct nk_command_polyline *p = (const struct nk_command_polyline *)cmd;
                 Color color = ColorFromNuklear(p->color);
-                Vector2* points = MemAlloc(p->point_count * (unsigned short)sizeof(Vector2));
+                Vector2* points = (Vector2 *)MemAlloc(p->point_count * (unsigned short)sizeof(Vector2));
                 unsigned short i;
                 for (i = 0; i < p->point_count; i++) {
                     points[i].x = p->points[i].x;
